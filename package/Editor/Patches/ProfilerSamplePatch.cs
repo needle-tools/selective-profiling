@@ -14,6 +14,9 @@ using UnityEngine.Profiling;
 
 namespace Needle.SelectiveProfiling
 {
+	// Limitations/Unsupported use cases: https://harmony.pardeike.net/articles/patching.html#commonly-unsupported-use-cases
+	// - Generic Methods are experimental and might not work -> https://harmony.pardeike.net/articles/patching-edgecases.html#generics
+
 	[NoAutoDiscover]
 	public class ProfilerSamplePatch : EditorPatchProvider
 	{
@@ -49,10 +52,11 @@ namespace Needle.SelectiveProfiling
 				if (string.IsNullOrEmpty(prefix)) prefix = string.Empty;
 				if (string.IsNullOrEmpty(postfix)) postfix = string.Empty;
 				ICodeWrapper wrapper = new MethodWrapper(new InstructionsWrapper(), (instruction, index) =>
-				{
-					var methodName = TranspilerUtils.TryGetMethodName(instruction.operand);
-					InsertBefore[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
-				});
+					{
+						var methodName = TranspilerUtils.TryGetMethodName(instruction.operand);
+						InsertBefore[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
+					},
+					PatchManager.AllowDebugLogs);
 				wrappers.Add(method, wrapper);
 			}
 

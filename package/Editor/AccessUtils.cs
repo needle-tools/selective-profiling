@@ -13,6 +13,14 @@ namespace Needle.SelectiveProfiling.Utils
 	{
 		private static readonly Dictionary<string, Assembly> assemblyMap = new Dictionary<string, Assembly>();
 
+		public static string GetMethodIdentifier(this MethodInfo info)
+		{
+			if (info == null) return null;
+			var declaring = info.DeclaringType;
+			var assembly = declaring?.Assembly;
+			return assembly?.GetName().Name + ".dll" + ", " + declaring?.Namespace + "::" + declaring?.Name + info.Name + "(TODO:Params)";
+		}
+
 		public static bool TryGetMethodFromName(string name, out MethodInfo method)
 		{
 			if (!string.IsNullOrEmpty(name))
@@ -24,7 +32,7 @@ namespace Needle.SelectiveProfiling.Utils
 					var dllIndex = name.IndexOf(".dll", StringComparison.InvariantCulture);
 					if (dllIndex > 0)
 					{
-						var assemblyName = name.Substring(0, dllIndex) + ",";
+						var assemblyName = name.Substring(0, dllIndex) + ", ";
 						var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 						foreach (var ass in assemblies)
 						{
@@ -51,6 +59,7 @@ namespace Needle.SelectiveProfiling.Utils
 					const string separator = "!";
 					var methodNameIndex = name.IndexOf(separator, StringComparison.InvariantCulture);
 					var fullName = name.Substring(methodNameIndex + separator.Length);
+					// TODO: params and generics?!
 					fullName = fullName.Substring(0, fullName.IndexOf("(", StringComparison.InvariantCulture));
 					fullName = fullName.Replace("::", ".");
 					var separatorIndex = fullName.LastIndexOf(".", StringComparison.InvariantCulture);

@@ -33,6 +33,8 @@ namespace MyNamespace
     			// var test = "123";
     			// Debug.Log("Another log");
     		}
+            
+            MethodWithGeneric<int>(0);
     
     		var f = Time.frameCount;
     		if (f % 1 == 0)
@@ -57,7 +59,12 @@ namespace MyNamespace
     		for (int i = 0; i < Logs / 10; i++)
     			c = new SomeClass();
     	}
-    
+
+        // https://harmony.pardeike.net/articles/patching.html#commonly-unsupported-use-cases
+        public void MethodWithGeneric<T>(T test)
+        {
+	        Debug.Log("GENERIC " + test);
+        }
     
     	// private void Update()
     	// {

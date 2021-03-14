@@ -5,6 +5,7 @@ using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
 using needle.EditorPatching;
+using Needle.SelectiveProfiling.Utils;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling
@@ -31,13 +32,9 @@ namespace Needle.SelectiveProfiling
 				return;
 			}
 
-			Debug.Log("Enable profiling for " + method);
+			// Debug.Log("Enable profiling for " + method);
 			var patch = new ProfilerSamplePatch(method, null, " NEEDLE_SAMPLE");
-			var info = new ProfilingInfo()
-			{
-				Patch = patch,
-				Method = method,
-			};
+			var info = new ProfilingInfo(patch, method);
 			patches.Add(info);
 			PatchManager.RegisterPatch(patch);
 			PatchManager.EnablePatch(patch);
@@ -58,9 +55,17 @@ namespace Needle.SelectiveProfiling
 		[Serializable]
 		internal class ProfilingInfo
 		{
+			public string Identifier;
 			public EditorPatchProvider Patch;
 			public MethodInfo Method;
 			public bool IsActive => PatchManager.IsActive(Patch.ID());
+
+			public ProfilingInfo(EditorPatchProvider patch, MethodInfo info)
+			{
+				this.Patch = patch;
+				this.Method = info;
+				this.Identifier = info.GetMethodIdentifier();
+			}
 
 			public void ToggleActive()
 			{
@@ -73,7 +78,7 @@ namespace Needle.SelectiveProfiling
 
 			public override string ToString()
 			{
-				return Patch?.ID() + " - " + Method?.FullDescription();
+				return Patch?.ID() + " - " + Identifier;
 			}
 		}
 
@@ -81,7 +86,7 @@ namespace Needle.SelectiveProfiling
 
 		private static void UpdateState(ProfilingInfo info)
 		{
-			Debug.Log("Persistent update state " + info);
+			// Debug.Log("Update state " + info);
 		}
 	}
 }

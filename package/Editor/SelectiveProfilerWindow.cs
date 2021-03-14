@@ -43,13 +43,13 @@ namespace Needle.SelectiveProfiling
 				foreach (var p in patches)
 				{
 					EditorGUILayout.BeginHorizontal();
-					EditorGUILayout.LabelField(p.Patch.DisplayName);
+					EditorGUILayout.LabelField(new GUIContent(p.Patch.DisplayName, p.Identifier), GUILayout.ExpandWidth(true));
 					if (!p.IsActive)
 					{
-						if (GUILayout.Button("Enable"))
+						if (GUILayout.Button("Enable", GUILayout.Width(80)))
 							p.Enable();
 					}
-					else if (GUILayout.Button("Disable"))
+					else if (GUILayout.Button("Disable",GUILayout.Width(80)))
 						p.Disable();
 
 					EditorGUILayout.EndHorizontal();

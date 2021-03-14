@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
+using needle.EditorPatching;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling.CodeWrapper
@@ -10,11 +11,14 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 	{
 		private readonly InstructionsWrapper wrapper;
 		private readonly Action<CodeInstruction, int> callback;
+
+		public bool DebugLog = false;
 		
-		public MethodWrapper(InstructionsWrapper wrapper, Action<CodeInstruction, int> onInstruction)
+		public MethodWrapper(InstructionsWrapper wrapper, Action<CodeInstruction, int> onInstruction, bool debugLog)
 		{
 			this.wrapper = wrapper;
 			this.callback = onInstruction;
+			this.DebugLog = debugLog;
 		}
 		
 		public void Apply(IList<CodeInstruction> instructions, IList<CodeInstruction> before, IList<CodeInstruction> after)
@@ -48,7 +52,8 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				}
 			}
 
-			Debug.Log(IL_Before + "\n\n----\n\n" + string.Join("\n", instructions) + "\n\n");
+			if(DebugLog)
+				Debug.Log(IL_Before + "\n\n----\n\n" + string.Join("\n", instructions) + "\n\n");
 		}
 	}
 }

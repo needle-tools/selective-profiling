@@ -12,8 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afdf0214f431a58499bf178c72b5bc72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DebugLog: 0
   enabledPatchIds:
   - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
   disabledPatchIds:
   - MyNamespace.MySlowScript.Update
   - MyNamespace.MySlowScript.CallingAnotherMethod
+  - MyNamespace.MySlowScript.SomeClassMethod
+  - MyNamespace.MySlowScript.MethodWithOut
+  - MyNamespace.MySlowScript.MethodWithGeneric
