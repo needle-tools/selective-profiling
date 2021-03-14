@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
+using UnityEditor;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling
@@ -87,6 +89,22 @@ namespace Needle.SelectiveProfiling
 		private static void UpdateState(ProfilingInfo info)
 		{
 			// Debug.Log("Update state " + info);
+		}
+
+		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+		private static void Init()
+		{
+			EditorApplication.playModeStateChanged -= OnPlayModeChanged;
+			EditorApplication.playModeStateChanged += OnPlayModeChanged;
+		}
+
+		private static void OnPlayModeChanged(PlayModeStateChange obj)
+		{
+			if (obj == PlayModeStateChange.ExitingPlayMode)
+			{
+				foreach(var patch in patches)
+					PatchManager.UnregisterAndDisablePatch(patch.Patch);
+			}
 		}
 	}
 }
