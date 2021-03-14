@@ -75,7 +75,7 @@ namespace Needle.SelectiveProfiling._Tests
 							// 		Debug.Log(callstack.Count);
 							// 	}
 							// }
-							
+
 							Traverse(c);
 						}
 					}
@@ -85,7 +85,6 @@ namespace Needle.SelectiveProfiling._Tests
 				{
 					Traverse(child);
 				}
-
 			}
 
 			// using (var frameData = ProfilerDriver.GetRawFrameDataView(frameIndex, 0))
@@ -142,6 +141,7 @@ namespace Needle.SelectiveProfiling._Tests
 			var s = Recorder.Get(SamplerPatch.MarkerName);
 			Debug.Log(s.elapsedNanoseconds + " - " + s.isValid);
 
+#if UNITY_2020_2_OR_NEWER
 			var info = new List<FrameDataView.MarkerInfo>();
 			using (var frameData = ProfilerDriver.GetRawFrameDataView(Time.frameCount, 0))
 			{
@@ -156,6 +156,7 @@ namespace Needle.SelectiveProfiling._Tests
 					Debug.Log(i.name);
 				}
 			}
+#endif
 		}
 
 		// Update is called once per frame
