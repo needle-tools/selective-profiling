@@ -40,20 +40,26 @@ namespace Needle.SelectiveProfiling
 			}
 			else
 			{
-				foreach (var p in patches)
-				{
-					EditorGUILayout.BeginHorizontal();
-					EditorGUILayout.LabelField(new GUIContent(p.Patch.DisplayName, p.Identifier), GUILayout.ExpandWidth(true));
-					if (!p.IsActive)
-					{
-						if (GUILayout.Button("Enable", GUILayout.Width(80)))
-							p.Enable();
-					}
-					else if (GUILayout.Button("Disable",GUILayout.Width(80)))
-						p.Disable();
+				DrawProfilerPatchesList();
+			}
+		}
 
-					EditorGUILayout.EndHorizontal();
+		internal static void DrawProfilerPatchesList()
+		{
+			if (SelectiveProfiler.Patches == null) return;
+			foreach (var p in SelectiveProfiler.Patches)
+			{
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.LabelField(new GUIContent(p.Patch.DisplayName, p.Identifier), GUILayout.ExpandWidth(true));
+				if (!p.IsActive)
+				{
+					if (GUILayout.Button("Enable", GUILayout.Width(80)))
+						p.Enable();
 				}
+				else if (GUILayout.Button("Disable",GUILayout.Width(80)))
+					p.Disable();
+
+				EditorGUILayout.EndHorizontal();
 			}
 		}
 	}
