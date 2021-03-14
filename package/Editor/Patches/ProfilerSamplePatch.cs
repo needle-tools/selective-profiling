@@ -9,7 +9,7 @@ using HarmonyLib;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
 using UnityEngine.Profiling;
-using Utils = Needle.SelectiveProfiling.CodeWrapper.Utils;
+
 // ReSharper disable UnusedType.Global
 
 namespace Needle.SelectiveProfiling
@@ -26,6 +26,7 @@ namespace Needle.SelectiveProfiling
 
 		public override string DisplayName => ID();
 		public override string ID() => method != null ? method.DeclaringType?.FullName + "." + method.Name : base.ID();
+		public override bool Persistent() => false;
 
 		private readonly string prefix;
 		private readonly string postfix;
@@ -49,7 +50,7 @@ namespace Needle.SelectiveProfiling
 				if (string.IsNullOrEmpty(postfix)) postfix = string.Empty;
 				ICodeWrapper wrapper = new MethodWrapper(new InstructionsWrapper(), (instruction, index) =>
 				{
-					var methodName = Utils.TryGetMethodName(instruction.operand);
+					var methodName = TranspilerUtils.TryGetMethodName(instruction.operand);
 					InsertBefore[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
 				});
 				wrappers.Add(method, wrapper);
@@ -75,7 +76,7 @@ namespace Needle.SelectiveProfiling
 
 			private static readonly List<CodeInstruction> InsertBefore = new List<CodeInstruction>()
 			{
-				new CodeInstruction(OpCodes.Ldstr, "WRAPPER_MARKER"),
+				new CodeInstruction(OpCodes.Ldstr, "%MARKER%"),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 				new CodeInstruction(OpCodes.Nop),
 			};

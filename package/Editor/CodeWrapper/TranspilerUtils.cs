@@ -1,10 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Emit;
 
 namespace Needle.SelectiveProfiling.CodeWrapper
 {
-	internal static class Utils
+	internal static class TranspilerUtils
 	{
+		public static readonly HashSet<OpCode> LoadVarCodes = new HashSet<OpCode>()
+		{
+			OpCodes.Ldloc_0,
+			OpCodes.Ldloc_1,
+			OpCodes.Ldloc_2,
+			OpCodes.Ldloc_3,
+			OpCodes.Ldloc,
+			OpCodes.Ldloca,
+			OpCodes.Ldloc_S,
+			OpCodes.Ldloca_S
+		};
+		
 		private static MethodInfo monoMethodFullName;
 		public static string TryGetMethodName(object operand)
 		{

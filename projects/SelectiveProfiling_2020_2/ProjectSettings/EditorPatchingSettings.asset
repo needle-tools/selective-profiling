@@ -13,15 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enabledPatchIds:
-  - Needle.Demystify.Patch_Exception
-  - Needle.Demystify.Patch_StacktraceUtility
-  - Needle.Demystify.Patch_Console
-  - Needle.Demystify.Patch_EditorGUI
   - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
-  - UnityEngine.Camera.FireOnPreRender
-  - UnityEngineInternal.Input.NativeInputSystem.NotifyUpdate
-  - UnityEngineInternal.Input.NativeInputSystem.NotifyBeforeUpdate
-  - UnityEngineInternal.Input.NativeInputSystem.ShouldRunUpdate
-  - UnityEngine.Experimental.Rendering.ScriptableRuntimeReflectionSystemWrapper.Internal_ScriptableRuntimeReflectionSystemWrapper_TickRealtimeProbes
   disabledPatchIds:
-  - UnityEngine.Rendering.RenderPipelineManager.CleanupRenderPipeline
+  - MyNamespace.MySlowScript.Update
+  - MyNamespace.MySlowScript.CallingAnotherMethod
