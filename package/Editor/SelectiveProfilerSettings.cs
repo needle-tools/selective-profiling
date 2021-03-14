@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -14,7 +16,21 @@ namespace Needle.SelectiveProfiling
 		}
 
 		public bool DeepProfiling = false;
-		public List<ProfiledMethod> Methods = new List<ProfiledMethod>();
+		
+		[SerializeField]
+		private List<MethodInformation> Methods = new List<MethodInformation>();
 
+		public void Add(MethodInfo method)
+		{
+			var info = new MethodInformation(method);
+			if (Methods.Contains(info))
+			{
+				// Debug.Log("Already found " + method);
+				return;
+			}
+			this.Methods.Add(info);
+		}
+
+		public IList<MethodInformation> MethodsList => Methods;
 	}
 }

@@ -2,22 +2,45 @@
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Needle.SelectiveProfiling
 {
 	[Serializable]
-	internal class ProfiledMethod
+	internal class ProfilingConfiguration
+	{
+		public string Name;
+		public List<MethodInformation> Methods;
+	}
+	
+	/// <summary>
+	/// serializeable method information
+	/// </summary>
+	[Serializable]
+	internal class MethodInformation : IEquatable<MethodInformation>
 	{
 		public string Assembly;
 		public string Type;
 		public string Method;
 
-		internal ProfiledMethod(MethodInfo method)
+		internal MethodInformation(MethodInfo method)
 		{
 			Method = method.ToString();
 			var t = method.DeclaringType;
 			Type = t?.FullName;
 			Assembly = t?.Assembly.FullName;
+		}
+
+		private MethodInformation(MethodInformation other)
+		{
+			Assembly = other.Assembly;
+			Type = other.Type;
+			Method = other.Method;
+		}
+
+		internal MethodInformation Copy()
+		{
+			return new MethodInformation(this);
 		}
 
 		public string TypeIdentifier() => IsValid() ? Assembly + "." + Type : null;
@@ -28,6 +51,34 @@ namespace Needle.SelectiveProfiling
 		{
 			return IsValid() ? "<b>Assembly</b>: " + Assembly + ", <b>Type</b>: " + Type + ", <b>Method</b>: " + Method + "\n<b>Identifier</b>: " + MethodIdentifier() : "Invalid " +  base.ToString();
 		}
+
+		#region Equatable
+		public bool Equals(MethodInformation other)
+		{
+			if (ReferenceEquals(null, other)) return false;
+			if (ReferenceEquals(this, other)) return true;
+			return Assembly == other.Assembly && Type == other.Type && Method == other.Method;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			if (obj.GetType() != this.GetType()) return false;
+			return Equals((MethodInformation) obj);
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				var hashCode = (Assembly != null ? Assembly.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (Type != null ? Type.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (Method != null ? Method.GetHashCode() : 0);
+				return hashCode;
+			}
+		}
+		#endregion
 	}
 
 	internal static class ProfiledMethodExtensions
@@ -35,9 +86,10 @@ namespace Needle.SelectiveProfiling
 		private static readonly Dictionary<string, Assembly> AssembliesCache = new Dictionary<string, Assembly>();
 		private static readonly Dictionary<string, Type> TypesCache = new Dictionary<string, Type>();
 		private static readonly Dictionary<string, MethodInfo> MethodsCache = new Dictionary<string, MethodInfo>();
-		
 
-		public static bool TryResolveMethod(this ProfiledMethod pm, out MethodInfo method, bool allowFormerlySerialized = true)
+		public static event Action<(string oldIdentifier, string newIdentifier)> MethodIdentifierChanged;
+
+		public static bool TryResolveMethod(this MethodInformation pm, out MethodInfo method, bool allowFormerlySerialized = true)
 		{
 			if (pm?.IsValid() ?? false)
 			{
@@ -106,7 +158,21 @@ namespace Needle.SelectiveProfiling
 							return true;
 						}
 					}
-					// TODO: check formerly serialized attribute
+					
+					foreach (var m in methods)
+					{
+						var fs = m.GetCustomAttribute<FormerlySerializedAsAttribute>();
+						if (fs != null && fs.oldName == pm.Method)
+						{
+							// method name changed, update
+							var old = pm.MethodIdentifier();
+							pm.Method = m.ToString();
+							MethodsCache.Add(pm.MethodIdentifier(), m);
+							method = m;
+							MethodIdentifierChanged?.Invoke((old, pm.MethodIdentifier()));
+							return true;
+						}
+					}
 				}
 				
 				Debug.LogWarning("Could not resolve method " + pm.MethodIdentifier());

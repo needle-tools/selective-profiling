@@ -35,7 +35,7 @@ namespace Needle.SelectiveProfiling
 		{
 			base.OnGUI(searchContext);
 			var settings = SelectiveProfilerSettings.instance;
-			
+			EditorGUI.BeginChangeCheck();
 			settings.DeepProfiling = EditorGUILayout.ToggleLeft(new GUIContent("Deep Profiling", "When enabled all calls within a newly profiled method will be recursively added to be profiled as well"), settings.DeepProfiling);
 
 			EditorGUILayout.Space(10);
@@ -44,12 +44,14 @@ namespace Needle.SelectiveProfiling
 			GUILayout.FlexibleSpace();
 			EditorGUILayout.BeginVertical();
 			EditorGUILayout.BeginHorizontal();
-			if (GUILayout.Button(new GUIContent("Save"), GUILayout.Width(80)))
-			{
+			if (GUILayout.Button(new GUIContent("Save"), GUILayout.Width(80))) 
 				SelectiveProfilerSettings.instance.Save();
-			}
+			if (GUILayout.Button(new GUIContent("Clear"), GUILayout.Width(80))) 
+				SelectiveProfilerSettings.instance.MethodsList?.Clear();
 			EditorGUILayout.EndHorizontal();
 			EditorGUILayout.EndVertical();
+			if(EditorGUI.EndChangeCheck())
+				settings.Save();
 		}
 	}
 }

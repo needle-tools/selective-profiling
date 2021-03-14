@@ -13,4 +13,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DeepProfiling: 0
-  Methods: []
+  Methods:
+  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.MySlowScript
+    Method: Void Update()

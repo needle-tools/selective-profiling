@@ -20,12 +20,12 @@ namespace Needle.SelectiveProfiling
 			return entries.Any(e => e.IsActive && e.Method == method);
 		}
 
-		public static async void EnableProfiling([NotNull] MethodInfo method)
+		public static async void EnableProfiling([NotNull] MethodInfo method, bool save = true)
 		{
-			await EnableProfilingAsync(method);
+			await EnableProfilingAsync(method, save);
 		}
 
-		public static async Task EnableProfilingAsync([NotNull] MethodInfo method)
+		public static async Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
@@ -46,12 +46,6 @@ namespace Needle.SelectiveProfiling
 				return;
 			}
 
-			var i = new ProfiledMethod(method);
-			Debug.Log(i);
-			if(i.TryResolveMethod(out var res))
-			{
-				Debug.Log("resolved " + res);
-			}
 
 			var patch = new ProfilerSamplePatch(method, null, " " + SamplePostfix);
 			var info = new ProfilingInfo(patch, method);
@@ -59,6 +53,12 @@ namespace Needle.SelectiveProfiling
 			PatchManager.RegisterPatch(patch);
 			await PatchManager.EnablePatch(patch);
 			HandleNestedCalls();
+
+			if (save)
+			{
+				SelectiveProfilerSettings.instance.Add(method);
+				SelectiveProfilerSettings.instance.Save();
+			}
 		}
 
 		public static void DisableProfiling(MethodInfo method)
@@ -71,6 +71,20 @@ namespace Needle.SelectiveProfiling
 
 		internal static IReadOnlyList<ProfilingInfo> Patches => entries;
 		private static readonly List<ProfilingInfo> entries = new List<ProfilingInfo>();
+
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+		private static async void InitRuntime()
+		{
+			var ml = SelectiveProfilerSettings.instance.MethodsList;
+			if (ml != null)
+			{
+				foreach (var m in ml)
+				{
+					if (m.TryResolveMethod(out var info))
+						await EnableProfilingAsync(info, false);
+				}
+			}
+		}
 
 		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void Init()
@@ -86,11 +100,6 @@ namespace Needle.SelectiveProfiling
 				foreach (var patch in entries)
 					PatchManager.UnregisterAndDisablePatch(patch.Patch);
 			}
-		}
-
-		private static void Save()
-		{
-			SelectiveProfilerSettings.instance.Save();
 		}
 		
 		private static readonly bool deepProfiling = SelectiveProfilerSettings.instance.DeepProfiling;
