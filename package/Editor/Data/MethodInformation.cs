@@ -6,13 +6,6 @@ using UnityEngine.Serialization;
 
 namespace Needle.SelectiveProfiling
 {
-	[Serializable]
-	internal class ProfilingConfiguration
-	{
-		public string Name;
-		public List<MethodInformation> Methods;
-	}
-	
 	/// <summary>
 	/// serializeable method information
 	/// </summary>

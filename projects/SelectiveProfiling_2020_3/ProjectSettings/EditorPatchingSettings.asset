@@ -28,3 +28,4 @@ MonoBehaviour:
   - UnityEngine.ILogger.Log
   - System.Object.GetType
   - UnityEngine.Camera.FireOnPreCull
+  - UnityEngine.GUIUtility.ProcessEvent

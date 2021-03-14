@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -19,6 +20,9 @@ namespace Needle.SelectiveProfiling
 		
 		[SerializeField]
 		private List<MethodInformation> Methods = new List<MethodInformation>();
+
+		// [SerializeField]
+		// private List<ProfilingConfiguration> Configurations = new List<ProfilingConfiguration>();
 
 		public void Add(MethodInfo method)
 		{

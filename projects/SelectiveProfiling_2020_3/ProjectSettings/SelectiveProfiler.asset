@@ -18,3 +18,6 @@ MonoBehaviour:
       PublicKeyToken=null
     Type: MyNamespace.MySlowScript
     Method: Void Update()
+  - Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Void ProcessEvent(Int32, IntPtr, Boolean ByRef)
