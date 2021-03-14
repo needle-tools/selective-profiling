@@ -17,7 +17,14 @@ MonoBehaviour:
   - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
   disabledPatchIds:
   - MyNamespace.MySlowScript.Update
-  - MyNamespace.MySlowScript.CallingAnotherMethod
+  - UnityEngine.Debug.Log
   - MyNamespace.MySlowScript.SomeClassMethod
-  - MyNamespace.MySlowScript.MethodWithOut
   - MyNamespace.MySlowScript.MethodWithGeneric
+  - MyNamespace.MySlowScript.CallingAnotherMethod
+  - MyNamespace.MySlowScript.MethodWithOut
+  - System.Object.ToString
+  - UnityEngine.Debug.get_unityLogger
+  - UnityEngine.Time.get_frameCount
+  - UnityEngine.ILogger.Log
+  - System.Object.GetType
+  - UnityEngine.Camera.FireOnPreCull

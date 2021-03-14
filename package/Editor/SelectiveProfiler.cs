@@ -14,14 +14,22 @@ namespace Needle.SelectiveProfiling
 {
 	public static class SelectiveProfiler
 	{
+		public static bool Deep = true;
+
 		public static bool IsProfiling(MethodInfo method)
 		{
 			return patches.Any(e => e.IsActive && e.Method == method);
 		}
 
-		public static void EnableProfiling([NotNull] MethodInfo method)
+		public static async void EnableProfiling([NotNull] MethodInfo method)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
+
+			if (!method.HasMethodBody())
+			{
+				Debug.LogWarning("Method has no body: " + method);
+				return;
+			}
 
 			var existing = patches.FirstOrDefault(e => e.Method == method);
 			if (existing != null)
@@ -31,16 +39,17 @@ namespace Needle.SelectiveProfiling
 					existing.Enable();
 					UpdateState(existing);
 				}
+
 				return;
 			}
 
-			// Debug.Log("Enable profiling for " + method);
 			var patch = new ProfilerSamplePatch(method, null, " NEEDLE_SAMPLE");
 			var info = new ProfilingInfo(patch, method);
 			patches.Add(info);
 			PatchManager.RegisterPatch(patch);
-			PatchManager.EnablePatch(patch);
+			await PatchManager.EnablePatch(patch);
 			UpdateState(info);
+			HandleNestedCalls();
 		}
 
 		public static void DisableProfiling(MethodInfo method)
@@ -97,13 +106,42 @@ namespace Needle.SelectiveProfiling
 			EditorApplication.playModeStateChanged -= OnPlayModeChanged;
 			EditorApplication.playModeStateChanged += OnPlayModeChanged;
 		}
-
+		
 		private static void OnPlayModeChanged(PlayModeStateChange obj)
 		{
 			if (obj == PlayModeStateChange.ExitingPlayMode)
 			{
-				foreach(var patch in patches)
+				foreach (var patch in patches)
 					PatchManager.UnregisterAndDisablePatch(patch.Patch);
+			}
+		}
+
+		private static readonly HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
+
+		internal static void RegisterInternalCalledMethod(MethodInfo method)
+		{
+			if (!Deep) return;
+			if (method == null) return;
+			if (!method.HasMethodBody())
+			{
+				Debug.Log("Skip called method. No body: " + method);
+				return;
+			}
+			if (callsFound.Contains(method)) return;
+			// Debug.Log("FOUND " + method);
+			callsFound.Add(method);
+		}
+
+		private static void HandleNestedCalls()
+		{
+			if (!Deep) return;
+			if (callsFound.Count <= 0) return;
+			// Debug.Log("Apply deep profiling: " + callsFound.Count);
+			var local = callsFound.ToArray();
+			foreach (var method in local)
+			{
+				// Debug.Log(method);
+				EnableProfiling(method);
 			}
 		}
 	}

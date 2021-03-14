@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
-using needle.EditorPatching;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling.CodeWrapper
@@ -42,6 +42,11 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				}
 				else if (inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt)
 				{
+					if (inst.operand is MethodInfo mi)
+					{
+						SelectiveProfiler.RegisterInternalCalledMethod(mi);
+					}
+					
 					// we arrived at the actual method call
 					wrapper.Start = start == -1 ? index : start;
 					wrapper.MethodIndex = index;
