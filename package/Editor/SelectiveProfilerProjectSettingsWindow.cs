@@ -34,18 +34,22 @@ namespace Needle.SelectiveProfiling
 		public override void OnGUI(string searchContext)
 		{
 			base.OnGUI(searchContext);
-
-			EditorGUILayout.BeginHorizontal();
+			var settings = SelectiveProfilerSettings.instance;
 			
+			settings.DeepProfiling = EditorGUILayout.ToggleLeft(new GUIContent("Deep Profiling", "When enabled all calls within a newly profiled method will be recursively added to be profiled as well"), settings.DeepProfiling);
+
+			EditorGUILayout.Space(10);
+			SelectiveProfilerWindow.DrawProfilerPatchesList();
+			
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.BeginVertical();
+			EditorGUILayout.BeginHorizontal();
 			if (GUILayout.Button(new GUIContent("Save"), GUILayout.Width(80)))
 			{
 				SelectiveProfilerSettings.instance.Save();
 			}
-			
-			
 			EditorGUILayout.EndHorizontal();
-			EditorGUILayout.Space(10);
-			SelectiveProfilerWindow.DrawProfilerPatchesList();
+			EditorGUILayout.EndVertical();
 		}
 	}
 }

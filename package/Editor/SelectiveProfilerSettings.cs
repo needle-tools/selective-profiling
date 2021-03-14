@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
@@ -12,6 +13,8 @@ namespace Needle.SelectiveProfiling
 			base.Save(true);
 		}
 
-		internal List<ProfilingInfo> Entries = new List<ProfilingInfo>();
+		public bool DeepProfiling = false;
+		public List<ProfiledMethod> Methods = new List<ProfiledMethod>();
+
 	}
 }

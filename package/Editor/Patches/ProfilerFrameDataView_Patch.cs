@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
@@ -8,7 +7,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEngine;
-
+// ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedType.Global
 
 namespace Needle.SelectiveProfiling
@@ -59,7 +58,7 @@ namespace Needle.SelectiveProfiling
 						{
 							var menu = new GenericMenu();
 							var active = SelectiveProfiler.IsProfiling(methodInfo);
-							menu.AddItem(new GUIContent($"{(active ? "Disable" : "Enable")} Deep Profiling {methodInfo}"), active, () =>
+							menu.AddItem(new GUIContent($"{(active ? "Remove" : "Add")} Profiling to \"{methodInfo.DeclaringType?.Name}.{methodInfo}\""), active, () =>
 							{
 								Debug.Log(methodInfo.DeclaringType + " - " + methodInfo);
 								if(!active)

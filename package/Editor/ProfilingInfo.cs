@@ -1,33 +1,22 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
-using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
-	[Serializable]
-	internal class ProfilingInfo : ISerializationCallbackReceiver
+	internal class ProfilingInfo
 	{
-		public string Identifier;
-		
-		[NonSerialized]
-		public EditorPatchProvider Patch;
-		[NonSerialized]
-		public MethodInfo Method;
-		public bool IsActive => PatchManager.IsActive(Patch.ID());
+		public readonly EditorPatchProvider Patch;
+		public readonly MethodInfo Method;
 
-		public ProfilingInfo(string identifier)
-		{
-			
-		}
+		public bool IsActive => Patch != null && PatchManager.IsActive(Patch.ID());
+		internal string Identifier => Method?.GetMethodIdentifier();
 
 		public ProfilingInfo(EditorPatchProvider patch, MethodInfo info)
 		{
 			this.Patch = patch;
 			this.Method = info;
-			this.Identifier = info.GetMethodIdentifier();
 		}
 
 		public void ToggleActive()
@@ -42,16 +31,6 @@ namespace Needle.SelectiveProfiling
 		public override string ToString()
 		{
 			return Patch?.ID() + " - " + Identifier;
-		}
-
-		public void OnBeforeSerialize()
-		{
-			Debug.Log("Before serialize");
-		}
-
-		public void OnAfterDeserialize()
-		{
-			
 		}
 	}
 }

@@ -13,14 +13,19 @@ namespace Needle.SelectiveProfiling
 {
 	public static class SelectiveProfiler
 	{
-		public static bool Deep = true;
+		public const string SamplePostfix = "NEEDLE_SAMPLE";
 
 		public static bool IsProfiling(MethodInfo method)
 		{
-			return patches.Any(e => e.IsActive && e.Method == method);
+			return entries.Any(e => e.IsActive && e.Method == method);
 		}
 
-		public static async Task EnableProfiling([NotNull] MethodInfo method)
+		public static async void EnableProfiling([NotNull] MethodInfo method)
+		{
+			await EnableProfilingAsync(method);
+		}
+
+		public static async Task EnableProfilingAsync([NotNull] MethodInfo method)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
@@ -30,45 +35,42 @@ namespace Needle.SelectiveProfiling
 				return;
 			}
 
-			var existing = patches.FirstOrDefault(e => e.Method == method);
+			var existing = entries.FirstOrDefault(e => e.Method == method);
 			if (existing != null)
 			{
 				if (!existing.IsActive)
 				{
 					await existing.Enable();
-					UpdateState(existing);
 				}
 
 				return;
 			}
 
-			var patch = new ProfilerSamplePatch(method, null, " NEEDLE_SAMPLE");
+			var i = new ProfiledMethod(method);
+			Debug.Log(i);
+			if(i.TryResolveMethod(out var res))
+			{
+				Debug.Log("resolved " + res);
+			}
+
+			var patch = new ProfilerSamplePatch(method, null, " " + SamplePostfix);
 			var info = new ProfilingInfo(patch, method);
-			patches.Add(info);
+			entries.Add(info);
 			PatchManager.RegisterPatch(patch);
 			await PatchManager.EnablePatch(patch);
-			UpdateState(info);
 			HandleNestedCalls();
 		}
 
 		public static void DisableProfiling(MethodInfo method)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
-			var existing = patches.FirstOrDefault(e => e.Method == method);
+			var existing = entries.FirstOrDefault(e => e.Method == method);
 			if (existing == null) return;
 			existing.Disable();
-			UpdateState(existing);
 		}
 
-		internal static IReadOnlyList<ProfilingInfo> Patches => patches;
-
-
-		private static readonly List<ProfilingInfo> patches = new List<ProfilingInfo>();
-
-		private static void UpdateState(ProfilingInfo info)
-		{
-			// Debug.Log("Update state " + info);
-		}
+		internal static IReadOnlyList<ProfilingInfo> Patches => entries;
+		private static readonly List<ProfilingInfo> entries = new List<ProfilingInfo>();
 
 		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void Init()
@@ -81,16 +83,22 @@ namespace Needle.SelectiveProfiling
 		{
 			if (obj == PlayModeStateChange.ExitingPlayMode)
 			{
-				foreach (var patch in patches)
+				foreach (var patch in entries)
 					PatchManager.UnregisterAndDisablePatch(patch.Patch);
 			}
 		}
 
+		private static void Save()
+		{
+			SelectiveProfilerSettings.instance.Save();
+		}
+		
+		private static readonly bool deepProfiling = SelectiveProfilerSettings.instance.DeepProfiling;
 		private static readonly HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
 
 		internal static void RegisterInternalCalledMethod(MethodInfo method)
 		{
-			if (!Deep) return;
+			if (!deepProfiling) return;
 			if (method == null) return;
 			if (!method.HasMethodBody())
 			{
@@ -102,16 +110,16 @@ namespace Needle.SelectiveProfiling
 			callsFound.Add(method);
 		}
 
-		private static void HandleNestedCalls()
+		private static async void HandleNestedCalls()
 		{
-			if (!Deep) return;
+			if (!deepProfiling) return;
 			if (callsFound.Count <= 0) return;
 			// Debug.Log("Apply deep profiling: " + callsFound.Count);
 			var local = callsFound.ToArray();
 			foreach (var method in local)
 			{
 				// Debug.Log(method);
-				EnableProfiling(method);
+				await EnableProfilingAsync(method);
 			}
 		}
 	}
