@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 61
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afdf0214f431a58499bf178c72b5bc72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enabledPatchIds:
+  - Needle.Demystify.Patch_Exception
+  - Needle.Demystify.Patch_StacktraceUtility
+  - Needle.Demystify.Patch_Console
+  - Needle.Demystify.Patch_EditorGUI
+  - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
+  - UnityEngine.Camera.FireOnPreRender
+  - UnityEngineInternal.Input.NativeInputSystem.NotifyUpdate
+  - UnityEngineInternal.Input.NativeInputSystem.NotifyBeforeUpdate
+  - UnityEngineInternal.Input.NativeInputSystem.ShouldRunUpdate
+  - UnityEngine.Experimental.Rendering.ScriptableRuntimeReflectionSystemWrapper.Internal_ScriptableRuntimeReflectionSystemWrapper_TickRealtimeProbes
+  disabledPatchIds:
+  - UnityEngine.Rendering.RenderPipelineManager.CleanupRenderPipeline

@@ -1,0 +1,13 @@
+{
+	"displayName": "Selective Profiling",
+	"name": "com.needle.selective-profiling",
+	"version": "1.0.0",
+	"unity": "2020.2",
+	"description": "Deep profile single methods",
+	"author": {
+		"name": "Needle",
+		"email": "contact@needle.tools",
+		"url": "https://needle.tools"
+	  },
+	"category": "Libraries"
+}
