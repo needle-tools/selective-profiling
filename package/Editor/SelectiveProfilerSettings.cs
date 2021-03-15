@@ -16,6 +16,7 @@ namespace Needle.SelectiveProfiling
 			base.Save(true);
 		}
 
+		public bool Enabled = true;
 		public bool DebugLog;
 		public bool DeepProfiling = false;
 		

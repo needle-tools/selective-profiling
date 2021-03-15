@@ -28,6 +28,9 @@ namespace Needle.SelectiveProfiling
 
 		public static async Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool isDeep = false)
 		{
+			var settings = SelectiveProfilerSettings.instance;
+			if (!settings.Enabled) return;
+			
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
 			if (!method.HasMethodBody())
@@ -36,7 +39,6 @@ namespace Needle.SelectiveProfiling
 				return;
 			}
 
-			var settings = SelectiveProfilerSettings.instance;
 			
 			if (AccessUtils.AllowPatching(method, isDeep, settings.DebugLog) == false)
 			{
@@ -87,13 +89,17 @@ namespace Needle.SelectiveProfiling
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
 		private static async void InitRuntime()
 		{
-			var ml = SelectiveProfilerSettings.instance.MethodsList;
-			if (ml != null)
+			var settings = SelectiveProfilerSettings.instance;
+			if (settings.Enabled)
 			{
-				foreach (var m in ml.ToArray())
+				var ml = settings.MethodsList;
+				if (ml != null)
 				{
-					if (m.TryResolveMethod(out var info))
-						await EnableProfilingAsync(info, false);
+					foreach (var m in ml.ToArray())
+					{
+						if (m.TryResolveMethod(out var info))
+							await EnableProfilingAsync(info, false);
+					}
 				}
 			}
 		}
@@ -139,8 +145,8 @@ namespace Needle.SelectiveProfiling
 			var local = callsFound.ToArray();
 			foreach (var method in local)
 			{
-				// Debug.Log(method);
-				await EnableProfilingAsync(method, true);
+				// dont save nested calls
+				await EnableProfilingAsync(method, false);
 			}
 		}
 	}

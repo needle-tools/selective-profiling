@@ -36,7 +36,8 @@ namespace Needle.SelectiveProfiling
 			base.OnGUI(searchContext);
 			var settings = SelectiveProfilerSettings.instance;
 			EditorGUI.BeginChangeCheck();
-			settings.DeepProfiling = EditorGUILayout.ToggleLeft(new GUIContent("Deep Profiling", "When enabled all calls within a newly profiled method will be recursively added to be profiled as well"), settings.DeepProfiling);
+			settings.Enabled = EditorGUILayout.ToggleLeft(new GUIContent("Enabled", ""), settings.Enabled);
+			settings.DeepProfiling = EditorGUILayout.ToggleLeft(new GUIContent("Deep Profiling", "When true all calls within a newly profiled method will be recursively added to be profiled as well"), settings.DeepProfiling);
 
 			EditorGUILayout.Space(10);
 			SelectiveProfilerWindow.DrawProfilerPatchesList();
