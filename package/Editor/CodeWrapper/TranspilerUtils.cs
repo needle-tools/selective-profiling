@@ -20,8 +20,13 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		};
 		
 		private static MethodInfo monoMethodFullName;
-		public static string TryGetMethodName(object operand)
+		public static string TryGetMethodName(object operand, bool fullName)
 		{
+			if (operand is MethodInfo m)
+			{
+				if (!fullName) return m.Name;
+			}
+			
 			if (operand.GetType().Name == "MonoMethod")
 			{
 				if (monoMethodFullName == null)

@@ -53,7 +53,7 @@ namespace Needle.SelectiveProfiling
 				if (string.IsNullOrEmpty(postfix)) postfix = string.Empty;
 				ICodeWrapper wrapper = new MethodWrapper(new InstructionsWrapper(), (instruction, index) =>
 					{
-						var methodName = TranspilerUtils.TryGetMethodName(instruction.operand);
+						var methodName = TranspilerUtils.TryGetMethodName(instruction.operand, false);
 						InsertBefore[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
 					},
 					PatchManager.AllowDebugLogs);
