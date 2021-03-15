@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afdf0214f431a58499bf178c72b5bc72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DebugLog: 0
+  DebugLog: 1
   enabledPatchIds:
   - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
   disabledPatchIds:
@@ -29,3 +29,42 @@ MonoBehaviour:
   - System.Object.GetType
   - UnityEngine.Camera.FireOnPreCull
   - UnityEngine.GUIUtility.ProcessEvent
+  - UnityEngine.EventSystems.EventSystem.Update
+  - UnityEngine.EventSystems.EventSystem.get_current
+  - UnityEngine.Object.op_Inequality
+  - UnityEngine.EventSystems.EventSystem.TickModules
+  - UnityEngine.EventSystems.BaseInputModule.IsModuleSupported
+  - UnityEngine.EventSystems.BaseInputModule.ShouldActivateModule
+  - UnityEngine.EventSystems.EventSystem.ChangeEventModule
+  - UnityEngine.Object.op_Equality
+  - UnityEngine.Debug.LogWarning
+  - UnityEngine.Object.CompareBaseObjects
+  - UnityEngine.EventSystems.BaseInputModule.UpdateModule
+  - UnityEngine.EventSystems.BaseInputModule.DeactivateModule
+  - UnityEngine.EventSystems.BaseInputModule.ActivateModule
+  - UnityEngine.Object.IsNativeObjectAlive
+  - UnityEngine.Object.GetCachedPtr
+  - UnityEngine.Object.GetInstanceID
+  - UnityEngine.Object.EnsureRunningOnMainThread
+  - UnityEngine.Rendering.OnDemandRendering.GetRenderFrameInterval
+  - UnityEngine.Rendering.OnDemandRendering.get_renderFrameInterval
+  - UnityEngine.GUIUtility.SetSkin
+  - UnityEngine.GUI.DoSetSkin
+  - UnityEngine.UIElements.UIElementsRuntimeUtilityNative.RepaintOverlayPanels
+  - UnityEngine.Object.op_Implicit
+  - UnityEngine.GUIUtility.GetDefaultSkin
+  - UnityEngine.GUISkin.MakeCurrent
+  - UnityEngine.Rendering.SupportedRenderingFeatures.IsUIOverlayRenderedBySRP
+  - UnityEngine.GUISkin.get_font
+  - UnityEngine.Rendering.SupportedRenderingFeatures.get_active
+  - UnityEngine.Rendering.SupportedRenderingFeatures.get_rendersUIOverlay
+  - UnityEngine.Rendering.RenderPipelineManager.CleanupRenderPipeline
+  - UnityEngine.Rendering.RenderPipelineManager.get_currentPipeline
+  - UnityEngine.Rendering.RenderPipeline.get_disposed
+  - UnityEngine.Rendering.RenderPipeline.Dispose
+  - UnityEngine.Rendering.RenderPipelineManager.set_currentPipeline
+  - UnityEngine.Rendering.SupportedRenderingFeatures.set_active
+  - UnityEngine.Rendering.RenderPipeline.set_disposed
+  - UnityEngine.UnitySynchronizationContext.ExecuteTasks
+  - UnityEngine.UnitySynchronizationContext.Exec
+  - UnityEngine.UnitySynchronizationContext+WorkRequest.Invoke

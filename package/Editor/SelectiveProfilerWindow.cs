@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -30,8 +31,16 @@ namespace Needle.SelectiveProfiling
 			titleContent = new GUIContent("Selective Profiling");
 		}
 
+		private Vector2 scroll;
+
 		private void OnGUI()
 		{
+			var settings = SelectiveProfilerSettings.instance;
+			scroll = EditorGUILayout.BeginScrollView(scroll);
+			EditorGUILayout.LabelField("Saved Methods", EditorStyles.boldLabel);
+			DrawSavedMethods(settings);
+			GUILayout.Space(10);
+			
 			EditorGUILayout.LabelField("Patches", EditorStyles.boldLabel);
 			var patches = SelectiveProfiler.Patches;
 			if (patches == null || patches.Count <= 0)
@@ -42,6 +51,39 @@ namespace Needle.SelectiveProfiling
 			{
 				DrawProfilerPatchesList();
 			}
+			EditorGUILayout.EndScrollView();
+		}
+
+		private static readonly List<int> removeList = new List<int>();
+		internal static void DrawSavedMethods(SelectiveProfilerSettings settings)
+		{
+			void DrawMethods(IReadOnlyList<MethodInformation> list, bool disabled)
+			{
+				for (var index = 0; index < list.Count; index++)
+				{
+					var m = list[index];
+					EditorGUILayout.BeginHorizontal();
+					EditorGUI.BeginDisabledGroup(disabled);
+					EditorGUILayout.LabelField(new GUIContent(m.ClassWithMethod(), m.MethodIdentifier()), GUILayout.ExpandWidth(true));
+					EditorGUI.EndDisabledGroup();
+					var muted = settings.IsMuted(m);
+					if (GUILayout.Button(muted ? "Unmute" : "Mute", GUILayout.Width(60))) 
+						settings.SetMuted(m, !muted);
+					if (GUILayout.Button("x", GUILayout.Width(30))) 
+						removeList.Add(index);
+					EditorGUILayout.EndHorizontal();
+				}
+			}
+
+			DrawMethods(settings.MethodsList, false);
+			DrawMethods(settings.MutedMethods, true);
+			
+			for (var i = removeList.Count - 1; i >= 0; i--)
+			{
+				var index = removeList[i];
+				settings.Remove(settings.MethodsList[index]);
+			}
+			removeList.Clear();
 		}
 
 		internal static void DrawProfilerPatchesList()

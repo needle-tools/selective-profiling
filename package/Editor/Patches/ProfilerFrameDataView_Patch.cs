@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
@@ -16,9 +17,41 @@ namespace Needle.SelectiveProfiling
 	{
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
+			patches.Add(new SelectionPatch());
 			patches.Add(new Patch());
 		}
-		
+
+		private static int selectedId = -1;
+
+		private static SelectiveProfilerSettings _settings;
+		private static SelectiveProfilerSettings Settings
+		{
+			get
+			{
+				if (!_settings) _settings = SelectiveProfilerSettings.instance;
+				return _settings;
+			}
+		}
+
+		private class SelectionPatch : EditorPatch
+		{
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
+				var m = t.GetMethod("SelectionChanged", (BindingFlags) ~0);
+				targetMethods.Add(m);
+				return Task.CompletedTask;
+			}
+
+			private static void Postfix(IList<int> selectedIds)
+			{
+				if (selectedIds == null || selectedIds.Count <= 0) selectedId = -1;
+				else selectedId = selectedIds[0];
+			}
+
+		}
+
+
 		private class Patch : EditorPatch
 		{
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L647
@@ -27,7 +60,7 @@ namespace Needle.SelectiveProfiling
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
 				var m = t.GetMethod("CellGUI", (BindingFlags) ~0);
 				targetMethods.Add(m);
-				return Task.CompletedTask;
+				return Task.CompletedTask; 
 			}
 
 			private static FieldInfo m_FrameDataViewField;
@@ -35,24 +68,31 @@ namespace Needle.SelectiveProfiling
 
 			// method https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L676
 			// item: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
-			private static void Postfix(Rect cellRect, TreeViewItem item, ref object args)
+			private static void Postfix(Rect cellRect, TreeViewItem item)
 			{
 				if (Event.current.type == EventType.MouseDown) return;
 				var button = Event.current.button;
+				
+				if (m_FrameDataViewField == null) 
+					m_FrameDataViewField = item.GetType().GetField("m_FrameDataView", (BindingFlags) ~0);
+
+				if(frameDataView == null || !frameDataView.valid)
+					frameDataView = m_FrameDataViewField?.GetValue(item) as HierarchyFrameDataView;
+
+				if (button == 0 && item.id == selectedId && Settings.AutoProfile)
+				{
+					var name = frameDataView?.GetItemName(item.id);
+					if (AccessUtils.TryGetMethodFromName(name, out var methodInfo)) 
+						SelectiveProfiler.AddToAutoProfiling(methodInfo);
+				}
+				
 				if (button != 1) return; // right
 
+				
 				if (cellRect.Contains(Event.current.mousePosition))
 				{
-					if (m_FrameDataViewField == null)
-					{
-						m_FrameDataViewField = item.GetType().GetField("m_FrameDataView", (BindingFlags) ~0);
-					}
-
 					if (m_FrameDataViewField != null)
 					{
-						if(frameDataView == null || !frameDataView.valid)
-							frameDataView = m_FrameDataViewField?.GetValue(item) as HierarchyFrameDataView;
-						
 						var name = frameDataView?.GetItemName(item.id);
 						if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
 						{

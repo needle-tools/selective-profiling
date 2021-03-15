@@ -12,12 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f52273eee02c4063a24a332d916bdea0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DeepProfiling: 0
+  Enabled: 1
+  DebugLog: 1
+  AutoProfile: 1
+  DeepProfiling: 1
+  MaxDepth: 2
   Methods:
-  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void Update()
-  - Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.GUIUtility
-    Method: Void ProcessEvent(Int32, IntPtr, Boolean ByRef)
+  - Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UnitySynchronizationContext
+    Method: Void ExecuteTasks()
+  Muted: []

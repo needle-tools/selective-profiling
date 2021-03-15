@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,25 +19,50 @@ namespace Needle.SelectiveProfiling
 
 		public bool Enabled = true;
 		public bool DebugLog;
+		public bool AutoProfile = false;
 		public bool DeepProfiling = false;
+		public int MaxDepth = 2;
 		
 		[SerializeField]
 		private List<MethodInformation> Methods = new List<MethodInformation>();
+		[SerializeField]
+		private List<MethodInformation> Muted = new List<MethodInformation>();
 
 		// [SerializeField]
 		// private List<ProfilingConfiguration> Configurations = new List<ProfilingConfiguration>();
-
-		public void Add(MethodInfo method)
+		
+		public void Add(MethodInformation info)
 		{
-			var info = new MethodInformation(method);
-			if (Methods.Contains(info))
-			{
-				// Debug.Log("Already found " + method);
-				return;
-			}
-			this.Methods.Add(info);
+			if (Methods.Contains(info)) return;
+			Methods.Add(info);
+			Muted.RemoveAll(m => m.Equals(info));
 		}
 
-		public IList<MethodInformation> MethodsList => Methods;
+		public void Remove(MethodInformation info)
+		{
+			Methods.RemoveAll(m => m.Equals(info));
+			Muted.RemoveAll(m => m.Equals(info));
+		}
+
+		public void SetMuted(MethodInformation info, bool mute)
+		{
+			if (mute)
+			{
+				if (Muted.Contains(info)) return;
+				Muted.Add(info);
+				Methods.RemoveAll(m => m.Equals(info));
+			}
+			else Add(info);
+		}
+
+		public void ClearAll()
+		{
+			Methods.Clear();
+			Muted.Clear();
+		}
+
+		public IReadOnlyList<MethodInformation> MethodsList => Methods;
+		public IReadOnlyList<MethodInformation> MutedMethods => Muted;
+		public bool IsMuted(MethodInformation m) => Muted.Contains(m);
 	}
 }

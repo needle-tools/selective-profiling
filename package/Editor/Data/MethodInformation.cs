@@ -44,6 +44,13 @@ namespace Needle.SelectiveProfiling
 		{
 			return IsValid() ? "<b>Assembly</b>: " + Assembly + ", <b>Type</b>: " + Type + ", <b>Method</b>: " + Method + "\n<b>Identifier</b>: " + MethodIdentifier() : "Invalid " +  base.ToString();
 		}
+		
+		public string ClassWithMethod()
+		{
+			var dotIndex = Type.LastIndexOf(".", StringComparison.Ordinal);
+			var className = dotIndex > 0 && dotIndex < Type.Length - 1 ? Type.Substring(dotIndex + 1) : Type;
+			return className + "." + Method;
+		}
 
 		#region Equatable
 		public bool Equals(MethodInformation other)

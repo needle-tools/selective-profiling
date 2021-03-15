@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
+using UnityEngine;
 using UnityEngine.Profiling;
 
 // ReSharper disable UnusedType.Global
@@ -70,6 +71,16 @@ namespace Needle.SelectiveProfiling
 			private static IEnumerable<CodeInstruction> Transpiler(MethodBase method, IEnumerable<CodeInstruction> _inst)
 			{
 				if (_inst == null) return null;
+
+	
+				// var f = _inst.Where(i => i.opcode == OpCodes.Endfinally).ToArray();
+				// if (f.Length > 0)
+				// {
+				// 	Debug.Log("Will not inject into " + method);
+				// 	return _inst;
+				// }
+				
+				
 				if (!wrappers.TryGetValue(method, out var wrapper)) return _inst;
 				// var instructions = new List<CodeInstruction>(_inst);
 				var instructions = _inst as List<CodeInstruction> ?? _inst.ToList();
