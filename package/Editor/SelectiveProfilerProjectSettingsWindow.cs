@@ -44,6 +44,8 @@ namespace Needle.SelectiveProfiling
 			GUILayout.FlexibleSpace();
 			EditorGUILayout.BeginVertical();
 			EditorGUILayout.BeginHorizontal();
+			settings.DebugLog = EditorGUILayout.ToggleLeft(new GUIContent("Debug Log"), settings.DebugLog);
+			GUILayout.FlexibleSpace();
 			if (GUILayout.Button(new GUIContent("Save"), GUILayout.Width(80))) 
 				SelectiveProfilerSettings.instance.Save();
 			if (GUILayout.Button(new GUIContent("Clear"), GUILayout.Width(80))) 

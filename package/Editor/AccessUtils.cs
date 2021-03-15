@@ -4,7 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
+using UnityEditor.Profiling;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 namespace Needle.SelectiveProfiling.Utils
@@ -89,7 +92,7 @@ namespace Needle.SelectiveProfiling.Utils
 			Unity = 2,
 			User = 3,
 		}
-
+		
 
 		public static IEnumerable<MethodInfo> GetMethods(object obj, BindingFlags flags, Type maxType)
 		{
@@ -115,7 +118,10 @@ namespace Needle.SelectiveProfiling.Utils
 					// if (level == maxLevel) yield break;
 					// Debug.Log(t + " - " + GetCurrentLevel(t));
 					var methods = t.GetMethods(flags);
-					foreach (var method in methods) yield return method;
+					foreach (var method in methods)
+					{
+						yield return method;
+					}
 					t = t.BaseType;
 					if (t != null) continue;
 					break;
@@ -130,12 +136,46 @@ namespace Needle.SelectiveProfiling.Utils
 		{
 			if (type == null) return Level.Unknown;
 			var name = type.Assembly.FullName;
-			if (name.StartsWith("UnityEngine.") || name.StartsWith("UnityEditor."))
-				return Level.Unity;
 			if (name.StartsWith("mscorlib"))
 				return Level.System;
+			if (name.StartsWith("UnityEngine.") || name.StartsWith("UnityEditor."))
+				return Level.Unity;
 			return Level.User;
 		}
 
+		public static bool AllowPatching(MethodInfo method, bool isDeep, bool debugLog)
+		{
+			if (method == null) return false;
+
+			if (method.DeclaringType == typeof(Profiler))
+			{
+				if(debugLog)
+					Debug.LogWarning("Profiling types in Unity Profiler is not allowed: " + method);
+				return false;
+			}
+
+			if (GetLevel(method.DeclaringType) == Level.System)
+			{
+				if(debugLog)
+					Debug.LogWarning("Profiling system level types is not allowed: " + method);
+				return false;
+			}
+			
+			if ((method.DeclaringType?.IsGenericType ?? false) || method.IsGenericMethod)// && (method.ReturnType.IsGenericType || method.IsGenericMethod || method.ContainsGenericParameters))
+			{
+				Debug.LogWarning("Profiling generic types is not supported: " + method);
+				return false;
+			}
+
+			// if (method.DeclaringType != null)
+			// {
+			// 	if (typeof(MonoBehaviour).IsAssignableFrom(method.DeclaringType) && method.Name == "OnValidate" && method.GetParameters().Length <= 0)
+			// 	{
+			// 		return false;
+			// 	}
+			// }
+
+			return true;
+		}
 	}
 }

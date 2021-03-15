@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
 using needle.EditorPatching;
+using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,18 +21,25 @@ namespace Needle.SelectiveProfiling
 			return entries.Any(e => e.IsActive && e.Method == method);
 		}
 
-		public static async void EnableProfiling([NotNull] MethodInfo method, bool save = true)
+		public static async void EnableProfiling([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool isDeep = false)
 		{
-			await EnableProfilingAsync(method, save);
+			await EnableProfilingAsync(method, save, enablePatch);
 		}
 
-		public static async Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true)
+		public static async Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool isDeep = false)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
 			if (!method.HasMethodBody())
 			{
 				Debug.LogWarning("Method has no body: " + method);
+				return;
+			}
+
+			var settings = SelectiveProfilerSettings.instance;
+			
+			if (AccessUtils.AllowPatching(method, isDeep, settings.DebugLog) == false)
+			{
 				return;
 			}
 
@@ -46,19 +54,23 @@ namespace Needle.SelectiveProfiling
 				return;
 			}
 
+			if (settings.DebugLog) Debug.Log("Patch " + method);
+			if (save)
+			{
+				settings.Add(method);
+				settings.Save();
+			}
 
 			var patch = new ProfilerSamplePatch(method, null, " " + SamplePostfix);
 			var info = new ProfilingInfo(patch, method);
 			entries.Add(info);
 			PatchManager.RegisterPatch(patch);
-			await PatchManager.EnablePatch(patch);
-			HandleNestedCalls();
-
-			if (save)
+			if (enablePatch)
 			{
-				SelectiveProfilerSettings.instance.Add(method);
-				SelectiveProfilerSettings.instance.Save();
+				await PatchManager.EnablePatch(patch);
+				HandleNestedCalls();
 			}
+
 		}
 
 		public static void DisableProfiling(MethodInfo method)
@@ -78,7 +90,7 @@ namespace Needle.SelectiveProfiling
 			var ml = SelectiveProfilerSettings.instance.MethodsList;
 			if (ml != null)
 			{
-				foreach (var m in ml)
+				foreach (var m in ml.ToArray())
 				{
 					if (m.TryResolveMethod(out var info))
 						await EnableProfilingAsync(info, false);
@@ -128,7 +140,7 @@ namespace Needle.SelectiveProfiling
 			foreach (var method in local)
 			{
 				// Debug.Log(method);
-				await EnableProfilingAsync(method);
+				await EnableProfilingAsync(method, true);
 			}
 		}
 	}
