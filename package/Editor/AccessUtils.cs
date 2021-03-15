@@ -147,23 +147,29 @@ namespace Needle.SelectiveProfiling.Utils
 		{
 			if (method == null) return false;
 
+			string GetMethodLogName()
+			{
+				if (method.DeclaringType != null) return method.DeclaringType.FullName + " -> " + method;
+				return method.ToString();
+			}
+
 			if (method.DeclaringType == typeof(Profiler))
 			{
 				if(debugLog)
-					Debug.LogWarning("Profiling types in Unity Profiler is not allowed: " + method);
+					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Profiling types in Unity Profiler is not allowed: " + GetMethodLogName());
 				return false;
 			}
 
 			if (GetLevel(method.DeclaringType) == Level.System)
 			{
 				if(debugLog)
-					Debug.LogWarning("Profiling system level types is not allowed: " + method);
+					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Profiling system level types is not allowed: " + GetMethodLogName());
 				return false;
 			}
 			
 			if ((method.DeclaringType?.IsGenericType ?? false) || method.IsGenericMethod)// && (method.ReturnType.IsGenericType || method.IsGenericMethod || method.ContainsGenericParameters))
 			{
-				Debug.LogWarning("Profiling generic types is not supported: " + method);
+				Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Profiling generic types is not supported: " + GetMethodLogName());
 				return false;
 			}
 
