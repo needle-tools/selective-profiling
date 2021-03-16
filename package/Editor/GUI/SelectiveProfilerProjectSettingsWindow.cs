@@ -58,11 +58,11 @@ namespace Needle.SelectiveProfiling
 			if (PatchesFoldout)
 			{
 				EditorGUI.indentLevel++;
-				SelectiveProfilerWindow.DrawSavedMethods(settings);
+				Draw.SavedMethods(settings);
 				EditorGUI.indentLevel--;
 			}
 				
-			SelectiveProfilerWindow.DrawScopesList(settings);
+			Draw.ScopesList(settings);
 			
 			GUILayout.FlexibleSpace();
 			GUILayout.Space(10);
