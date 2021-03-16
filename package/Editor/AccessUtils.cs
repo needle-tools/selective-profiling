@@ -146,7 +146,7 @@ namespace Needle.SelectiveProfiling.Utils
 		public static bool AllowPatching(MethodInfo method, bool isDeep, bool debugLog)
 		{
 			if (method == null) return false;
-
+			
 			string GetMethodLogName()
 			{
 				if (method.DeclaringType != null) return method.DeclaringType.FullName + " -> " + method;
@@ -167,9 +167,13 @@ namespace Needle.SelectiveProfiling.Utils
 				return false;
 			}
 			
+			// Generics
+			// See https://harmony.pardeike.net/articles/patching.html#commonly-unsupported-use-cases
+			// Got various crashes when patching generics was enabled (e.g. patching generic singleton Instance.Getter caused crashes)
 			if ((method.DeclaringType?.IsGenericType ?? false) || method.IsGenericMethod)// && (method.ReturnType.IsGenericType || method.IsGenericMethod || method.ContainsGenericParameters))
 			{
-				Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Profiling generic types is not supported: " + GetMethodLogName());
+				if(debugLog)
+					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Profiling generic types is not supported: " + GetMethodLogName());
 				return false;
 			}
 

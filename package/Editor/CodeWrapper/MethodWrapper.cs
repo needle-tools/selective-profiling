@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Needle.SelectiveProfiling.CodeWrapper
 {
@@ -12,14 +13,15 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 	{
 		private readonly InstructionsWrapper wrapper;
 		private readonly Action<CodeInstruction, int> callback;
+		private readonly bool debugLog = false;
+		private readonly bool skipProfilerMethods = true;
 
-		public bool DebugLog = false;
-
-		public MethodWrapper(InstructionsWrapper wrapper, Action<CodeInstruction, int> onInstruction, bool debugLog)
+		public MethodWrapper(InstructionsWrapper wrapper, Action<CodeInstruction, int> onInstruction, bool debugLog, bool skipProfilerMethods)
 		{
 			this.wrapper = wrapper;
 			this.callback = onInstruction;
-			this.DebugLog = debugLog;
+			this.debugLog = debugLog;
+			this.skipProfilerMethods = skipProfilerMethods;
 		}
 
 		public void Apply(IList<CodeInstruction> instructions, IList<CodeInstruction> before, IList<CodeInstruction> after)
@@ -55,6 +57,11 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					if (inst.operand is MethodInfo mi)
 					{
 						SelectiveProfiler.RegisterInternalCalledMethod(mi);
+						if (skipProfilerMethods && mi.DeclaringType == typeof(Profiler))
+						{
+							start = -1;
+							continue;
+						}
 					}
 
 					// we arrived at the actual method call
@@ -67,7 +74,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				}
 			}
 
-			if (DebugLog)
+			if (debugLog)
 				Debug.Log(IL_Before + "\n\n----\n\n" + string.Join("\n", instructions) + "\n\n");
 		}
 	}

@@ -2,16 +2,22 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Needle.SelectiveProfiling
 {
 	public class SelectiveProfilerWindow : EditorWindow
 	{
 		[MenuItem(MenuItems.Menu + nameof(Open))]
-		private static void Open()
+		public static void Open()
 		{
-			var window = CreateInstance<SelectiveProfilerWindow>();
-			window.Show();
+			if(HasOpenInstances<SelectiveProfilerWindow>())
+				FocusWindowIfItsOpen<SelectiveProfilerWindow>();
+			else
+			{
+				var window = CreateInstance<SelectiveProfilerWindow>();
+				window.Show();
+			}
 		}
 
 		[RuntimeInitializeOnLoadMethod]
@@ -37,7 +43,7 @@ namespace Needle.SelectiveProfiling
 		{
 			var settings = SelectiveProfilerSettings.instance;
 			scroll = EditorGUILayout.BeginScrollView(scroll);
-			EditorGUILayout.LabelField("Saved Methods", EditorStyles.boldLabel);
+			EditorGUILayout.LabelField("Selected Methods", EditorStyles.boldLabel);
 			DrawSavedMethods(settings);
 			GUILayout.Space(10);
 			
@@ -45,7 +51,7 @@ namespace Needle.SelectiveProfiling
 			var patches = SelectiveProfiler.Patches;
 			if (patches == null || patches.Count <= 0)
 			{
-				EditorGUILayout.LabelField("No selective patches in project");
+				EditorGUILayout.LabelField("No active patched methods");
 			}
 			else
 			{
@@ -54,29 +60,49 @@ namespace Needle.SelectiveProfiling
 			EditorGUILayout.EndScrollView();
 		}
 
+		private static bool MethodsListFoldout
+		{
+			get => SessionState.GetBool(nameof(MethodsListFoldout), false);
+			set => SessionState.SetBool(nameof(MethodsListFoldout), value);
+		}
+		private static bool MutedMethodsFoldout
+		{
+			get => SessionState.GetBool(nameof(MutedMethodsFoldout), false);
+			set => SessionState.SetBool(nameof(MutedMethodsFoldout), value);
+		}
+		
 		private static readonly List<int> removeList = new List<int>();
 		internal static void DrawSavedMethods(SelectiveProfilerSettings settings)
 		{
-			void DrawMethods(IReadOnlyList<MethodInformation> list, bool disabled)
+			bool DrawMethods(IReadOnlyList<MethodInformation> list, bool disabled, bool foldout, string label)
 			{
-				for (var index = 0; index < list.Count; index++)
+				if (list == null) return foldout;
+				foldout = EditorGUILayout.Foldout(foldout, label + " [" + list.Count + "]");
+				if (foldout)
 				{
-					var m = list[index];
-					EditorGUILayout.BeginHorizontal();
-					EditorGUI.BeginDisabledGroup(disabled);
-					EditorGUILayout.LabelField(new GUIContent(m.ClassWithMethod(), m.MethodIdentifier()), GUILayout.ExpandWidth(true));
-					EditorGUI.EndDisabledGroup();
-					var muted = settings.IsMuted(m);
-					if (GUILayout.Button(muted ? "Unmute" : "Mute", GUILayout.Width(60))) 
-						settings.SetMuted(m, !muted);
-					if (GUILayout.Button("x", GUILayout.Width(30))) 
-						removeList.Add(index);
-					EditorGUILayout.EndHorizontal();
+					EditorGUI.indentLevel++;
+					for (var index = 0; index < list.Count; index++)
+					{
+						var m = list[index];
+						EditorGUILayout.BeginHorizontal();
+						EditorGUI.BeginDisabledGroup(disabled);
+						EditorGUILayout.LabelField(new GUIContent(m.ClassWithMethod(), m.MethodIdentifier()), GUILayout.ExpandWidth(true));
+						EditorGUI.EndDisabledGroup();
+						var muted = settings.IsMuted(m);
+						if (GUILayout.Button(muted ? "Unmute" : "Mute", GUILayout.Width(60)))
+							settings.SetMuted(m, !muted);
+						if (GUILayout.Button("x", GUILayout.Width(30)))
+							removeList.Add(index);
+						EditorGUILayout.EndHorizontal();
+					}
+					EditorGUI.indentLevel--;
 				}
+				return foldout;
 			}
 
-			DrawMethods(settings.MethodsList, false);
-			DrawMethods(settings.MutedMethods, true);
+			MethodsListFoldout = DrawMethods(settings.MethodsList, false, MethodsListFoldout, "Methods");
+			MutedMethodsFoldout = DrawMethods(settings.MutedMethods, true, MutedMethodsFoldout, "Muted");
+			
 			
 			for (var i = removeList.Count - 1; i >= 0; i--)
 			{
@@ -88,7 +114,8 @@ namespace Needle.SelectiveProfiling
 
 		internal static void DrawProfilerPatchesList()
 		{
-			if (SelectiveProfiler.Patches == null) return;
+			if (SelectiveProfiler.Patches == null || SelectiveProfiler.Patches.Count <= 0) return;
+			
 			foreach (var p in SelectiveProfiler.Patches)
 			{
 				EditorGUILayout.BeginHorizontal();

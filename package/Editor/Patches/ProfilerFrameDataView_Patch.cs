@@ -79,7 +79,7 @@ namespace Needle.SelectiveProfiling
 				if(frameDataView == null || !frameDataView.valid)
 					frameDataView = m_FrameDataViewField?.GetValue(item) as HierarchyFrameDataView;
 
-				if (button == 0 && item.id == selectedId && Settings.AutoProfile)
+				if (button == 0 && item.id == selectedId && Settings.ImmediateMode)
 				{
 					var name = frameDataView?.GetItemName(item.id);
 					if (AccessUtils.TryGetMethodFromName(name, out var methodInfo)) 

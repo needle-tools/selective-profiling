@@ -15,13 +15,13 @@ namespace Needle.SelectiveProfiling
 {
 	public static class SelectiveProfiler
 	{
-		public const string SamplePostfix = "NEEDLE_SAMPLE";
+		public const string SamplePostfix = "[needle]";
 
 		internal static void AddToAutoProfiling(MethodInfo method)
 		{
 			if (method == null) return;
 			if (!Application.isPlaying) return;
-			if (!SelectiveProfilerSettings.instance.AutoProfile) return;
+			if (!SelectiveProfilerSettings.instance.ImmediateMode) return;
 #pragma warning disable 4014
 			InternalEnableProfilingAsync(method, false, true, method);
 #pragma warning restore 4014
@@ -51,7 +51,8 @@ namespace Needle.SelectiveProfiling
 
 			if (!method.HasMethodBody())
 			{
-				Debug.LogWarning("Method has no body: " + method);
+				if(settings.DebugLog)
+					Debug.LogWarning("Method has no body: " + method);
 				return;
 			}
 
@@ -104,6 +105,9 @@ namespace Needle.SelectiveProfiling
 			existing.Disable();
 		}
 
+		internal static bool DebugLog => SelectiveProfilerSettings.instance.DebugLog;
+		internal static bool TranspilerShouldSkipCallsInProfilerType => true;
+
 		internal static IReadOnlyList<ProfilingInfo> Patches => entries;
 		private static readonly List<ProfilingInfo> entries = new List<ProfilingInfo>();
 
@@ -150,7 +154,8 @@ namespace Needle.SelectiveProfiling
 			if (method == null) return;
 			if (!method.HasMethodBody())
 			{
-				Debug.Log("Skip called method. No body: " + method);
+				if(DebugLog)
+					Debug.Log("Skip called method. No body: " + method);
 				return;
 			}
 			if (callsFound.Contains(method)) return;

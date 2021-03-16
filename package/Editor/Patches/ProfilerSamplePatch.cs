@@ -52,12 +52,19 @@ namespace Needle.SelectiveProfiling
 				this.method = methods;
 				if (string.IsNullOrEmpty(prefix)) prefix = string.Empty;
 				if (string.IsNullOrEmpty(postfix)) postfix = string.Empty;
-				ICodeWrapper wrapper = new MethodWrapper(new InstructionsWrapper(), (instruction, index) =>
-					{
-						var methodName = TranspilerUtils.TryGetMethodName(instruction.operand, false);
-						InsertBefore[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
-					},
-					PatchManager.AllowDebugLogs);
+				
+				void SetSampleName(CodeInstruction instruction, int index)
+				{
+					var methodName = TranspilerUtils.TryGetMethodName(instruction.operand, false);
+					InsertBefore[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
+				}
+				ICodeWrapper wrapper = new MethodWrapper(
+					new InstructionsWrapper(), 
+					SetSampleName,
+					SelectiveProfiler.DebugLog,
+					SelectiveProfiler.TranspilerShouldSkipCallsInProfilerType
+					);
+				
 				wrappers.Add(method, wrapper);
 			}
 
