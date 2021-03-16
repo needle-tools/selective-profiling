@@ -65,6 +65,8 @@ namespace Needle.SelectiveProfiling
 
 			private static FieldInfo m_FrameDataViewField;
 			private static HierarchyFrameDataView frameDataView;
+			
+			private static int lastPatchedInImmediateMode = -1;
 
 			// method https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L676
 			// item: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
@@ -79,8 +81,9 @@ namespace Needle.SelectiveProfiling
 				if(frameDataView == null || !frameDataView.valid)
 					frameDataView = m_FrameDataViewField?.GetValue(item) as HierarchyFrameDataView;
 
-				if (button == 0 && item.id == selectedId && Settings.ImmediateMode)
+				if (button == 0 && item.id == selectedId && Settings.ImmediateMode && selectedId != lastPatchedInImmediateMode)
 				{
+					lastPatchedInImmediateMode = selectedId;
 					var name = frameDataView?.GetItemName(item.id);
 					if (AccessUtils.TryGetMethodFromName(name, out var methodInfo)) 
 						SelectiveProfiler.AddToAutoProfiling(methodInfo);

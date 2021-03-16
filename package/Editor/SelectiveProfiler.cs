@@ -85,7 +85,7 @@ namespace Needle.SelectiveProfiling
 			if (settings.IsMuted(mi)) return;
 
 			var patch = new ProfilerSamplePatch(method, null, " " + SamplePostfix);
-			var info = new ProfilingInfo(patch, method);
+			var info = new ProfilingInfo(patch, method, mi);
 			entries.Add(info);
 			PatchManager.RegisterPatch(patch);
 			if (enablePatch)
@@ -104,12 +104,19 @@ namespace Needle.SelectiveProfiling
 			if (existing == null) return;
 			existing.Disable();
 		}
-
+		
 		internal static bool DebugLog => SelectiveProfilerSettings.instance.DebugLog;
 		internal static bool TranspilerShouldSkipCallsInProfilerType => true;
 
 		internal static IReadOnlyList<ProfilingInfo> Patches => entries;
 		private static readonly List<ProfilingInfo> entries = new List<ProfilingInfo>();
+
+		internal static bool TryGet([NotNull] MethodInformation info, out ProfilingInfo profile)
+		{
+			if (info == null) throw new ArgumentNullException(nameof(info));
+			profile = Patches.FirstOrDefault(p => p.Data.Equals(info));
+			return profile != null;
+		}
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
 		private static async void InitRuntime()
@@ -134,8 +141,27 @@ namespace Needle.SelectiveProfiling
 		{
 			EditorApplication.playModeStateChanged -= OnPlayModeChanged;
 			EditorApplication.playModeStateChanged += OnPlayModeChanged;
+			
+			SelectiveProfilerSettings.MethodStateChanged -= OnMethodChanged;
+			SelectiveProfilerSettings.MethodStateChanged += OnMethodChanged;
+			
+			SelectiveProfilerSettings.Cleared -= MethodsCleared;
+			SelectiveProfilerSettings.Cleared += MethodsCleared;
 		}
-		
+
+		private static void MethodsCleared()
+		{
+			foreach(var p in Patches)
+				p.Disable();
+		}
+
+		private static void OnMethodChanged(MethodInformation method, bool enabled)
+		{
+			if (!TryGet(method, out var patch)) return;
+			if (enabled) patch.Enable();
+			else patch.Disable();
+		}
+
 		private static void OnPlayModeChanged(PlayModeStateChange obj)
 		{
 			if (obj == PlayModeStateChange.ExitingPlayMode)

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
+using UnityEditor.Profiling;
 
 namespace Needle.SelectiveProfiling
 {
@@ -9,14 +10,16 @@ namespace Needle.SelectiveProfiling
 	{
 		public readonly EditorPatchProvider Patch;
 		public readonly MethodInfo Method;
+		public readonly MethodInformation Data;
 
 		public bool IsActive => Patch != null && PatchManager.IsActive(Patch.ID());
 		internal string Identifier => Method?.GetMethodIdentifier();
 
-		public ProfilingInfo(EditorPatchProvider patch, MethodInfo info)
+		public ProfilingInfo(EditorPatchProvider patch, MethodInfo info, MethodInformation data)
 		{
 			this.Patch = patch;
 			this.Method = info;
+			this.Data = data;
 		}
 
 		public void ToggleActive()

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -43,12 +44,27 @@ namespace Needle.SelectiveProfiling
 			Undo.RegisterCompleteObjectUndo(this, "Add " + info);
 			Methods.Add(info);
 			Muted.RemoveAll(m => m.Equals(info));
+			MethodStateChanged?.Invoke(info, true);
 		}
 
 		public void Remove(MethodInformation info)
 		{
-			Methods.RemoveAll(m => m.Equals(info));
-			Muted.RemoveAll(m => m.Equals(info));
+			for (var index = Methods.Count - 1; index >= 0; index--)
+			{
+				var method = Methods[index];
+				if (method.Equals(info)) continue;
+				Methods.RemoveAt(index);
+				NotifyStateChanged(method, false);
+				break;
+			}
+			for (var index = Muted.Count - 1; index >= 0; index--)
+			{
+				var method = Muted[index];
+				if (method.Equals(info)) continue;
+				Muted.RemoveAt(index);
+				NotifyStateChanged(method, false);
+				break;
+			}
 		}
 
 		public void SetMuted(MethodInformation info, bool mute)
@@ -59,6 +75,7 @@ namespace Needle.SelectiveProfiling
 				if (Muted.Contains(info)) return;
 				Muted.Add(info);
 				Methods.RemoveAll(m => m.Equals(info));
+				MethodStateChanged?.Invoke(info, false);
 			}
 			else Add(info);
 		}
@@ -68,11 +85,20 @@ namespace Needle.SelectiveProfiling
 			Undo.RegisterCompleteObjectUndo(this, "Clear Selective Profiler Data");
 			Methods.Clear();
 			Muted.Clear();
+			Cleared?.Invoke();
 		}
 
 		public IReadOnlyList<MethodInformation> MethodsList => Methods;
 		public IReadOnlyList<MethodInformation> MutedMethods => Muted;
 		public bool IsMuted(MethodInformation m) => Muted.Contains(m);
+
+		public static event Action<MethodInformation, bool> MethodStateChanged;
+		public static event Action Cleared;
+
+		private static void NotifyStateChanged(MethodInformation info, bool state)
+		{
+			MethodStateChanged?.Invoke(info, state);
+		}
 	}
 	
 #if !UNITY_2020_1_OR_NEWER
