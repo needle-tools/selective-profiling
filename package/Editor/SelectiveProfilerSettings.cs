@@ -49,22 +49,27 @@ namespace Needle.SelectiveProfiling
 
 		public void Remove(MethodInformation info)
 		{
+			var removed = false;
+			
 			for (var index = Methods.Count - 1; index >= 0; index--)
 			{
 				var method = Methods[index];
-				if (method.Equals(info)) continue;
+				if (!method.Equals(info)) continue;
 				Methods.RemoveAt(index);
-				NotifyStateChanged(method, false);
+				removed = true;
 				break;
 			}
 			for (var index = Muted.Count - 1; index >= 0; index--)
 			{
 				var method = Muted[index];
-				if (method.Equals(info)) continue;
+				if (!method.Equals(info)) continue;
 				Muted.RemoveAt(index);
-				NotifyStateChanged(method, false);
+				removed = true;
 				break;
 			}
+			
+			if(removed)
+				NotifyStateChanged(info, false);
 		}
 
 		public void SetMuted(MethodInformation info, bool mute)

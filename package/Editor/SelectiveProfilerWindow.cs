@@ -45,18 +45,18 @@ namespace Needle.SelectiveProfiling
 			scroll = EditorGUILayout.BeginScrollView(scroll);
 			EditorGUILayout.LabelField("Selected Methods", EditorStyles.boldLabel);
 			DrawSavedMethods(settings);
-			GUILayout.Space(10);
+			DrawScopesList(settings);
 			
+			GUILayout.Space(10);
 			EditorGUILayout.LabelField("Patches", EditorStyles.boldLabel);
 			var patches = SelectiveProfiler.Patches;
-			if (patches == null || patches.Count <= 0)
+			if (patches == null || SelectiveProfiler.PatchesCount <= 0)
 			{
 				EditorGUILayout.LabelField("No active patched methods");
 			}
 			else
 			{
 				DrawProfilerPatchesList();
-				DrawScopesList(settings);
 			}
 			EditorGUILayout.EndScrollView();
 		}
@@ -73,17 +73,14 @@ namespace Needle.SelectiveProfiling
 			set => SessionState.SetBool(nameof(MutedMethodsFoldout), value);
 		}
 		
-		private static readonly List<int> removeList = new List<int>();
+		private static readonly List<MethodInformation> removeList = new List<MethodInformation>();
 		internal static void DrawSavedMethods(SelectiveProfilerSettings settings)
 		{
 			void ApplyRemoveList()
 			{
 				for (var i = removeList.Count - 1; i >= 0; i--)
 				{
-					var index = removeList[i];
-					if(index < 0 || index >= settings.MethodsList.Count)
-						continue;
-					var entry = settings.MethodsList[index];
+					var entry = removeList[i];
 					settings.Remove(entry);
 				}
 				removeList.Clear();
@@ -105,7 +102,7 @@ namespace Needle.SelectiveProfiling
 				{
 					for (var index = list.Count - 1; index >= 0; index--)
 					{
-						if (removeAll) removeList.Add(index);
+						if (removeAll) removeList.Add(list[index]);
 						else if (toggleMuteAll) settings.SetMuted(list[index], activeList);
 					}
 					ApplyRemoveList();
@@ -125,7 +122,7 @@ namespace Needle.SelectiveProfiling
 						if (GUILayout.Button(muted ? "Unmute" : "Mute", GUILayout.Width(60)))
 							settings.SetMuted(m, !muted);
 						if (GUILayout.Button("x", GUILayout.Width(30)))
-							removeList.Add(index);
+							removeList.Add(m);
 						EditorGUILayout.EndHorizontal();
 					}
 					EditorGUI.indentLevel--;
@@ -141,7 +138,7 @@ namespace Needle.SelectiveProfiling
 
 		internal static void DrawProfilerPatchesList()
 		{
-			if (SelectiveProfiler.Patches == null || SelectiveProfiler.Patches.Count <= 0) return;
+			if (SelectiveProfiler.Patches == null || SelectiveProfiler.PatchesCount <= 0) return;
 			
 			foreach (var p in SelectiveProfiler.Patches)
 			{
@@ -191,7 +188,7 @@ namespace Needle.SelectiveProfiling
 					switch (SelectedScope)
 					{
 						case MethodScopeDisplay.Assembly:
-							return method.Assembly;
+							return method.ExtractAssemblyName();
 						case MethodScopeDisplay.Namespace:
 							return method.ExtractNamespace();
 						default:

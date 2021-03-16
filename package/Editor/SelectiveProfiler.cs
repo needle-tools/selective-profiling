@@ -29,7 +29,7 @@ namespace Needle.SelectiveProfiling
 
 		public static bool IsProfiling(MethodInfo method)
 		{
-			return entries.Any(e => e.IsActive && e.Method == method);
+			return Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
 		public static async void EnableProfiling([NotNull] MethodInfo method, bool save = true, bool enablePatch = true)
@@ -62,8 +62,10 @@ namespace Needle.SelectiveProfiling
 				return;
 			}
 
-			var existing = entries.FirstOrDefault(e => e.Method == method);
-			if (existing != null)
+			if (settings.DebugLog) Debug.Log("Patch " + method);
+			
+			var mi = new MethodInformation(method);
+			if (patches.TryGetValue(mi, out var existing))
 			{
 				if (!existing.IsActive)
 				{
@@ -72,10 +74,7 @@ namespace Needle.SelectiveProfiling
 
 				return;
 			}
-
-			if (settings.DebugLog) Debug.Log("Patch " + method);
 			
-			var mi = new MethodInformation(method);
 			if (save)
 			{
 				settings.Add(mi);
@@ -86,7 +85,7 @@ namespace Needle.SelectiveProfiling
 
 			var patch = new ProfilerSamplePatch(method, null, " " + SamplePostfix);
 			var info = new ProfilingInfo(patch, method, mi);
-			entries.Add(info);
+			patches.Add(mi, info);
 			PatchManager.RegisterPatch(patch);
 			if (enablePatch)
 			{
@@ -100,7 +99,7 @@ namespace Needle.SelectiveProfiling
 		public static void DisableProfiling(MethodInfo method)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
-			var existing = entries.FirstOrDefault(e => e.Method == method);
+			var existing = patches.Values.FirstOrDefault(e => e.Method == method);
 			if (existing == null) return;
 			existing.Disable();
 		}
@@ -108,14 +107,14 @@ namespace Needle.SelectiveProfiling
 		internal static bool DebugLog => SelectiveProfilerSettings.instance.DebugLog;
 		internal static bool TranspilerShouldSkipCallsInProfilerType => true;
 
-		internal static IReadOnlyList<ProfilingInfo> Patches => entries;
-		private static readonly List<ProfilingInfo> entries = new List<ProfilingInfo>();
+		internal static IEnumerable<ProfilingInfo> Patches => patches.Values;
+		internal static int PatchesCount => patches.Count;
+		private static readonly Dictionary<MethodInformation, ProfilingInfo> patches = new Dictionary<MethodInformation, ProfilingInfo>();
 
 		internal static bool TryGet([NotNull] MethodInformation info, out ProfilingInfo profile)
 		{
 			if (info == null) throw new ArgumentNullException(nameof(info));
-			profile = Patches.FirstOrDefault(p => p.Data.Equals(info));
-			return profile != null;
+			return patches.TryGetValue(info, out profile);
 		}
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
@@ -147,6 +146,40 @@ namespace Needle.SelectiveProfiling
 			
 			SelectiveProfilerSettings.Cleared -= MethodsCleared;
 			SelectiveProfilerSettings.Cleared += MethodsCleared;
+
+			EditorApplication.update -= OnEditorUpdate;
+			EditorApplication.update += OnEditorUpdate;
+		}
+
+		private static readonly List<(MethodInformation method, bool state)> stateChangedList = new List<(MethodInformation, bool)>();
+
+		private static void OnEditorUpdate()
+		{
+			if (stateChangedList.Count > 0)
+			{
+				var handled = 0;
+				for (var index = stateChangedList.Count - 1; index >= 0; index--)
+				{
+					var changed = stateChangedList[index];
+					stateChangedList.RemoveAt(index);
+					var shouldBeActive = changed.state;
+					if (patches.TryGetValue(changed.method, out var patch))
+					{
+						if (patch.IsActive == shouldBeActive) continue;
+						if (shouldBeActive) patch.Enable();
+						else patch.Disable();
+					}
+					else if (shouldBeActive)
+					{
+						if (changed.method.TryResolveMethod(out var method))
+						{
+							EnableProfiling(method);
+						}
+					}
+					++handled;
+					if(handled >= 2) break;
+				}
+			}
 		}
 
 		private static void MethodsCleared()
@@ -157,17 +190,16 @@ namespace Needle.SelectiveProfiling
 
 		private static void OnMethodChanged(MethodInformation method, bool enabled)
 		{
-			if (!TryGet(method, out var patch)) return;
-			if (enabled) patch.Enable();
-			else patch.Disable();
+			stateChangedList.RemoveAll(e => e.method.Equals(method));
+			stateChangedList.Add((method, enabled));
 		}
 
 		private static void OnPlayModeChanged(PlayModeStateChange obj)
 		{
 			if (obj == PlayModeStateChange.ExitingPlayMode)
 			{
-				foreach (var patch in entries)
-					PatchManager.UnregisterAndDisablePatch(patch.Patch);
+				foreach (var patch in patches)
+					PatchManager.UnregisterAndDisablePatch(patch.Value.Patch);
 			}
 		}
 		

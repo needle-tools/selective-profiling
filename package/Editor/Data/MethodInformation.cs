@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -50,6 +51,13 @@ namespace Needle.SelectiveProfiling
 			var dotIndex = Type.LastIndexOf(".", StringComparison.Ordinal);
 			var className = dotIndex > 0 && dotIndex < Type.Length - 1 ? Type.Substring(dotIndex + 1) : Type;
 			return className + "." + Method;
+		}
+
+		public string ExtractAssemblyName()
+		{
+			var index = Assembly.IndexOf(",", StringComparison.InvariantCultureIgnoreCase);
+			if (index > 0) return Assembly.Substring(0, index);
+			return Assembly;
 		}
 
 		public string ExtractNamespace()
