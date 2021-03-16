@@ -19,6 +19,11 @@ namespace Needle.SelectiveProfiling
 
 		internal MethodInformation(MethodInfo method)
 		{
+			UpdateFrom(method);
+		}
+
+		internal void UpdateFrom(MethodInfo method)
+		{
 			Method = method.ToString();
 			var t = method.DeclaringType;
 			Type = t?.FullName;
@@ -150,13 +155,24 @@ namespace Needle.SelectiveProfiling
 					return false;
 				}
 
+				var requireUpdateIfSuccessfullyResolved = false;
 				if (type == null)
 				{
-					type = assembly.GetType(pm.Type, true, true);
-					Debug.Log(type);
-					if (type != null)
+					try
 					{
-						TypesCache.Add(pm.TypeIdentifier(), type);
+						type = assembly.GetType(pm.Type, true, true);
+						if (type != null)
+						{
+							TypesCache.Add(pm.TypeIdentifier(), type);
+						}
+					}
+					catch (TypeLoadException typeLoadException)
+					{
+						var types = assembly.GetTypes();
+						type = types.FirstOrDefault(t => t.Name == pm.Type);
+						requireUpdateIfSuccessfullyResolved |= type != null;
+						if (type == null) 
+							Debug.LogException(typeLoadException);
 					}
 				}
 
@@ -170,6 +186,8 @@ namespace Needle.SelectiveProfiling
 						{
 							MethodsCache.Add(pm.MethodIdentifier(), m);
 							method = m;
+							if (requireUpdateIfSuccessfullyResolved) 
+								pm.UpdateFrom(method);
 							return true;
 						}
 					}
@@ -182,8 +200,10 @@ namespace Needle.SelectiveProfiling
 							// method name changed, update
 							var old = pm.MethodIdentifier();
 							pm.Method = m.ToString();
-							MethodsCache.Add(pm.MethodIdentifier(), m);
 							method = m;
+							if (requireUpdateIfSuccessfullyResolved) 
+								pm.UpdateFrom(method);
+							MethodsCache.Add(pm.MethodIdentifier(), m);
 							MethodIdentifierChanged?.Invoke((old, pm.MethodIdentifier()));
 							return true;
 						}
