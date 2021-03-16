@@ -256,6 +256,13 @@ namespace Needle.SelectiveProfiling
 
 
 		internal static bool stepDeepProfile;
+
+		internal static int stepDeepProfileToIndex
+		{
+			get => SessionState.GetInt("StepDeepProfileDebugIndex", -1);
+			set => SessionState.SetInt("StepDeepProfileDebugIndex", value);
+
+		}
 		private static List<(MethodInfo method, int depth, MethodInfo source)> stepDeepProfileList = null;
 		private static int deepProfileStepIndex;
 
@@ -283,6 +290,8 @@ namespace Needle.SelectiveProfiling
 #pragma warning disable 4014
 			InternalEnableProfilingAsync(method.method, false, true,  method.source, method.depth);
 #pragma warning restore 4014
+			if (deepProfileStepIndex < stepDeepProfileToIndex)
+				stepDeepProfile = true;
 		}
 	}
 }

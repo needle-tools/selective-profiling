@@ -48,10 +48,11 @@ namespace Needle.SelectiveProfiling
 			if (SelectiveProfiler.DeepProfileDebuggingMode)
 			{
 				GUILayout.Space(10);
-				if (GUILayout.Button("Step Deep Profile"))
-				{
+				EditorGUILayout.BeginHorizontal();
+				SelectiveProfiler.stepDeepProfileToIndex = EditorGUILayout.IntField("Step to", SelectiveProfiler.stepDeepProfileToIndex, GUILayout.ExpandWidth(false));
+				if (GUILayout.Button("Step Deep Profile", GUILayout.ExpandWidth(true))) 
 					SelectiveProfiler.stepDeepProfile = true;
-				}
+				EditorGUILayout.EndHorizontal();
 			}
 			
 			GUILayout.Space(10);

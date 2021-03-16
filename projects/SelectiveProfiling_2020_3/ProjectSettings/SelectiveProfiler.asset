@@ -20,38 +20,15 @@ MonoBehaviour:
   Methods:
   - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Void OnValidate()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Void Start()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Void OnEnable()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
     Method: Void Update()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Boolean CheckMatchingSampleBuffer(UnityEngine.RaycastHit, System.Collections.Generic.IList`1[UnityEngine.Vector3])
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Void OnDrawGizmosSelected()
-  - Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.ComponentWithRaycasts
+  Muted:
+  - Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.EventSystem
     Method: Void Update()
-  - Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.ComponentWithRaycasts
-    Method: Boolean Compare()
   - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.MySlowScript
-    Method: Void CallingAnotherMethod()
-  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void MethodWithOut(Int32 ByRef, SomeClass ByRef)
+    Method: Void Update()
   - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.MySlowScript
@@ -59,8 +36,31 @@ MonoBehaviour:
   - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.MySlowScript
+    Method: Void MethodWithOut(Int32 ByRef, SomeClass ByRef)
+  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.MySlowScript
+    Method: Void CallingAnotherMethod()
+  - Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.ComponentWithRaycasts
+    Method: Boolean Compare()
+  - Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.ComponentWithRaycasts
     Method: Void Update()
-  - Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.EventSystems.EventSystem
-    Method: Void Update()
-  Muted: []
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void OnDrawGizmosSelected()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Boolean CheckMatchingSampleBuffer(UnityEngine.RaycastHit, System.Collections.Generic.IList`1[UnityEngine.Vector3])
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void OnEnable()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void Start()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void OnValidate()
