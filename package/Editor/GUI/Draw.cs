@@ -7,7 +7,7 @@ namespace Needle.SelectiveProfiling
 {
 	internal static class Draw
 	{
-		public static bool WithHeaderFoldout(string foldoutStateName, string headerName, Action draw, bool defaultFoldoutState = false)
+		public static bool WithHeaderFoldout(string foldoutStateName, string headerName, Action draw, bool defaultFoldoutState = false, int afterWhenOpen = 5)
 		{
 			var foldout = EditorGUILayout.BeginFoldoutHeaderGroup(SessionState.GetBool(foldoutStateName, defaultFoldoutState), new GUIContent(headerName));
 			SessionState.SetBool(foldoutStateName, foldout);
@@ -19,6 +19,7 @@ namespace Needle.SelectiveProfiling
 			}
 
 			EditorGUILayout.EndFoldoutHeaderGroup();
+			if (foldout) GUILayout.Space(afterWhenOpen);
 			return foldout;
 		}
 
