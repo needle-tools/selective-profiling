@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using HarmonyLib;
 using UnityEditor;
 using UnityEngine;
 
@@ -56,16 +59,68 @@ namespace Needle.SelectiveProfiling
 			{
 				Draw.WithHeaderFoldout("DebugOptionsFoldout", "Debug Options", () =>
 				{
-					EditorGUILayout.BeginHorizontal();
-					SelectiveProfiler.stepDeepProfileToIndex = EditorGUILayout.IntField("Step to", SelectiveProfiler.stepDeepProfileToIndex, GUILayout.ExpandWidth(false));
-					if (GUILayout.Button("Step Deep Profile", GUILayout.ExpandWidth(true))) 
-						SelectiveProfiler.stepDeepProfile = true;
-					EditorGUILayout.EndHorizontal();
+					DrawDeepProfilingDebug();
+					EditorGUILayout.Space(10);
+					DrawTypesExplorer(this);
 				});
 			}
 
 			EditorGUILayout.Space(10);
 			EditorGUILayout.EndScrollView();
+		}
+
+		private static void DrawDeepProfilingDebug()
+		{
+			EditorGUILayout.LabelField("Deep Profiling", EditorStyles.boldLabel);
+			SelectiveProfiler.DeepProfileDebuggingMode = EditorGUILayout.Toggle("Use Stepping", SelectiveProfiler.DeepProfileDebuggingMode);
+			// GUILayout.BeginHorizontal();
+			SelectiveProfiler.stepDeepProfileToIndex = EditorGUILayout.IntField("Step to", SelectiveProfiler.stepDeepProfileToIndex, GUILayout.ExpandWidth(false));
+			EditorGUILayout.LabelField("Current Index:", SelectiveProfiler.deepProfileStepIndex.ToString());
+			// GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			GUILayout.Space(18);
+			if (GUILayout.Button("Make Step", GUILayout.ExpandWidth(false))) 
+				SelectiveProfiler.stepDeepProfile = true;
+			GUILayout.EndHorizontal();
+		}
+
+		private static string filter;
+		private static readonly List<MethodInfo> matches = new List<MethodInfo>();
+
+		private class SearchUpdated : IProgress<MethodInfo>
+		{
+			private EditorWindow window;
+			
+			public SearchUpdated(EditorWindow window)
+			{
+				this.window = window;
+			}
+			
+			public void Report(MethodInfo value)
+			{
+				Debug.Log(value);
+				window.Repaint();
+			}
+		}
+		
+		private static void DrawTypesExplorer(EditorWindow window)
+		{
+			EditorGUI.BeginChangeCheck();
+			filter = EditorGUILayout.TextField("Filter", filter);
+			
+			if (EditorGUI.EndChangeCheck())
+			{
+				matches.Clear();
+				TypesExplorer.TryFindMethodAsync(filter, matches, new SearchUpdated(window));
+			}
+			
+			if (matches != null)
+			{
+				foreach (var t in matches)
+				{
+					EditorGUILayout.LabelField(t.FullDescription());
+				}
+			}
 		}
 
 	}

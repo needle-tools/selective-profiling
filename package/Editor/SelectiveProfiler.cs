@@ -264,7 +264,7 @@ namespace Needle.SelectiveProfiling
 
 		}
 		private static List<(MethodInfo method, int depth, MethodInfo source)> stepDeepProfileList = null;
-		private static int deepProfileStepIndex;
+		internal static int deepProfileStepIndex;
 
 		[MenuItem(MenuItems.Menu + nameof(EnableDeepProfilingDebug))]
 		private static void EnableDeepProfilingDebug() => DeepProfileDebuggingMode = true;
