@@ -21,3 +21,10 @@ MonoBehaviour:
   - MyNamespace.MySlowScript.SomeClassMethod
   - MyNamespace.MySlowScript.MethodWithOut
   - MyNamespace.MySlowScript.MethodWithGeneric
+  - MyNamespace.ComponentWithRaycasts.Update
+  - UnityEngine.Debug.Log
+  - UnityEngine.Vector3.get_zero
+  - UnityEngine.Vector3.get_up
+  - MyNamespace.RaycastExtensions.InverseTransformDir
+  - UnityEngine.LayerMask.GetMask
+  - UnityEngine.Physics.RaycastNonAlloc
