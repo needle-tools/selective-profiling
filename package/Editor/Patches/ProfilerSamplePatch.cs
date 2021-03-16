@@ -91,6 +91,7 @@ namespace Needle.SelectiveProfiling
 				if (!wrappers.TryGetValue(method, out var wrapper)) return _inst;
 				// var instructions = new List<CodeInstruction>(_inst);
 				var instructions = _inst as List<CodeInstruction> ?? _inst.ToList();
+				if (wrapper is MethodWrapper mr) mr.CurrentMethod = method;
 				wrapper.Apply(instructions, InsertBefore, InsertAfter);
 				return instructions;
 			}

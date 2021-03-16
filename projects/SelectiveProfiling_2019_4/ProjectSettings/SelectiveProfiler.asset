@@ -22,4 +22,8 @@ MonoBehaviour:
       PublicKeyToken=null
     Type: MyNamespace.ComponentWithRaycasts
     Method: Void Update()
+  - Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.ComponentWithRaycasts
+    Method: Boolean Compare()
   Muted: []

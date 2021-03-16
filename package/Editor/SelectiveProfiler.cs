@@ -62,7 +62,7 @@ namespace Needle.SelectiveProfiling
 				return;
 			}
 
-			if (settings.DebugLog) Debug.Log("Patch " + method);
+			// if (settings.DebugLog) Debug.Log("Patch " + method);
 			
 			var mi = new MethodInformation(method);
 			if (patches.TryGetValue(mi, out var existing))

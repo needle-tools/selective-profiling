@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -15,6 +16,8 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		private readonly Action<CodeInstruction, int> callback;
 		private readonly bool debugLog = false;
 		private readonly bool skipProfilerMethods = true;
+
+		[CanBeNull] public MethodBase CurrentMethod;
 
 		public MethodWrapper(InstructionsWrapper wrapper, Action<CodeInstruction, int> onInstruction, bool debugLog, bool skipProfilerMethods)
 		{
@@ -33,14 +36,15 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				var inst = instructions[index];
 
 				// if a method call loads variables make sure to insert code before variable loading
-				if (TranspilerUtils.LoadVarCodes.Contains(inst.opcode) || inst.opcode == OpCodes.Ldstr)
+				if (TranspilerUtils.LoadVarCodes.Contains(inst.opcode) || inst.opcode == OpCodes.Ldstr || inst.opcode == OpCodes.Ldobj || inst.IsLdarg() || inst.IsLdarga())
 				{
-					start = index;
+					if(start < 0)
+						start = index;
 				}
-
-				// make sure to insert sample after branching labels
+				
 				if (inst.Branches(out _) || inst.labels != null && inst.labels.Count > 0)
 				{
+					// make sure to insert sample after branching labels
 					start = index + 1;
 				}
 				// make sure to insert sample after end exception block
@@ -75,7 +79,10 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			}
 
 			if (debugLog)
-				Debug.Log(IL_Before + "\n\n----\n\n" + string.Join("\n", instructions) + "\n\n");
+			{
+				var prefix = CurrentMethod != null ? "<b>Transpiled</b> " + CurrentMethod.Name + "\n" : string.Empty;
+				Debug.Log(prefix + IL_Before + "\n\n----\n\n" + string.Join("\n", instructions) + "\n\n");
+			}
 		}
 	}
 }

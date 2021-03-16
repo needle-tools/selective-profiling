@@ -28,3 +28,7 @@ MonoBehaviour:
   - MyNamespace.RaycastExtensions.InverseTransformDir
   - UnityEngine.LayerMask.GetMask
   - UnityEngine.Physics.RaycastNonAlloc
+  - MyNamespace.ComponentWithRaycasts.Compare
+  - UnityEngine.Debug.Assert
+  - UnityEngine.Debug.get_unityLogger
+  - UnityEngine.Vector2.op_Equality
