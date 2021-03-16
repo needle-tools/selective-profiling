@@ -80,8 +80,8 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 			if (debugLog)
 			{
-				var prefix = CurrentMethod != null ? "<b>Transpiled</b> " + CurrentMethod.Name + "\n" : string.Empty;
-				Debug.Log(prefix + IL_Before + "\n\n----\n\n" + string.Join("\n", instructions) + "\n\n");
+				var prefix = CurrentMethod != null ? "<b>Transpiled</b> " + CurrentMethod.DeclaringType?.Name + "." + CurrentMethod.Name + "\n" : string.Empty;
+				Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, prefix + IL_Before + "\n\n----\n\n" + string.Join("\n", instructions) + "\n\n");
 			}
 		}
 	}

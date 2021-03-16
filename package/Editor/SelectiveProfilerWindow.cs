@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Needle.SelectiveProfiling
 {
@@ -46,6 +44,15 @@ namespace Needle.SelectiveProfiling
 			EditorGUILayout.LabelField("Selected Methods", EditorStyles.boldLabel);
 			DrawSavedMethods(settings);
 			DrawScopesList(settings);
+
+			if (SelectiveProfiler.DeepProfileDebuggingMode)
+			{
+				GUILayout.Space(10);
+				if (GUILayout.Button("Step Deep Profile"))
+				{
+					SelectiveProfiler.stepDeepProfile = true;
+				}
+			}
 			
 			GUILayout.Space(10);
 			EditorGUILayout.LabelField("Patches", EditorStyles.boldLabel);

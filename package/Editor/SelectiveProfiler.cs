@@ -42,16 +42,20 @@ namespace Needle.SelectiveProfiling
 			return InternalEnableProfilingAsync(method, save, enablePatch, method);
 		}
 
-		private static async Task InternalEnableProfilingAsync(MethodInfo method, bool save = true, bool enablePatch = true, MethodInfo source = null, int depth = 0)
+		private static async Task InternalEnableProfilingAsync(MethodInfo method,
+			bool save = true,
+			bool enablePatch = true,
+			MethodInfo source = null,
+			int depth = 0)
 		{
 			var settings = SelectiveProfilerSettings.instance;
 			if (!settings.Enabled) return;
-			
+
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
 			if (!method.HasMethodBody())
 			{
-				if(settings.DebugLog)
+				if (settings.DebugLog)
 					Debug.LogWarning("Method has no body: " + method);
 				return;
 			}
@@ -63,7 +67,7 @@ namespace Needle.SelectiveProfiling
 			}
 
 			// if (settings.DebugLog) Debug.Log("Patch " + method);
-			
+
 			var mi = new MethodInformation(method);
 			if (patches.TryGetValue(mi, out var existing))
 			{
@@ -74,7 +78,7 @@ namespace Needle.SelectiveProfiling
 
 				return;
 			}
-			
+
 			if (save)
 			{
 				settings.Add(mi);
@@ -103,7 +107,7 @@ namespace Needle.SelectiveProfiling
 			if (existing == null) return;
 			existing.Disable();
 		}
-		
+
 		internal static bool DebugLog => SelectiveProfilerSettings.instance.DebugLog;
 		internal static bool TranspilerShouldSkipCallsInProfilerType => true;
 
@@ -140,10 +144,10 @@ namespace Needle.SelectiveProfiling
 		{
 			EditorApplication.playModeStateChanged -= OnPlayModeChanged;
 			EditorApplication.playModeStateChanged += OnPlayModeChanged;
-			
+
 			SelectiveProfilerSettings.MethodStateChanged -= OnMethodChanged;
 			SelectiveProfilerSettings.MethodStateChanged += OnMethodChanged;
-			
+
 			SelectiveProfilerSettings.Cleared -= MethodsCleared;
 			SelectiveProfilerSettings.Cleared += MethodsCleared;
 
@@ -176,15 +180,19 @@ namespace Needle.SelectiveProfiling
 							EnableProfiling(method);
 						}
 					}
+
 					++handled;
-					if(handled >= 2) break;
+					if (handled >= 2) break;
 				}
 			}
+
+			if (DeepProfileDebuggingMode)
+				UpdateDeepProfileDebug();
 		}
 
 		private static void MethodsCleared()
 		{
-			foreach(var p in Patches)
+			foreach (var p in Patches)
 				p.Disable();
 		}
 
@@ -202,7 +210,7 @@ namespace Needle.SelectiveProfiling
 					PatchManager.UnregisterAndDisablePatch(patch.Value.Patch);
 			}
 		}
-		
+
 		private static readonly bool deepProfiling = SelectiveProfilerSettings.instance.DeepProfiling;
 		private static readonly HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
 
@@ -212,10 +220,11 @@ namespace Needle.SelectiveProfiling
 			if (method == null) return;
 			if (!method.HasMethodBody())
 			{
-				if(DebugLog)
+				if (DebugLog)
 					Debug.Log("Skip called method. No body: " + method);
 				return;
 			}
+
 			if (callsFound.Contains(method)) return;
 			// Debug.Log("FOUND " + method);
 			callsFound.Add(method);
@@ -225,13 +234,55 @@ namespace Needle.SelectiveProfiling
 		{
 			if (!deepProfiling) return;
 			if (callsFound.Count <= 0) return;
-			// Debug.Log("Apply deep profiling: " + callsFound.Count);
+
+
 			var local = callsFound.ToArray();
 			foreach (var method in local)
 			{
+				// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
+				if (DeepProfileDebuggingMode)
+				{
+					if (stepDeepProfileList == null) stepDeepProfileList = new List<(MethodInfo, int, MethodInfo)>(100);
+					if(!stepDeepProfileList.Any(e => e.method == method))
+						stepDeepProfileList.Add((method, depth, source));
+				}
 				// dont save nested calls
-				await InternalEnableProfilingAsync(method, false, true, source, depth);
+				else
+				{
+					await InternalEnableProfilingAsync(method, false, true, source, depth);
+				}
 			}
+		}
+
+
+		internal static bool stepDeepProfile;
+		private static List<(MethodInfo method, int depth, MethodInfo source)> stepDeepProfileList = null;
+		private static int deepProfileStepIndex;
+
+		[MenuItem(MenuItems.Menu + nameof(EnableDeepProfilingDebug))]
+		private static void EnableDeepProfilingDebug() => DeepProfileDebuggingMode = true;
+		[MenuItem(MenuItems.Menu + nameof(DisableDeepProfilingDebug))]
+		private static void DisableDeepProfilingDebug() => DeepProfileDebuggingMode = false;
+
+		internal static bool DeepProfileDebuggingMode
+		{
+			get => SessionState.GetBool(nameof(DeepProfileDebuggingMode), false);
+			set => SessionState.SetBool(nameof(DeepProfileDebuggingMode), value);
+		}
+
+		private static void UpdateDeepProfileDebug()
+		{
+			if (!stepDeepProfile) return;
+			stepDeepProfile = false;
+			if (stepDeepProfileList == null) return;
+			if (deepProfileStepIndex >= stepDeepProfileList.Count) return;
+
+			var method = stepDeepProfileList[deepProfileStepIndex];
+			Debug.Log("Step " + deepProfileStepIndex + " / " + stepDeepProfileList.Count + ", Depth: " + method.depth + ": " + method.method.FullDescription());
+			++deepProfileStepIndex;
+#pragma warning disable 4014
+			InternalEnableProfilingAsync(method.method, false, true,  method.source, method.depth);
+#pragma warning restore 4014
 		}
 	}
 }
