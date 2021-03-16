@@ -52,6 +52,13 @@ namespace Needle.SelectiveProfiling
 			return className + "." + Method;
 		}
 
+		public string ExtractNamespace()
+		{
+			var dotIndex = Type.LastIndexOf(".", StringComparison.Ordinal);
+			if (dotIndex >= 0) return Type.Substring(0, dotIndex);
+			return "global";
+		}
+
 		#region Equatable
 		public bool Equals(MethodInformation other)
 		{

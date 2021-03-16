@@ -54,15 +54,18 @@ namespace Needle.SelectiveProfiling
 
 			GUILayout.Space(5);
 			EditorGUILayout.LabelField("Data", EditorStyles.boldLabel); 
-			PatchesFoldout = EditorGUILayout.Foldout(PatchesFoldout, "Selected Methods [" + settings.AllSelectedMethodsCount + "]");
+			PatchesFoldout = EditorGUILayout.Foldout(PatchesFoldout, "Selected Methods [Active " + settings.MethodsList.Count + " of " + settings.AllSelectedMethodsCount + "]");
 			if (PatchesFoldout)
 			{
 				EditorGUI.indentLevel++;
 				SelectiveProfilerWindow.DrawSavedMethods(settings);
 				EditorGUI.indentLevel--;
 			}
+				
+			SelectiveProfilerWindow.DrawScopesList(settings);
 			
 			GUILayout.FlexibleSpace();
+			GUILayout.Space(10);
 			EditorGUILayout.BeginVertical();
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.FlexibleSpace();
