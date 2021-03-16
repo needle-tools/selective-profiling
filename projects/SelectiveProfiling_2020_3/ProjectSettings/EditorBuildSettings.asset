@@ -5,4 +5,6 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes: []
-  m_configObjects: {}
+  m_configObjects:
+    com.needle.xr.management.arsimulation_loader: {fileID: 11400000, guid: 17562e907f90ec94b8ad59a14631c9b5, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 70202355023da1b4e9bd446c382117a6, type: 2}

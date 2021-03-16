@@ -18,6 +18,24 @@ MonoBehaviour:
   MaxDepth: 3
   DebugLog: 1
   Methods:
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void OnValidate()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void Start()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void OnEnable()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void Update()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Boolean CheckMatchingSampleBuffer(UnityEngine.RaycastHit, System.Collections.Generic.IList`1[UnityEngine.Vector3])
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void OnDrawGizmosSelected()
   - Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.ComponentWithRaycasts
@@ -26,18 +44,10 @@ MonoBehaviour:
       PublicKeyToken=null
     Type: MyNamespace.ComponentWithRaycasts
     Method: Boolean Compare()
-  Muted:
-  - Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.EventSystems.EventSystem
-    Method: Void Update()
   - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.MySlowScript
-    Method: Void Update()
-  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void SomeClassMethod(SomeClass)
+    Method: Void CallingAnotherMethod()
   - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.MySlowScript
@@ -45,4 +55,12 @@ MonoBehaviour:
   - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.MySlowScript
-    Method: Void CallingAnotherMethod()
+    Method: Void SomeClassMethod(SomeClass)
+  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.MySlowScript
+    Method: Void Update()
+  - Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.EventSystem
+    Method: Void Update()
+  Muted: []
