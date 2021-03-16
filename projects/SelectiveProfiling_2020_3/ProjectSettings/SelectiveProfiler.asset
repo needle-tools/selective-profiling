@@ -21,6 +21,524 @@ MonoBehaviour:
   - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
     Method: Void Update()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: UnityEngine.Camera get_camera()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: Void set_camera(UnityEngine.Camera)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: UnityEngine.Transform get_trackablesParent()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: Void set_trackablesParent(UnityEngine.Transform)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: UnityEngine.Transform get_contentOffsetTransform()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: Void MakeContentAppearAt(UnityEngine.Transform, UnityEngine.Vector3,
+      UnityEngine.Quaternion)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: Void MakeContentAppearAt(UnityEngine.Transform, UnityEngine.Vector3)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: Void MakeContentAppearAt(UnityEngine.Transform, UnityEngine.Quaternion)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: Void Awake()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: UnityEngine.Pose GetCameraOriginPose()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: Void Update()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: Void OnValidate()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: UnityEngine.GameObject get_raycastPrefab()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Void set_raycastPrefab(UnityEngine.GameObject)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Boolean Raycast(UnityEngine.Vector2, System.Collections.Generic.List`1[UnityEngine.XR.ARFoundation.ARRaycastHit],
+      UnityEngine.XR.ARSubsystems.TrackableType)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Boolean Raycast(UnityEngine.Ray, System.Collections.Generic.List`1[UnityEngine.XR.ARFoundation.ARRaycastHit],
+      UnityEngine.XR.ARSubsystems.TrackableType)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: UnityEngine.XR.ARFoundation.ARRaycast AddRaycast(UnityEngine.Vector2,
+      Single)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Void RemoveRaycast(UnityEngine.XR.ARFoundation.ARRaycast)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: UnityEngine.GameObject GetPrefab()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Void TransformAndSortRaycastResults(UnityEngine.Transform, Unity.Collections.NativeArray`1[UnityEngine.XR.ARSubsystems.XRRaycastHit],
+      System.Collections.Generic.List`1[UnityEngine.XR.ARFoundation.ARRaycastHit],
+      UnityEngine.Vector3)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Void RegisterRaycaster(UnityEngine.XR.ARFoundation.IRaycaster)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Void UnregisterRaycaster(UnityEngine.XR.ARFoundation.IRaycaster)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Void OnAfterStart()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: UnityEngine.Ray ScreenPointToSessionSpaceRay(UnityEngine.Vector2)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Unity.Collections.NativeArray`1[UnityEngine.XR.ARSubsystems.XRRaycastHit]
+      RaycastViewportAsRay(UnityEngine.Vector2, UnityEngine.XR.ARSubsystems.TrackableType,
+      Unity.Collections.Allocator)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Unity.Collections.NativeArray`1[UnityEngine.XR.ARSubsystems.XRRaycastHit]
+      RaycastViewport(UnityEngine.Vector2, UnityEngine.XR.ARSubsystems.TrackableType,
+      Unity.Collections.Allocator)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Unity.Collections.NativeArray`1[UnityEngine.XR.ARSubsystems.XRRaycastHit]
+      RaycastRay(UnityEngine.Ray, UnityEngine.XR.ARSubsystems.TrackableType, Unity.Collections.Allocator)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Int32 RaycastHitComparer(UnityEngine.XR.ARFoundation.ARRaycastHit, UnityEngine.XR.ARFoundation.ARRaycastHit)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Unity.Collections.NativeArray`1[UnityEngine.XR.ARSubsystems.XRRaycastHit]
+      RaycastFallback(UnityEngine.Ray, UnityEngine.XR.ARSubsystems.TrackableType,
+      Unity.Collections.Allocator)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Boolean TransformAndDisposeNativeHitResults(Unity.Collections.NativeArray`1[UnityEngine.XR.ARSubsystems.XRRaycastHit],
+      System.Collections.Generic.List`1[UnityEngine.XR.ARFoundation.ARRaycastHit],
+      UnityEngine.Vector3)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: Void OnAfterSetSessionRelativeData(UnityEngine.XR.ARFoundation.ARRaycast,
+      UnityEngine.XR.ARSubsystems.XRRaycast)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARRaycastManager
+    Method: System.String get_gameObjectName()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: UnityEngine.GameObject get_planePrefab()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Void set_planePrefab(UnityEngine.GameObject)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: UnityEngine.XR.ARSubsystems.PlaneDetectionMode get_detectionMode()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Void set_detectionMode(UnityEngine.XR.ARSubsystems.PlaneDetectionMode)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: UnityEngine.XR.ARSubsystems.PlaneDetectionMode get_requestedDetectionMode()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Void set_requestedDetectionMode(UnityEngine.XR.ARSubsystems.PlaneDetectionMode)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: UnityEngine.XR.ARSubsystems.PlaneDetectionMode get_currentDetectionMode()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Void add_planesChanged(System.Action`1[UnityEngine.XR.ARFoundation.ARPlanesChangedEventArgs])
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Void remove_planesChanged(System.Action`1[UnityEngine.XR.ARFoundation.ARPlanesChangedEventArgs])
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: UnityEngine.XR.ARFoundation.ARPlane GetPlane(UnityEngine.XR.ARSubsystems.TrackableId)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Unity.Collections.NativeArray`1[UnityEngine.XR.ARSubsystems.XRRaycastHit]
+      Raycast(UnityEngine.Ray, UnityEngine.XR.ARSubsystems.TrackableType, Unity.Collections.Allocator)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Single GetCrossDirection(UnityEngine.Vector2, UnityEngine.Vector2)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Int32 WindingNumber(UnityEngine.Vector2, Unity.Collections.NativeArray`1[UnityEngine.Vector2])
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: UnityEngine.GameObject GetPrefab()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Void OnBeforeStart()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Void OnAfterSetSessionRelativeData(UnityEngine.XR.ARFoundation.ARPlane,
+      UnityEngine.XR.ARSubsystems.BoundedPlane)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Void OnTrackablesChanged(System.Collections.Generic.List`1[UnityEngine.XR.ARFoundation.ARPlane],
+      System.Collections.Generic.List`1[UnityEngine.XR.ARFoundation.ARPlane], System.Collections.Generic.List`1[UnityEngine.XR.ARFoundation.ARPlane])
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: System.String get_gameObjectName()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Void OnEnable()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneManager
+    Method: Void OnDisable()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.ExampleComponents.InstantiateAtRaycastHitExample
+    Method: Void OnValidate()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.ExampleComponents.InstantiateAtRaycastHitExample
+    Method: Void OnDisable()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.ExampleComponents.InstantiateAtRaycastHitExample
+    Method: Void DestroyCreatedInstances()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.ExampleComponents.InstantiateAtRaycastHitExample
+    Method: Void Update()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPoseDriver
+    Method: Void OnEnable()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPoseDriver
+    Method: Void OnDisable()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPoseDriver
+    Method: Void Update()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPoseDriver
+    Method: Void OnBeforeRender()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPoseDriver
+    Method: Void PerformUpdate()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPoseDriver
+    Method: Void OnInputDeviceConnected(UnityEngine.XR.InputDevice)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPoseDriver
+    Method: Void CheckConnectedDevice(UnityEngine.XR.InputDevice, Boolean)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPoseDriver
+    Method: NullablePose GetPoseData()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void OnBeforeSerialize()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void OnAfterDeserialize()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Boolean get_autoFocusRequested()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void set_autoFocusRequested(Boolean)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: UnityEngine.XR.ARSubsystems.CameraFocusMode get_focusMode()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void set_focusMode(UnityEngine.XR.ARSubsystems.CameraFocusMode)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Boolean get_autoFocusEnabled()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: UnityEngine.XR.ARFoundation.LightEstimation get_requestedLightEstimation()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void set_requestedLightEstimation(UnityEngine.XR.ARFoundation.LightEstimation)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: UnityEngine.XR.ARFoundation.LightEstimation get_currentLightEstimation()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: UnityEngine.XR.ARSubsystems.LightEstimationMode get_lightEstimationMode()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void set_lightEstimationMode(UnityEngine.XR.ARSubsystems.LightEstimationMode)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: UnityEngine.XR.ARFoundation.CameraFacingDirection get_requestedFacingDirection()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void set_requestedFacingDirection(UnityEngine.XR.ARFoundation.CameraFacingDirection)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: UnityEngine.XR.ARFoundation.CameraFacingDirection get_currentFacingDirection()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Boolean get_permissionGranted()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void add_frameReceived(System.Action`1[UnityEngine.XR.ARFoundation.ARCameraFrameEventArgs])
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void remove_frameReceived(System.Action`1[UnityEngine.XR.ARFoundation.ARCameraFrameEventArgs])
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: UnityEngine.Material get_cameraMaterial()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Boolean TryGetIntrinsics(UnityEngine.XR.ARSubsystems.XRCameraIntrinsics
+      ByRef)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Unity.Collections.NativeArray`1[UnityEngine.XR.ARSubsystems.XRCameraConfiguration]
+      GetConfigurations(Unity.Collections.Allocator)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: System.Nullable`1[UnityEngine.XR.ARSubsystems.XRCameraConfiguration]
+      get_currentConfiguration()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void set_currentConfiguration(System.Nullable`1[UnityEngine.XR.ARSubsystems.XRCameraConfiguration])
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Boolean TryGetLatestImage(UnityEngine.XR.ARSubsystems.XRCpuImage ByRef)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Boolean TryAcquireLatestCpuImage(UnityEngine.XR.ARSubsystems.XRCpuImage
+      ByRef)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void Awake()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void OnBeforeStart()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void OnDisable()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void Update()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void UpdateTexturesInfos()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void InvokeFrameReceivedEvent(UnityEngine.XR.ARSubsystems.XRCameraFrame)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: UnityEngine.Camera get_camera()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: UnityEngine.XR.ARFoundation.ARCameraManager get_cameraManager()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: UnityEngine.XR.ARFoundation.AROcclusionManager get_occlusionManager()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: UnityEngine.Material get_material()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Boolean get_useCustomMaterial()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void set_useCustomMaterial(Boolean)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: UnityEngine.Material get_customMaterial()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void set_customMaterial(UnityEngine.Material)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Boolean get_backgroundRenderingEnabled()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: UnityEngine.Material get_defaultMaterial()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Boolean get_useLegacyRenderPipeline()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void BeforeBackgroundRenderHandler(Int32)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Boolean get_shouldInvertCulling()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void Awake()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void OnEnable()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void OnDisable()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void EnableBackgroundRendering()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void DisableBackgroundRendering()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void DisableBackgroundClearFlags()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void RestoreBackgroundClearFlags()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: System.Collections.Generic.IEnumerable`1[UnityEngine.Rendering.CameraEvent]
+      get_legacyCameraEvents()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void ConfigureLegacyCommandBuffer(UnityEngine.Rendering.CommandBuffer)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void EnableLegacyRenderPipelineBackgroundRendering()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void DisableLegacyRenderPipelineBackgroundRendering()
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void AddBeforeBackgroundRenderHandler(UnityEngine.Rendering.CommandBuffer)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void OnCameraFrameReceived(UnityEngine.XR.ARFoundation.ARCameraFrameEventArgs)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void OnOcclusionFrameReceived(UnityEngine.XR.ARFoundation.AROcclusionFrameEventArgs)
+  - Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraBackground
+    Method: Void SetMaterialKeywords(UnityEngine.Material, System.Collections.Generic.List`1[System.String],
+      System.Collections.Generic.List`1[System.String])
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Boolean get_HasLightData()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Boolean ShouldSimulate(UnityEngine.XR.ARFoundation.LightEstimation)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Boolean EstimateAmbientIntensity()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Boolean EstimateAmbientColor()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Boolean EstimateAmbientSphericalHarmonics()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Boolean EstimateMainLightDirection()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Boolean EstimateMainLightIntensity()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: UnityEngine.Matrix4x4 get_ProjectionMatrix()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void set_ProjectionMatrix(UnityEngine.Matrix4x4)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Single get_MainLightIntensityLumen()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void set_MainLightIntensityLumen(Single)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: UnityEngine.Color get_MainLightColor()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void set_MainLightColor(UnityEngine.Color)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: UnityEngine.Vector3 get_MainLightDirection()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void set_MainLightDirection(UnityEngine.Vector3)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Single get_AverageBrightness()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void set_AverageBrightness(Single)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: UnityEngine.Color get_ColorCorrection()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void set_ColorCorrection(UnityEngine.Color)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Single get_ColorTemperature()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void set_ColorTemperature(Single)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Double get_ExposureDuration()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void set_ExposureDuration(Double)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Single get_ExposureOffset()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void set_ExposureOffset(Single)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void SetDefaultLightValues()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: UnityEngine.XR.ARFoundation.ARCameraManager get_ARCameraManager()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Boolean get_UseSphericalHarmonics()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void EnsureARCamera()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void Start()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void OnEnable()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void OnDisable()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void LateUpdate()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void UpdateProjectionMatrix()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void UpdateLightData()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Boolean TryUpdateLightDataFromOverride()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Boolean TryUpdateLightDataFromLightsInSimulation()
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: UnityEngine.Vector3 JitterDirection(UnityEngine.Vector3, Single)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void OnEnvironmentChanged(Needle.XR.ARSimulation.Simulation.SimulatedAREnvironmentManager)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Void UpdateLightsFromSimulatedEnvironment(UnityEngine.GameObject)
+  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARCameraFrameDataProvider
+    Method: Single <JitterDirection>g__RandomJitterAngle|74_0(<>c__DisplayClass74_0
+      ByRef)
   Muted:
   - Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: UnityEngine.EventSystems.EventSystem

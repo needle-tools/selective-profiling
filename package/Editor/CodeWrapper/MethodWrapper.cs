@@ -30,6 +30,18 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		public void Apply(IList<CodeInstruction> instructions, IList<CodeInstruction> before, IList<CodeInstruction> after)
 		{
 			var IL_Before = string.Join("\n", instructions);
+			
+			if (CurrentMethod != null)
+			{
+				var name = CurrentMethod.Name.ToLower();
+				if (name.Contains("equality") || name.Contains("normal") || name.Contains("inverse") || name.Contains("dir") || name.Contains("physics"))
+				{
+					Debug.DebugBreak();
+					// Debug.Log("--- -SKIP " + CurrentMethod + "\n" + IL_Before);
+					// return;
+				}
+			}
+			
 			var start = -1;
 			for (var index = 0; index < instructions.Count; index++)
 			{
