@@ -235,7 +235,6 @@ namespace Needle.SelectiveProfiling
 			if (!deepProfiling) return;
 			if (callsFound.Count <= 0) return;
 
-
 			var local = callsFound.ToArray();
 			foreach (var method in local)
 			{
@@ -254,6 +253,17 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
+		
+		internal static bool DevelopmentMode
+		{
+			get => SessionState.GetBool("SelectiveProfilerDevelopment", false);
+			set => SessionState.SetBool("SelectiveProfilerDevelopment", value);
+		}
+		[MenuItem(MenuItems.Menu + nameof(EnableDevelopmentMode))]
+		private static void EnableDevelopmentMode() => DevelopmentMode = true;
+		[MenuItem(MenuItems.Menu + nameof(DisableDevelopmentMode))]
+		private static void DisableDevelopmentMode() => DevelopmentMode = false;
+
 
 		internal static bool stepDeepProfile;
 
@@ -266,11 +276,6 @@ namespace Needle.SelectiveProfiling
 		private static List<(MethodInfo method, int depth, MethodInfo source)> stepDeepProfileList = null;
 		internal static int deepProfileStepIndex;
 
-		[MenuItem(MenuItems.Menu + nameof(EnableDeepProfilingDebug))]
-		private static void EnableDeepProfilingDebug() => DeepProfileDebuggingMode = true;
-		[MenuItem(MenuItems.Menu + nameof(DisableDeepProfilingDebug))]
-		private static void DisableDeepProfilingDebug() => DeepProfileDebuggingMode = false;
-
 		internal static bool DeepProfileDebuggingMode
 		{
 			get => SessionState.GetBool(nameof(DeepProfileDebuggingMode), false);
@@ -279,6 +284,7 @@ namespace Needle.SelectiveProfiling
 
 		private static void UpdateDeepProfileDebug()
 		{
+			if (!DevelopmentMode) return;
 			if (!stepDeepProfile) return;
 			stepDeepProfile = false;
 			if (stepDeepProfileList == null) return;

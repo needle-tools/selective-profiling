@@ -55,7 +55,7 @@ namespace Needle.SelectiveProfiling
 				}
 			});
 			
-			if (SelectiveProfiler.DeepProfileDebuggingMode)
+			if (SelectiveProfiler.DevelopmentMode)
 			{
 				Draw.WithHeaderFoldout("DebugOptionsFoldout", "Debug Options", () =>
 				{
