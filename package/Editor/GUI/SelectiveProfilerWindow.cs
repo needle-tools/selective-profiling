@@ -64,7 +64,9 @@ namespace Needle.SelectiveProfiling
 				}
 				else
 				{
-					scrollPatches = EditorGUILayout.BeginScrollView(scrollPatches);
+					var h = SelectiveProfiler.PatchesCount * EditorGUIUtility.singleLineHeight * 1.2f;
+					h = Mathf.Min(500, h);
+					scrollPatches = EditorGUILayout.BeginScrollView(scrollPatches, GUILayout.MinHeight(h));
 					Draw.DrawProfilerPatchesList();
 					EditorGUILayout.EndScrollView();
 				}
@@ -123,7 +125,7 @@ namespace Needle.SelectiveProfiling
 			if (GUILayout.Button("Refresh", GUILayout.Width(70))) 
 				requestRepaint = true;
 			EditorGUILayout.EndHorizontal();
-			
+
 			if (EditorGUI.EndChangeCheck())
 			{
 				allowDrawCount = defaultAllowDrawCount;
@@ -131,10 +133,10 @@ namespace Needle.SelectiveProfiling
 				cancelSearch?.Cancel();
 				cancelSearch = null;
 				requestRepaint = false;
-				if (filter.Length > 0 &&!string.IsNullOrWhiteSpace(filter))
+				if (filter.Length > 0 && !string.IsNullOrWhiteSpace(filter))
 				{
 					cancelSearch = new CancellationTokenSource();
-					TypesExplorer.TryFindMethod(filter,  entry =>
+					TypesExplorer.TryFindMethod(filter, entry =>
 					{
 						requestRepaint = true;
 						matches.Add(new Match()
@@ -146,13 +148,14 @@ namespace Needle.SelectiveProfiling
 					}, cancelSearch.Token);
 				}
 			}
-			
+
 			if (matches != null && !requestRepaint)
 			{
-				if(!string.IsNullOrWhiteSpace(filter))
+				if (!string.IsNullOrWhiteSpace(filter))
 					EditorGUILayout.LabelField("Matching " + matches.Count + " / " + TypesExplorer.MethodsCount);
-				scrollTypesList = EditorGUILayout.BeginScrollView(scrollTypesList);
-				for (var index = 0; index < matches.Count; index++) 
+				var h = Mathf.Min(matches.Count, 10) * EditorGUIUtility.singleLineHeight * 1.2f;
+				scrollTypesList = EditorGUILayout.BeginScrollView(scrollTypesList, GUILayout.MinHeight(h));
+				for (var index = 0; index < matches.Count; index++)
 				{
 					if (requestRepaint) break;
 					var match = matches[index];
@@ -163,6 +166,7 @@ namespace Needle.SelectiveProfiling
 						SelectiveProfilerSettings.instance.Add(new MethodInformation(match.Method));
 						// SelectiveProfiler.EnableProfiling(match.Method);
 					}
+
 					EditorGUILayout.EndHorizontal();
 					if (index > allowDrawCount)
 					{
@@ -175,6 +179,7 @@ namespace Needle.SelectiveProfiling
 						break;
 					}
 				}
+
 				EditorGUILayout.EndScrollView();
 			}
 		}
