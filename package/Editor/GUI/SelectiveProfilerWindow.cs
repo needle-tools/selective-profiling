@@ -26,6 +26,7 @@ namespace Needle.SelectiveProfiling
 		{
 			titleContent = new GUIContent("Selective Profiling");
 			EditorApplication.update += OnUpdate;
+			TypesExplorer.AllTypesLoaded += () => Repaint();
 		}
 		
 		private void OnDisable()

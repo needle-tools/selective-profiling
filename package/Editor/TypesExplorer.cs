@@ -33,6 +33,7 @@ namespace Needle.SelectiveProfiling
 	
 	internal static class TypesExplorer
 	{
+		public static event Action AllTypesLoaded;
 		
 		public static async void TryFindMethod(string filter, Action<FilterEntry<MethodInfo>> changed, CancellationToken cancel)
 		{
@@ -106,6 +107,7 @@ namespace Needle.SelectiveProfiling
 			Debug.Log("Found " + methodsList.Count + " methods");
 			isLoading = false;
 			typesLoaded = true;
+			AllTypesLoaded?.Invoke();
 		}
 
 
