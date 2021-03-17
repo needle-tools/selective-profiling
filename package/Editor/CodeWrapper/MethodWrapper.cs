@@ -34,9 +34,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			if (CurrentMethod != null)
 			{
 				var name = CurrentMethod.Name.ToLower();
-				if (name.Contains("equality") || name.Contains("normal") || name.Contains("inverse") || name.Contains("dir") || name.Contains("physics"))
+				if (name.Contains("get_origin"))// || name.Contains("normal") || name.Contains("inverse") || name.Contains("dir") || name.Contains("physics"))
 				{
-					Debug.DebugBreak();
+					// Debug.DebugBreak();
 					// Debug.Log("--- -SKIP " + CurrentMethod + "\n" + IL_Before);
 					// return;
 				}

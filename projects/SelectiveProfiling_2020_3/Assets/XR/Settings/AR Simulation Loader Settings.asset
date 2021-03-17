@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4131c50fb82c3f844a2b9846971716b1, type: 3}
   m_Name: AR Simulation Loader Settings
   m_EditorClassIdentifier: 
-  m_firstInstallation: 0
+  m_firstInstallation: 1
   m_StartAndStopSubsystems: 1
   m_addXRLoader: 1
   m_autoSceneSetup: 1
@@ -28,10 +28,12 @@ MonoBehaviour:
     DisableInputWithSelectedUI: 1
     Mode: 1
     Keys: 1
-    MovementSensitivity: 1
-    RotationSensitivity: 1
+    MovementSensitivity: 1.5
+    RotationSensitivity: 2.5
     Mouse: 1
     FocusKey: 102
     FocusAt: 1
     DefaultFocusDistance: 1.5
   m_allowAutoSetupLogging: 0
+  foldoutEnvironmentManagerSettings: 1
+  prefabGuidsWithSimulatedEnvironmentComponent: []

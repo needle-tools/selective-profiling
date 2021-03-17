@@ -86,8 +86,7 @@ namespace Needle.SelectiveProfiling
 				// 	Debug.Log("Will not inject into " + method);
 				// 	return _inst;
 				// }
-				
-				
+
 				if (!wrappers.TryGetValue(method, out var wrapper)) return _inst;
 				// var instructions = new List<CodeInstruction>(_inst);
 				var instructions = _inst as List<CodeInstruction> ?? _inst.ToList();
