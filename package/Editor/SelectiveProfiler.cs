@@ -76,6 +76,15 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 
+			void HandleDeepProfiling()
+			{
+				var nextLevel = ++depth;
+				if (nextLevel <= settings.MaxDepth)
+				{
+					HandleNestedCalls(method, nextLevel);
+				}
+			}
+
 			var mi = new MethodInformation(method);
 			if (patches.TryGetValue(mi, out var existingProfilingInfo))
 			{
@@ -84,6 +93,7 @@ namespace Needle.SelectiveProfiling
 				if (!existingProfilingInfo.IsActive)
 				{
 					await existingProfilingInfo.Enable();
+					HandleDeepProfiling();
 				}
 
 				return;
@@ -104,11 +114,7 @@ namespace Needle.SelectiveProfiling
 			if (enablePatch && !settings.IsMuted(mi))
 			{
 				await info.Enable();
-				var nextLevel = ++depth;
-				if (nextLevel <= settings.MaxDepth)
-				{
-					HandleNestedCalls(method, nextLevel);
-				}
+				HandleDeepProfiling();
 			}
 		}
 
@@ -182,7 +188,9 @@ namespace Needle.SelectiveProfiling
 					if (patches.TryGetValue(changed.method, out var patch))
 					{
 						if (patch.IsActive == shouldBeActive) continue;
-						if (shouldBeActive) patch.Enable();
+
+						if (shouldBeActive)
+							EnableProfiling(patch.Method);
 						else patch.Disable();
 					}
 					else if (shouldBeActive)

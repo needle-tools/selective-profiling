@@ -10,7 +10,9 @@
       "version": "file:../../../package",
       "depth": 0,
       "source": "local",
-      "dependencies": {}
+      "dependencies": {
+        "com.needle.editorpatching": "1.1.0-pre"
+      }
     },
     "com.needle.selective-profiling.extras": {
       "version": "file:../../needle.selective-profiling.extras",

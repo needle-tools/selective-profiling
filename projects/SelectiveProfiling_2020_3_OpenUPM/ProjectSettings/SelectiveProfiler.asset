@@ -18,15 +18,15 @@ MonoBehaviour:
   MaxDepth: 3
   DebugLog: 0
   Methods:
-  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void CallingAnotherMethod()
+  - Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Ray
+    Method: UnityEngine.Vector3 get_origin()
   Muted:
   - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.MySlowScript
+    Method: Void CallingAnotherMethod()
+  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.MySlowScript
     Method: Void Update()
-  - Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.Ray
-    Method: UnityEngine.Vector3 get_origin()
