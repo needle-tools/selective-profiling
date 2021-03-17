@@ -9,5 +9,8 @@
 		"email": "contact@needle.tools",
 		"url": "https://needle.tools"
 	  },
-	"category": "Libraries"
+	"category": "Libraries",
+	"dependencies": {
+		"com.needle.editorpatching" : "1.1.0-pre"
+	}
 }
