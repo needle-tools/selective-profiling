@@ -26,7 +26,7 @@ namespace Needle.SelectiveProfiling
 		{
 			titleContent = new GUIContent("Selective Profiling");
 			EditorApplication.update += OnUpdate;
-			TypesExplorer.AllTypesLoaded += () => Repaint();
+			TypesExplorer.AllTypesLoaded += Repaint;
 		}
 		
 		private void OnDisable()
@@ -74,7 +74,7 @@ namespace Needle.SelectiveProfiling
 			{
 				Draw.WithHeaderFoldout("DebugOptionsFoldout", "Debug Options", () =>
 				{
-					DrawDeepProfilingDebug();
+					DrawDeepProfilingDebug(settings);
 					EditorGUILayout.Space(10);
 					DrawTypesExplorer();
 				});
@@ -84,8 +84,9 @@ namespace Needle.SelectiveProfiling
 			EditorGUILayout.EndScrollView();
 		}
 
-		private static void DrawDeepProfilingDebug()
+		private static void DrawDeepProfilingDebug(SelectiveProfilerSettings settings)
 		{
+			EditorGUI.BeginDisabledGroup(!settings.DeepProfiling);
 			EditorGUILayout.LabelField("Deep Profiling", EditorStyles.boldLabel);
 			SelectiveProfiler.DeepProfileDebuggingMode = EditorGUILayout.Toggle("Use Stepping", SelectiveProfiler.DeepProfileDebuggingMode);
 			// GUILayout.BeginHorizontal();
@@ -97,6 +98,7 @@ namespace Needle.SelectiveProfiling
 			if (GUILayout.Button("Make Step", GUILayout.ExpandWidth(false))) 
 				SelectiveProfiler.stepDeepProfile = true;
 			GUILayout.EndHorizontal();
+			EditorGUI.EndDisabledGroup();
 		}
 
 		private static string filter
@@ -128,7 +130,6 @@ namespace Needle.SelectiveProfiling
 					cancelSearch = new CancellationTokenSource();
 					TypesExplorer.TryFindMethod(filter,  entry =>
 					{
-						// Debug.Log("Found");
 						requestRepaint = true;
 						matches.Add(new Match()
 						{

@@ -46,6 +46,7 @@ namespace Needle.SelectiveProfiling
 
 			filter = filter.ToLowerInvariant();
 			var filters = filter.Split(' ');
+			if (filter.Length <= 0) return;
 
 			try
 			{
@@ -65,10 +66,11 @@ namespace Needle.SelectiveProfiling
 							Debug.Log("cancelled");
 							break;
 						}
+
 						var entry = methodsList[index];
 						if (filters.All(entry.Filter.Contains))
 						{
-							changed?.Invoke(entry); 
+							changed?.Invoke(entry);
 						}
 					}
 				}, cancel);
@@ -77,7 +79,7 @@ namespace Needle.SelectiveProfiling
 			{
 				// Debug.Log("cancelled " + filter);
 			}
-			
+
 		}
 
 		public static int MethodsCount => methodsList.Count;
