@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,9 +42,9 @@ namespace Needle.SelectiveProfiling
 			}
 
 			EnsureTypesLoaded();
-			
 
 			filter = filter.ToLowerInvariant();
+			var filters = filter.Split(' ');
 
 			try
 			{
@@ -53,7 +54,7 @@ namespace Needle.SelectiveProfiling
 					{
 						if (cancel.IsCancellationRequested) break;
 						var entry = methodsList[index];
-						if (entry.Filter.Contains(filter))
+						if (filters.All(entry.Filter.Contains))
 						{
 							changed?.Invoke(entry);
 						}
