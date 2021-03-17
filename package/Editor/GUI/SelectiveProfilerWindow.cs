@@ -35,11 +35,9 @@ namespace Needle.SelectiveProfiling
 
 		private void OnUpdate()
 		{
-			if (requestRepaint)
-			{
-				requestRepaint = false;
-				Repaint();
-			}
+			if (!requestRepaint) return;
+			requestRepaint = false;
+			Repaint();
 		}
 
 		private Vector2 scroll, scrollPatches;
@@ -100,15 +98,23 @@ namespace Needle.SelectiveProfiling
 			GUILayout.EndHorizontal();
 		}
 
-		private static string filter;
+		private static string filter
+		{
+			get => SessionState.GetString(nameof(SelectiveProfilerWindow) + "Filter", string.Empty);
+			set => SessionState.SetString(nameof(SelectiveProfilerWindow) + "Filter", value);
+		}
 		private static readonly List<Match> matches = new List<Match>();
 		private static CancellationTokenSource cancelSearch;
 		private static bool requestRepaint;
 		
 		private static void DrawTypesExplorer()
 		{
-			EditorGUI.BeginChangeCheck();
-			filter = EditorGUILayout.TextField("Filter", filter);
+			EditorGUI.BeginChangeCheck();;
+			EditorGUILayout.BeginHorizontal();
+			filter = EditorGUILayout.TextField("Filter", filter, GUILayout.ExpandWidth(true));
+			if (GUILayout.Button("Refresh", GUILayout.Width(70))) 
+				requestRepaint = true;
+			EditorGUILayout.EndHorizontal();
 			
 			if (EditorGUI.EndChangeCheck())
 			{
@@ -119,8 +125,9 @@ namespace Needle.SelectiveProfiling
 				if (filter.Length > 1 &&!string.IsNullOrWhiteSpace(filter))
 				{
 					cancelSearch = new CancellationTokenSource();
-					TypesExplorer.TryFindMethodAsync(filter,  entry =>
+					TypesExplorer.TryFindMethod(filter,  entry =>
 					{
+						// Debug.Log("Found");
 						requestRepaint = true;
 						matches.Add(new Match()
 						{
@@ -135,12 +142,18 @@ namespace Needle.SelectiveProfiling
 			if (matches != null && !requestRepaint)
 			{
 				if(!string.IsNullOrWhiteSpace(filter))
-					EditorGUILayout.LabelField(matches.Count + " matches");
+					EditorGUILayout.LabelField("Matching " + matches.Count + " / " + TypesExplorer.MethodsCount);
 				for (var index = 0; index < matches.Count; index++)
 				{
 					if (requestRepaint) break;
-					var t = matches[index];
-					EditorGUILayout.LabelField(t.Key);
+					var match = matches[index];
+					EditorGUILayout.BeginHorizontal();
+					EditorGUILayout.LabelField(match.Key, GUILayout.ExpandWidth(true));
+					if (GUILayout.Button("Add", GUILayout.Width(50)))
+					{
+						SelectiveProfiler.EnableProfiling(match.Method);
+					}
+					EditorGUILayout.EndHorizontal();
 					if (index > 100)
 					{
 						EditorGUILayout.LabelField("Truncated: " + matches.Count);

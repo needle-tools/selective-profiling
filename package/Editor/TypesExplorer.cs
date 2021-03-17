@@ -34,7 +34,7 @@ namespace Needle.SelectiveProfiling
 	internal static class TypesExplorer
 	{
 		
-		public static async void TryFindMethodAsync(string filter, Action<FilterEntry<MethodInfo>> changed, CancellationToken cancel)
+		public static async void TryFindMethod(string filter, Action<FilterEntry<MethodInfo>> changed, CancellationToken cancel)
 		{
 			if (string.IsNullOrWhiteSpace(filter))
 			{
@@ -48,24 +48,38 @@ namespace Needle.SelectiveProfiling
 
 			try
 			{
-				await Task.Run(() =>
+				await Task.Run(async () =>
 				{
-					for (var index = 0; index < methodsList.Count; index++)
+					while (isLoading && methodsList.Count <= 0) await Task.Delay(100, cancel);
+					for (var index = 0; index < methodsList.Count || isLoading; index++)
 					{
-						if (cancel.IsCancellationRequested) break;
+						if (isLoading && index >= methodsList.Count)
+						{
+							await Task.Delay(100, cancel);
+							continue;
+						}
+
+						if (cancel.IsCancellationRequested)
+						{
+							Debug.Log("cancelled");
+							break;
+						}
 						var entry = methodsList[index];
 						if (filters.All(entry.Filter.Contains))
 						{
-							changed?.Invoke(entry);
+							changed?.Invoke(entry); 
 						}
 					}
-				}, cancel).ConfigureAwait(true);
+				}, cancel);
 			}
 			catch (TaskCanceledException)
 			{
-				Debug.Log("cancelled " + filter);
+				// Debug.Log("cancelled " + filter);
 			}
+			
 		}
+
+		public static int MethodsCount => methodsList.Count;
 		
 		private static async void EnsureTypesLoaded()
 		{
