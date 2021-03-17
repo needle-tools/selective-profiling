@@ -73,6 +73,9 @@ namespace Needle.SelectiveProfiling
 			private static void Postfix(Rect cellRect, TreeViewItem item)
 			{
 				if (Event.current.type == EventType.MouseDown) return;
+				var settings = SelectiveProfilerSettings.instance;
+				if (!settings.Enabled) return;
+				
 				var button = Event.current.button;
 				
 				if (m_FrameDataViewField == null) 
@@ -100,14 +103,25 @@ namespace Needle.SelectiveProfiling
 						if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
 						{
 							var menu = new GenericMenu();
-							var active = SelectiveProfiler.IsProfiling(methodInfo);
-							menu.AddItem(new GUIContent($"{(active ? "Remove" : "Add")} Profiling to \"{methodInfo.DeclaringType?.Name}.{methodInfo}\""), active, () =>
+							if (settings.Enabled)
 							{
-								Debug.Log(methodInfo.DeclaringType + " - " + methodInfo);
-								if(!active)
-									SelectiveProfiler.EnableProfiling(methodInfo);
-								else SelectiveProfiler.DisableProfiling(methodInfo);
-							});
+								var active = SelectiveProfiler.IsProfiling(methodInfo);
+								menu.AddItem(new GUIContent($"{(active ? "Remove" : "Add")} Profiling to \"{methodInfo.DeclaringType?.Name}.{methodInfo}\""), active, () =>
+								{
+									if (!active)
+									{
+										SelectiveProfiler.EnableProfiling(methodInfo);
+									}
+									else
+									{
+										SelectiveProfiler.DisableProfiling(methodInfo);
+									}
+								});
+							}
+							else
+							{
+								
+							}
 							menu.ShowAsContext();
 						}
 						else Debug.Log("Did not find type for " + name);

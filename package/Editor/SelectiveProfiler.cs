@@ -23,7 +23,7 @@ namespace Needle.SelectiveProfiling
 			if (!Application.isPlaying) return;
 			if (!SelectiveProfilerSettings.instance.ImmediateMode) return;
 #pragma warning disable 4014
-			InternalEnableProfilingAsync(method, false, true, method);
+			InternalEnableProfilingAsync(method, false, true, true, method);
 #pragma warning restore 4014
 		}
 
@@ -32,21 +32,23 @@ namespace Needle.SelectiveProfiling
 			return Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
-		public static async void EnableProfiling([NotNull] MethodInfo method, bool save = true, bool enablePatch = true)
+		public static async void EnableProfiling([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool enableIfMuted = false)
 		{
-			await EnableProfilingAsync(method, save, enablePatch);
+			await EnableProfilingAsync(method, save, enablePatch, enableIfMuted);
 		}
 
-		public static Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true, bool enablePatch = true)
+		public static Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool enableIfMuted = false)
 		{
-			return InternalEnableProfilingAsync(method, save, enablePatch);
+			return InternalEnableProfilingAsync(method, save, enablePatch, enableIfMuted);
 		}
 
 		private static async Task InternalEnableProfilingAsync(MethodInfo method,
 			bool save = true,
 			bool enablePatch = true,
+			bool enableIfMuted = false,
 			MethodInfo source = null,
-			int depth = 0)
+			int depth = 0
+		)
 		{
 			var settings = SelectiveProfilerSettings.instance;
 			if (!settings.Enabled) return;
@@ -111,10 +113,16 @@ namespace Needle.SelectiveProfiling
 			patches.Add(mi, info);
 			HandleCallstackRegistration(info);
 			PatchManager.RegisterPatch(patch);
-			if (enablePatch && !settings.IsMuted(mi))
+
+			if (enablePatch)
 			{
-				await info.Enable();
-				HandleDeepProfiling();
+				var muted = settings.IsMuted(mi);
+				if (muted) settings.SetMuted(mi, true);
+				if (!muted)
+				{
+					await info.Enable();
+					HandleDeepProfiling();
+				}
 			}
 		}
 
@@ -271,7 +279,7 @@ namespace Needle.SelectiveProfiling
 				else
 				{
 					Debug.Log(source + " calls " + method);
-					await InternalEnableProfilingAsync(method, false, true, source, depth);
+					await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 				}
 			}
 		}
@@ -317,7 +325,7 @@ namespace Needle.SelectiveProfiling
 			Debug.Log("Step " + deepProfileStepIndex + " / " + stepDeepProfileList.Count + ", Depth: " + method.depth + ": " + method.method.FullDescription());
 			++deepProfileStepIndex;
 #pragma warning disable 4014
-			InternalEnableProfilingAsync(method.method, false, true,  method.source, method.depth);
+			InternalEnableProfilingAsync(method.method, false, true,  false, method.source, method.depth);
 #pragma warning restore 4014
 			if (deepProfileStepIndex < stepDeepProfileToIndex)
 				stepDeepProfile = true;
