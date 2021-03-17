@@ -14,8 +14,8 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 	{
 		private readonly InstructionsWrapper wrapper;
 		private readonly Action<CodeInstruction, int> callback;
-		private readonly bool debugLog = false;
-		private readonly bool skipProfilerMethods = true;
+		private readonly bool debugLog;
+		private readonly bool skipProfilerMethods;
 
 		[CanBeNull] public MethodBase CurrentMethod;
 

@@ -115,6 +115,12 @@ namespace MyNamespace
     		{
     			Debug.Log("Another log");
     		}
+            TwoLevelsDeepCalledFromAnotherMethod();
     	}
+
+        private void TwoLevelsDeepCalledFromAnotherMethod()
+        {
+	        
+        }
     }
 }

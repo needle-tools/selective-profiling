@@ -69,6 +69,9 @@ namespace Needle.SelectiveProfiling
 					EditorGUILayout.EndScrollView();
 				}
 			});
+
+
+			Draw.WithHeaderFoldout("TypesExplorer", "Types Explorer", DrawTypesExplorer);
 			
 			if (SelectiveProfiler.DevelopmentMode)
 			{
@@ -76,7 +79,6 @@ namespace Needle.SelectiveProfiling
 				{
 					DrawDeepProfilingDebug(settings);
 					EditorGUILayout.Space(10);
-					DrawTypesExplorer();
 				});
 			}
 
@@ -109,6 +111,9 @@ namespace Needle.SelectiveProfiling
 		private static readonly List<Match> matches = new List<Match>();
 		private static CancellationTokenSource cancelSearch;
 		private static bool requestRepaint;
+		private static Vector2 scrollTypesList;
+		private static int allowDrawCount;
+		private static int defaultAllowDrawCount = 100;
 		
 		private static void DrawTypesExplorer()
 		{
@@ -121,11 +126,12 @@ namespace Needle.SelectiveProfiling
 			
 			if (EditorGUI.EndChangeCheck())
 			{
+				allowDrawCount = defaultAllowDrawCount;
 				matches.Clear();
 				cancelSearch?.Cancel();
 				cancelSearch = null;
 				requestRepaint = false;
-				if (filter.Length > 1 &&!string.IsNullOrWhiteSpace(filter))
+				if (filter.Length > 0 &&!string.IsNullOrWhiteSpace(filter))
 				{
 					cancelSearch = new CancellationTokenSource();
 					TypesExplorer.TryFindMethod(filter,  entry =>
@@ -145,23 +151,31 @@ namespace Needle.SelectiveProfiling
 			{
 				if(!string.IsNullOrWhiteSpace(filter))
 					EditorGUILayout.LabelField("Matching " + matches.Count + " / " + TypesExplorer.MethodsCount);
-				for (var index = 0; index < matches.Count; index++)
+				scrollTypesList = EditorGUILayout.BeginScrollView(scrollTypesList);
+				for (var index = 0; index < matches.Count; index++) 
 				{
 					if (requestRepaint) break;
 					var match = matches[index];
 					EditorGUILayout.BeginHorizontal();
-					EditorGUILayout.LabelField(match.Key, GUILayout.ExpandWidth(true));
+					EditorGUILayout.LabelField(new GUIContent(match.Key, match.Method.FullDescription()), GUILayout.ExpandWidth(true));
 					if (GUILayout.Button("Add", GUILayout.Width(50)))
 					{
-						SelectiveProfiler.EnableProfiling(match.Method);
+						SelectiveProfilerSettings.instance.Add(new MethodInformation(match.Method));
+						// SelectiveProfiler.EnableProfiling(match.Method);
 					}
 					EditorGUILayout.EndHorizontal();
-					if (index > 100)
+					if (index > allowDrawCount)
 					{
-						EditorGUILayout.LabelField("Truncated: " + matches.Count);
+						EditorGUILayout.LabelField("Truncated: " + matches.Count + ". Max: " + allowDrawCount, GUILayout.ExpandWidth(true));
+						EditorGUILayout.BeginHorizontal();
+						GUILayout.Space(18);
+						if (GUILayout.Button("Show More", GUILayout.Height(30)))
+							allowDrawCount *= 2;
+						EditorGUILayout.EndHorizontal();
 						break;
 					}
 				}
+				EditorGUILayout.EndScrollView();
 			}
 		}
 

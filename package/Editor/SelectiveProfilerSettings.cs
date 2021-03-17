@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -67,9 +69,12 @@ namespace Needle.SelectiveProfiling
 				removed = true;
 				break;
 			}
-			
-			if(removed)
+
+			if (removed)
+			{
+				Undo.RegisterCompleteObjectUndo(this, "Removed " + info);
 				NotifyStateChanged(info, false);
+			}
 		}
 
 		public void SetMuted(MethodInformation info, bool mute)
@@ -80,7 +85,7 @@ namespace Needle.SelectiveProfiling
 				if (Muted.Contains(info)) return;
 				Muted.Add(info);
 				Methods.RemoveAll(m => m.Equals(info));
-				MethodStateChanged?.Invoke(info, false);
+				MethodStateChanged?.Invoke(info, false); 
 			}
 			else Add(info);
 		}
@@ -96,6 +101,7 @@ namespace Needle.SelectiveProfiling
 		public IReadOnlyList<MethodInformation> MethodsList => Methods;
 		public IReadOnlyList<MethodInformation> MutedMethods => Muted;
 		public bool IsMuted(MethodInformation m) => Muted.Contains(m);
+		public bool IsEnabledExplicitly(MethodInformation mi) => MethodsList.Contains(mi);
 
 		public static event Action<MethodInformation, bool> MethodStateChanged;
 		public static event Action Cleared;

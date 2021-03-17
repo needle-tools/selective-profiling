@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using HarmonyLib;
 using UnityEditor.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -69,7 +70,7 @@ namespace Needle.SelectiveProfiling.Utils
 					var typeName = fullName.Substring(0, separatorIndex);
 					var type = assembly.GetType(typeName);
 					var methodName = fullName.Substring(separatorIndex + 1);
-					method = type?.GetMethod(methodName, (BindingFlags) ~0);
+					method = type?.GetMethod(methodName, AccessUtils.All);
 #if DEBUG_ACCESS
 					Debug.Log($"{name}\n{assembly}\n{fullName}\n{typeName}\n{type}");
 #endif
@@ -80,10 +81,10 @@ namespace Needle.SelectiveProfiling.Utils
 			method = null;
 			return false;
 		}
-		
-		
 
-		public const BindingFlags All = (BindingFlags) ~0;
+
+
+		public static BindingFlags All => AccessTools.all;
 
 		public enum Level
 		{

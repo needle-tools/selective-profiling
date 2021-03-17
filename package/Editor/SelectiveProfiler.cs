@@ -39,7 +39,7 @@ namespace Needle.SelectiveProfiling
 
 		public static Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true, bool enablePatch = true)
 		{
-			return InternalEnableProfilingAsync(method, save, enablePatch, method);
+			return InternalEnableProfilingAsync(method, save, enablePatch);
 		}
 
 		private static async Task InternalEnableProfilingAsync(MethodInfo method,
@@ -66,14 +66,24 @@ namespace Needle.SelectiveProfiling
 				return;
 			}
 
-			// if (settings.DebugLog) Debug.Log("Patch " + method);
+			void HandleCallstackRegistration(ProfilingInfo current)
+			{
+				if (source == null) return;
+				var sourcePatch = patches.FirstOrDefault(p => p.Value.Method == source).Value;
+				if (sourcePatch != null) 
+				{
+					current.AddCaller(sourcePatch);
+				}
+			}
 
 			var mi = new MethodInformation(method);
-			if (patches.TryGetValue(mi, out var existing))
+			if (patches.TryGetValue(mi, out var existingProfilingInfo))
 			{
-				if (!existing.IsActive)
+				HandleCallstackRegistration(existingProfilingInfo);
+				
+				if (!existingProfilingInfo.IsActive)
 				{
-					await existing.Enable();
+					await existingProfilingInfo.Enable();
 				}
 
 				return;
@@ -85,18 +95,20 @@ namespace Needle.SelectiveProfiling
 				settings.Save();
 			}
 
-			if (settings.IsMuted(mi)) return;
 
 			var patch = new ProfilerSamplePatch(method, null, " " + SamplePostfix);
 			var info = new ProfilingInfo(patch, method, mi);
 			patches.Add(mi, info);
+			HandleCallstackRegistration(info);
 			PatchManager.RegisterPatch(patch);
-			if (enablePatch)
+			if (enablePatch && !settings.IsMuted(mi))
 			{
-				await PatchManager.EnablePatch(patch);
+				await info.Enable();
 				var nextLevel = ++depth;
-				if (nextLevel < settings.MaxDepth)
+				if (nextLevel <= settings.MaxDepth)
+				{
 					HandleNestedCalls(method, nextLevel);
+				}
 			}
 		}
 
@@ -104,11 +116,11 @@ namespace Needle.SelectiveProfiling
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 			var existing = patches.Values.FirstOrDefault(e => e.Method == method);
-			if (existing == null) return;
-			existing.Disable();
+			existing?.Disable();
 		}
 
 		internal static bool DebugLog => SelectiveProfilerSettings.instance.DebugLog;
+
 		internal static bool TranspilerShouldSkipCallsInProfilerType => true;
 
 		internal static IEnumerable<ProfilingInfo> Patches => patches.Values;
@@ -177,6 +189,7 @@ namespace Needle.SelectiveProfiling
 					{
 						if (changed.method.TryResolveMethod(out var method))
 						{
+							Debug.Log("ENABLE " + method);
 							EnableProfiling(method);
 						}
 					}
@@ -235,7 +248,8 @@ namespace Needle.SelectiveProfiling
 			if (!deepProfiling) return;
 			if (callsFound.Count <= 0) return;
 
-			var local = callsFound.ToArray();
+			var local = callsFound.ToArray(); 
+			callsFound.Clear();
 			foreach (var method in local)
 			{
 				// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
@@ -248,6 +262,7 @@ namespace Needle.SelectiveProfiling
 				// dont save nested calls
 				else
 				{
+					Debug.Log(source + " calls " + method);
 					await InternalEnableProfilingAsync(method, false, true, source, depth);
 				}
 			}

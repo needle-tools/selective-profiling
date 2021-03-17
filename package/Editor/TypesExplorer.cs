@@ -45,8 +45,10 @@ namespace Needle.SelectiveProfiling
 			EnsureTypesLoaded();
 
 			filter = filter.ToLowerInvariant();
+			filter = filter.Trim();
+			var matchAll = filter == "*";
 			var filters = filter.Split(' ');
-			if (filter.Length <= 0) return;
+			if (!matchAll && filter.Length <= 0) return;
 
 			try
 			{
@@ -63,12 +65,11 @@ namespace Needle.SelectiveProfiling
 
 						if (cancel.IsCancellationRequested)
 						{
-							Debug.Log("cancelled");
 							break;
 						}
 
 						var entry = methodsList[index];
-						if (filters.All(entry.Filter.Contains))
+						if (matchAll || filters.All(entry.Filter.Contains))
 						{
 							changed?.Invoke(entry);
 						}
@@ -91,22 +92,33 @@ namespace Needle.SelectiveProfiling
 			isLoading = true;
 			await Task.Run(() =>
 			{
-				foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+				foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().AsParallel())
 				{
-					foreach (var type in assembly.GetTypes())
+					foreach (var type in assembly.GetTypes().AsParallel())
 					{
-						foreach (var member in type.GetMethods())
+						void RegisterMethodInfo(MethodInfo method)
 						{
-							var fullName = type.FullName + " " + member;
-							var name = member.DeclaringType?.Name + "." + member.Name;
-							var filter = fullName + " " + name + " " + member.FullDescription();
+							if (method == null) return;
+							var fullName = type.FullName + " " + method;
+							var name = method.DeclaringType?.Name + "." + method.Name;
+							var filter = fullName + " " + name + " " + method.FullDescription();
 							filter = filter.ToLowerInvariant();
-							methodsList.Add(new FilterEntry<MethodInfo>(filter, fullName, member, name));
+							if (string.IsNullOrEmpty(filter)) return;
+							methodsList.Add(new FilterEntry<MethodInfo>(filter, fullName, method, name));
 						}
+
+						foreach (var method in type.GetMethods(AccessTools.allDeclared)) 
+						{
+							RegisterMethodInfo(method);
+						}
+						
+						// foreach (var method in type.GetMethods((BindingFlags)~0))
+						// {
+						// 	RegisterMethodInfo(method);
+						// }
 					}
 				}
 			});
-			Debug.Log("Found " + methodsList.Count + " methods");
 			isLoading = false;
 			typesLoaded = true;
 			AllTypesLoaded?.Invoke();
