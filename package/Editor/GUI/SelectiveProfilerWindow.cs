@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using HarmonyLib;
 using UnityEditor;
 using UnityEngine;
@@ -24,6 +25,20 @@ namespace Needle.SelectiveProfiling
 		private void OnEnable()
 		{
 			titleContent = new GUIContent("Selective Profiling");
+			EditorApplication.update += OnUpdate;
+			TypesExplorer.AllTypesLoaded += Repaint;
+		}
+		
+		private void OnDisable()
+		{
+			EditorApplication.update -= OnUpdate;
+		}
+
+		private void OnUpdate()
+		{
+			if (!requestRepaint) return;
+			requestRepaint = false;
+			Repaint();
 		}
 
 		private Vector2 scroll, scrollPatches;
@@ -59,9 +74,9 @@ namespace Needle.SelectiveProfiling
 			{
 				Draw.WithHeaderFoldout("DebugOptionsFoldout", "Debug Options", () =>
 				{
-					DrawDeepProfilingDebug();
+					DrawDeepProfilingDebug(settings);
 					EditorGUILayout.Space(10);
-					DrawTypesExplorer(this);
+					DrawTypesExplorer();
 				});
 			}
 
@@ -69,8 +84,9 @@ namespace Needle.SelectiveProfiling
 			EditorGUILayout.EndScrollView();
 		}
 
-		private static void DrawDeepProfilingDebug()
+		private static void DrawDeepProfilingDebug(SelectiveProfilerSettings settings)
 		{
+			EditorGUI.BeginDisabledGroup(!settings.DeepProfiling);
 			EditorGUILayout.LabelField("Deep Profiling", EditorStyles.boldLabel);
 			SelectiveProfiler.DeepProfileDebuggingMode = EditorGUILayout.Toggle("Use Stepping", SelectiveProfiler.DeepProfileDebuggingMode);
 			// GUILayout.BeginHorizontal();
@@ -82,43 +98,69 @@ namespace Needle.SelectiveProfiling
 			if (GUILayout.Button("Make Step", GUILayout.ExpandWidth(false))) 
 				SelectiveProfiler.stepDeepProfile = true;
 			GUILayout.EndHorizontal();
+			EditorGUI.EndDisabledGroup();
 		}
 
-		private static string filter;
-		private static readonly List<MethodInfo> matches = new List<MethodInfo>();
-
-		private class SearchUpdated : IProgress<MethodInfo>
+		private static string filter
 		{
-			private EditorWindow window;
-			
-			public SearchUpdated(EditorWindow window)
-			{
-				this.window = window;
-			}
-			
-			public void Report(MethodInfo value)
-			{
-				Debug.Log(value);
-				window.Repaint();
-			}
+			get => SessionState.GetString(nameof(SelectiveProfilerWindow) + "Filter", string.Empty);
+			set => SessionState.SetString(nameof(SelectiveProfilerWindow) + "Filter", value);
 		}
+		private static readonly List<Match> matches = new List<Match>();
+		private static CancellationTokenSource cancelSearch;
+		private static bool requestRepaint;
 		
-		private static void DrawTypesExplorer(EditorWindow window)
+		private static void DrawTypesExplorer()
 		{
-			EditorGUI.BeginChangeCheck();
-			filter = EditorGUILayout.TextField("Filter", filter);
+			EditorGUI.BeginChangeCheck();;
+			EditorGUILayout.BeginHorizontal();
+			filter = EditorGUILayout.TextField("Filter", filter, GUILayout.ExpandWidth(true));
+			if (GUILayout.Button("Refresh", GUILayout.Width(70))) 
+				requestRepaint = true;
+			EditorGUILayout.EndHorizontal();
 			
 			if (EditorGUI.EndChangeCheck())
 			{
 				matches.Clear();
-				TypesExplorer.TryFindMethodAsync(filter, matches, new SearchUpdated(window));
+				cancelSearch?.Cancel();
+				cancelSearch = null;
+				requestRepaint = false;
+				if (filter.Length > 1 &&!string.IsNullOrWhiteSpace(filter))
+				{
+					cancelSearch = new CancellationTokenSource();
+					TypesExplorer.TryFindMethod(filter,  entry =>
+					{
+						requestRepaint = true;
+						matches.Add(new Match()
+						{
+							Key = entry.FullName,
+							Method = entry.Entry
+						});
+
+					}, cancelSearch.Token);
+				}
 			}
 			
-			if (matches != null)
+			if (matches != null && !requestRepaint)
 			{
-				foreach (var t in matches)
+				if(!string.IsNullOrWhiteSpace(filter))
+					EditorGUILayout.LabelField("Matching " + matches.Count + " / " + TypesExplorer.MethodsCount);
+				for (var index = 0; index < matches.Count; index++)
 				{
-					EditorGUILayout.LabelField(t.FullDescription());
+					if (requestRepaint) break;
+					var match = matches[index];
+					EditorGUILayout.BeginHorizontal();
+					EditorGUILayout.LabelField(match.Key, GUILayout.ExpandWidth(true));
+					if (GUILayout.Button("Add", GUILayout.Width(50)))
+					{
+						SelectiveProfiler.EnableProfiling(match.Method);
+					}
+					EditorGUILayout.EndHorizontal();
+					if (index > 100)
+					{
+						EditorGUILayout.LabelField("Truncated: " + matches.Count);
+						break;
+					}
 				}
 			}
 		}

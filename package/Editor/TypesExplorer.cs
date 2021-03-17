@@ -1,17 +1,41 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using HarmonyLib;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
+	internal struct Match
+	{
+		public string Key;
+		public MethodInfo Method;
+	}
+	
+	internal class FilterEntry<T>
+	{
+		public readonly string Filter;
+		public readonly string FullName;
+		public readonly string Name;
+		public readonly T Entry;
+
+		public FilterEntry(string filter, string fullName, T entry, string name)
+		{
+			Filter = filter;
+			FullName = fullName;
+			Name = name;
+			Entry = entry;
+		}
+	}
+	
 	internal static class TypesExplorer
 	{
-		public static async void TryFindMethodAsync(string filter, List<MethodInfo> matches, IProgress<MethodInfo> updated)
+		public static event Action AllTypesLoaded;
+		
+		public static async void TryFindMethod(string filter, Action<FilterEntry<MethodInfo>> changed, CancellationToken cancel)
 		{
 			if (string.IsNullOrWhiteSpace(filter))
 			{
@@ -19,25 +43,46 @@ namespace Needle.SelectiveProfiling
 			}
 
 			EnsureTypesLoaded();
-			if (!typesLoaded)
-			{
-				return;
-			}
 
 			filter = filter.ToLowerInvariant();
+			var filters = filter.Split(' ');
+			if (filter.Length <= 0) return;
 
-			await Task.Run(() =>
+			try
 			{
-				foreach (var kvp in methodsList.AsParallel())
+				await Task.Run(async () =>
 				{
-					if (kvp.Key.Contains(filter))
+					while (isLoading && methodsList.Count <= 0) await Task.Delay(100, cancel);
+					for (var index = 0; index < methodsList.Count || isLoading; index++)
 					{
-						matches.Add(kvp.Value);
-						updated.Report(kvp.Value);
+						if (isLoading && index >= methodsList.Count)
+						{
+							await Task.Delay(100, cancel);
+							continue;
+						}
+
+						if (cancel.IsCancellationRequested)
+						{
+							Debug.Log("cancelled");
+							break;
+						}
+
+						var entry = methodsList[index];
+						if (filters.All(entry.Filter.Contains))
+						{
+							changed?.Invoke(entry);
+						}
 					}
-				}
-			});
+				}, cancel);
+			}
+			catch (TaskCanceledException)
+			{
+				// Debug.Log("cancelled " + filter);
+			}
+
 		}
+
+		public static int MethodsCount => methodsList.Count;
 		
 		private static async void EnsureTypesLoaded()
 		{
@@ -48,15 +93,15 @@ namespace Needle.SelectiveProfiling
 			{
 				foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
 				{
-					var assemblyName = assembly.FullName;
 					foreach (var type in assembly.GetTypes())
 					{
 						foreach (var member in type.GetMethods())
 						{
-							var key = assemblyName + " " + type.FullName + " " + member.FullDescription();
-							key = key.ToLowerInvariant();
-							if(!methodsList.ContainsKey(key))
-								methodsList.Add(key, member);
+							var fullName = type.FullName + " " + member;
+							var name = member.DeclaringType?.Name + "." + member.Name;
+							var filter = fullName + " " + name + " " + member.FullDescription();
+							filter = filter.ToLowerInvariant();
+							methodsList.Add(new FilterEntry<MethodInfo>(filter, fullName, member, name));
 						}
 					}
 				}
@@ -64,9 +109,11 @@ namespace Needle.SelectiveProfiling
 			Debug.Log("Found " + methodsList.Count + " methods");
 			isLoading = false;
 			typesLoaded = true;
+			AllTypesLoaded?.Invoke();
 		}
 
+
 		private static bool typesLoaded, isLoading;
-		private static volatile Dictionary<string, MethodInfo> methodsList = new Dictionary<string, MethodInfo>();
+		private static volatile List<FilterEntry<MethodInfo>> methodsList = new List<FilterEntry<MethodInfo>>();
 	}
 }

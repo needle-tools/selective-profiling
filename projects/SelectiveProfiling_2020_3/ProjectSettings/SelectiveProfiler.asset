@@ -14,30 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Enabled: 1
   ImmediateMode: 0
-  DeepProfiling: 1
+  DeepProfiling: 0
   MaxDepth: 3
   DebugLog: 1
-  Methods: []
+  Methods:
+  - Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Ray
+    Method: UnityEngine.Vector3 get_origin()
   Muted:
   - Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: UnityEngine.EventSystems.EventSystem
     Method: Void Update()
-  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void Update()
-  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void SomeClassMethod(SomeClass)
-  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void MethodWithOut(Int32 ByRef, SomeClass ByRef)
-  - Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void CallingAnotherMethod()
   - Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.ComponentWithRaycasts
