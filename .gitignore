@@ -109,3 +109,5 @@ projects/*/UserSettings
 projects/**/builds-webgl
 projects/**/Assets/Samples
 projects/**/Assets/Samples.meta
+projects/**/Assets/harmony.log.txt
+projects/**/Assets/harmony.log.txt.meta
