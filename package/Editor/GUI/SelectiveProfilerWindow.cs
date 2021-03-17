@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using HarmonyLib;
 using UnityEditor;
 using UnityEngine;
@@ -24,6 +25,21 @@ namespace Needle.SelectiveProfiling
 		private void OnEnable()
 		{
 			titleContent = new GUIContent("Selective Profiling");
+			EditorApplication.update += OnUpdate;
+		}
+		
+		private void OnDisable()
+		{
+			EditorApplication.update -= OnUpdate;
+		}
+
+		private void OnUpdate()
+		{
+			if (requestRepaint)
+			{
+				requestRepaint = false;
+				Repaint();
+			}
 		}
 
 		private Vector2 scroll, scrollPatches;
@@ -61,7 +77,7 @@ namespace Needle.SelectiveProfiling
 				{
 					DrawDeepProfilingDebug();
 					EditorGUILayout.Space(10);
-					DrawTypesExplorer(this);
+					DrawTypesExplorer();
 				});
 			}
 
@@ -85,25 +101,11 @@ namespace Needle.SelectiveProfiling
 		}
 
 		private static string filter;
-		private static readonly List<MethodInfo> matches = new List<MethodInfo>();
-
-		private class SearchUpdated : IProgress<MethodInfo>
-		{
-			private EditorWindow window;
-			
-			public SearchUpdated(EditorWindow window)
-			{
-				this.window = window;
-			}
-			
-			public void Report(MethodInfo value)
-			{
-				Debug.Log(value);
-				window.Repaint();
-			}
-		}
+		private static readonly List<Match> matches = new List<Match>();
+		private static CancellationTokenSource cancelSearch;
+		private static bool requestRepaint;
 		
-		private static void DrawTypesExplorer(EditorWindow window)
+		private static void DrawTypesExplorer()
 		{
 			EditorGUI.BeginChangeCheck();
 			filter = EditorGUILayout.TextField("Filter", filter);
@@ -111,14 +113,39 @@ namespace Needle.SelectiveProfiling
 			if (EditorGUI.EndChangeCheck())
 			{
 				matches.Clear();
-				TypesExplorer.TryFindMethodAsync(filter, matches, new SearchUpdated(window));
+				cancelSearch?.Cancel();
+				cancelSearch = null;
+				requestRepaint = false;
+				if (filter.Length > 1 &&!string.IsNullOrWhiteSpace(filter))
+				{
+					cancelSearch = new CancellationTokenSource();
+					TypesExplorer.TryFindMethodAsync(filter,  entry =>
+					{
+						requestRepaint = true;
+						matches.Add(new Match()
+						{
+							Key = entry.FullName,
+							Method = entry.Entry
+						});
+
+					}, cancelSearch.Token);
+				}
 			}
 			
-			if (matches != null)
+			if (matches != null && !requestRepaint)
 			{
-				foreach (var t in matches)
+				if(!string.IsNullOrWhiteSpace(filter))
+					EditorGUILayout.LabelField(matches.Count + " matches");
+				for (var index = 0; index < matches.Count; index++)
 				{
-					EditorGUILayout.LabelField(t.FullDescription());
+					if (requestRepaint) break;
+					var t = matches[index];
+					EditorGUILayout.LabelField(t.Key);
+					if (index > 100)
+					{
+						EditorGUILayout.LabelField("Truncated: " + matches.Count);
+						break;
+					}
 				}
 			}
 		}

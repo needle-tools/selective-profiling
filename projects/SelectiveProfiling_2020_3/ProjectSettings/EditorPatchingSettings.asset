@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DebugLog: 1
   enabledPatchIds:
+  - Needle.SelectiveProfiling.RayPatch
   - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
   disabledPatchIds:
   - MyNamespace.MySlowScript.Update
@@ -68,3 +69,56 @@ MonoBehaviour:
   - UnityEngine.UnitySynchronizationContext.ExecuteTasks
   - UnityEngine.UnitySynchronizationContext.Exec
   - UnityEngine.UnitySynchronizationContext+WorkRequest.Invoke
+  - MyNamespace.ComponentWithRaycasts.Update
+  - UnityEngine.Vector3.get_zero
+  - UnityEngine.Vector3.get_up
+  - MyNamespace.RaycastExtensions.InverseTransformDir
+  - UnityEngine.LayerMask.GetMask
+  - UnityEngine.Physics.RaycastNonAlloc
+  - MyNamespace.ComponentWithRaycasts.Compare
+  - UnityEngine.Debug.Assert
+  - UnityEngine.Physics.get_defaultPhysicsScene
+  - UnityEngine.Ray.get_origin
+  - UnityEngine.Ray.get_direction
+  - UnityEngine.PhysicsScene.Raycast
+  - UnityEngine.Vector2.Equals
+  - Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration.OnValidate
+  - Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration.Start
+  - Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration.OnEnable
+  - Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration.OnDisable
+  - Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration.Update
+  - Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration.CheckMatchingSampleBuffer
+  - Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration.OnDrawGizmosSelected
+  - Needle.XR.ARSimulation.Simulation.SimulatedARElement.get_ArSessionOrigin
+  - Needle.XR.ARSimulation.Simulation.SimulatedARElement.TransformPoseToSessionSpaceIfNecessary
+  - Needle.XR.ARSimulation.Simulation.SimulatedARElement.Reset
+  - Needle.XR.ARSimulation.Simulation.SimulatedARElement.Awake
+  - Needle.XR.ARSimulation.Simulation.SimulatedARElement.OnDestroy
+  - Needle.XR.ARSimulation.Simulation.SimulatedARElement.OnBeforeCleanup
+  - Needle.XR.ARSimulation.Simulation.SimulatedARElement.OnPostCleanup
+  - UnityEngine.Mathf.Max
+  - Needle.XR.ARSimulation.Simulation.SceneSetup.TryGetARCamera
+  - UnityEngine.Screen.get_width
+  - UnityEngine.Screen.get_height
+  - UnityEngine.Camera.ScreenPointToRay
+  - UnityEngine.LayerMask.op_Implicit
+  - Needle.XR.ARSimulation.Simulation.SimulatedAREnvironmentManager.IncludeEnvironment
+  - Needle.XR.ARSimulation.RayHelper.ToWorld
+  - UnityEngine.RaycastHit.set_distance
+  - UnityEngine.RaycastHit.get_transform
+  - UnityEngine.Transform.get_parent
+  - UnityEngine.XR.ARFoundation.ARSessionOrigin.get_trackablesParent
+  - UnityEngine.RaycastHit.get_distance
+  - UnityEngine.XR.ARFoundation.ARSessionOrigin.get_camera
+  - Needle.XR.ARSimulation.Simulation.SceneSetup.get_Settings
+  - Needle.XR.ARSimulation.ARSimulationLoaderSettings.get_allowAutoSetupLogging
+  - Needle.XR.ARSimulation.Simulation.SceneSetup.ARSimulationIsEnabled
+  - UnityEngine.Camera.get_allCameras
+  - UnityEngine.ShimManager.get_screenShim
+  - UnityEngine.ScreenShimBase.get_width
+  - UnityEngine.ScreenShimBase.get_height
+  - Needle.XR.ARSimulation.Simulation.SimulatedAREnvironmentManager.get_SimulatedEnvironmentMask
+  - Needle.XR.ARSimulation.RayHelper.get_SessionSpace
+  - UnityEngine.Vector3.get_magnitude
+  - UnityEngine.Vector3.get_normalized
+  - UnityEngine.PhysicsScene.Internal_RaycastNonAlloc
