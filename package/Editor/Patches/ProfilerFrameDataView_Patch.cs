@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
@@ -8,6 +10,9 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEngine;
+using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
+
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedType.Global
 
@@ -17,13 +22,16 @@ namespace Needle.SelectiveProfiling
 	{
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
-			patches.Add(new SelectionPatch());
-			patches.Add(new Patch());
+			patches.Add(new Profiler_SelectionChanged());
+			patches.Add(new Profiler_CellGUI());
+			patches.Add(new ContextMenuPatches.GenericMenuPatch());
 		}
+
 
 		private static int selectedId = -1;
 
 		private static SelectiveProfilerSettings _settings;
+
 		private static SelectiveProfilerSettings Settings
 		{
 			get
@@ -33,7 +41,7 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private class SelectionPatch : EditorPatch
+		private class Profiler_SelectionChanged : EditorPatch
 		{
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
@@ -48,11 +56,10 @@ namespace Needle.SelectiveProfiling
 				if (selectedIds == null || selectedIds.Count <= 0) selectedId = -1;
 				else selectedId = selectedIds[0];
 			}
-
 		}
 
 
-		private class Patch : EditorPatch
+		private class Profiler_CellGUI : EditorPatch
 		{
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L647
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
@@ -60,12 +67,12 @@ namespace Needle.SelectiveProfiling
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
 				var m = t.GetMethod("CellGUI", (BindingFlags) ~0);
 				targetMethods.Add(m);
-				return Task.CompletedTask; 
+				return Task.CompletedTask;
 			}
 
 			private static FieldInfo m_FrameDataViewField;
 			private static HierarchyFrameDataView frameDataView;
-			
+
 			private static int lastPatchedInImmediateMode = -1;
 
 			// method https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L676
@@ -75,26 +82,26 @@ namespace Needle.SelectiveProfiling
 				if (Event.current.type == EventType.MouseDown) return;
 				var settings = SelectiveProfilerSettings.instance;
 				if (!settings.Enabled) return;
-				
+
 				var button = Event.current.button;
-				
-				if (m_FrameDataViewField == null) 
+
+				if (m_FrameDataViewField == null)
 					m_FrameDataViewField = item.GetType().GetField("m_FrameDataView", (BindingFlags) ~0);
 
-				if(frameDataView == null || !frameDataView.valid)
+				if (frameDataView == null || !frameDataView.valid)
 					frameDataView = m_FrameDataViewField?.GetValue(item) as HierarchyFrameDataView;
 
 				if (button == 0 && item.id == selectedId && Settings.ImmediateMode && selectedId != lastPatchedInImmediateMode)
 				{
 					lastPatchedInImmediateMode = selectedId;
 					var name = frameDataView?.GetItemName(item.id);
-					if (AccessUtils.TryGetMethodFromName(name, out var methodInfo)) 
+					if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
 						SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
 				}
-				
+
 				if (button != 1) return; // right
 
-				
+
 				if (cellRect.Contains(Event.current.mousePosition))
 				{
 					if (m_FrameDataViewField != null)
@@ -106,33 +113,33 @@ namespace Needle.SelectiveProfiling
 							if (settings.Enabled)
 							{
 								var active = SelectiveProfiler.IsProfiling(methodInfo);
-								menu.AddItem(new GUIContent($"{(active ? "Remove" : "Add")} Profiling to \"{methodInfo.DeclaringType?.Name}.{methodInfo}\""), active, () =>
-								{
-									if (!active)
+								menu.AddItem(new GUIContent($"{(active ? "Remove" : "Add")} Profiling to \"{methodInfo.DeclaringType?.Name}.{methodInfo}\""),
+									active, () =>
 									{
-										SelectiveProfiler.EnableProfiling(methodInfo, true, true, true);
-									}
-									else
-									{
-										SelectiveProfiler.DisableProfiling(methodInfo);
-									}
-								});
+										if (!active)
+										{
+											SelectiveProfiler.EnableProfiling(methodInfo, true, true, true);
+										}
+										else
+										{
+											SelectiveProfiler.DisableProfiling(methodInfo);
+										}
+									});
 							}
 							else
 							{
-								
 							}
+
 							menu.ShowAsContext();
 						}
 						else Debug.Log("Did not find type for " + name);
 					}
 				}
 			}
-			
+
 			// TODO: figure out how to use https://docs.unity3d.com/ScriptReference/Profiling.FrameDataView.ResolveMethodInfo.html
 			// https://docs.unity3d.com/ScriptReference/Profiling.HierarchyFrameDataView.GetItemCallstack.html
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerModules/CPUorGPUProfilerModule.cs#L194
-			
 		}
 	}
 }

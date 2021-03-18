@@ -15,8 +15,8 @@ MonoBehaviour:
   DebugLog: 0
   enabledPatchIds:
   - Needle.SelectiveProfiling.RayPatch
-  - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
   - needle.EditorPatching.HarmonyUnityDebugLogPatch
+  - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
   disabledPatchIds:
   - MyNamespace.MySlowScript.Update
   - UnityEngine.Debug.Log
@@ -125,3 +125,10 @@ MonoBehaviour:
   - UnityEngine.PhysicsScene.Internal_RaycastNonAlloc
   - UnityEngine.Debug.LogException
   - MyNamespace.MySlowScript.TwoLevelsDeepCalledFromAnotherMethod
+  - UnityEngine.Transform.InverseTransformDirection
+  - UnityEngine.Ray.set_direction
+  - UnityEngine.Vector3.Normalize
+  - UnityEngine.Vector3.Magnitude
+  - UnityEngine.Vector3.op_Division
+  - ComponentWithTryCatch.Update
+  - ComponentWithTryCatch.OtherMethod
