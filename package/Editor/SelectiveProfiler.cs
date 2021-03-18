@@ -59,6 +59,11 @@ namespace Needle.SelectiveProfiling
 			return InternalEnableProfilingAsync(method, save, enablePatch, enableIfMuted);
 		}
 
+		/// <summary>
+		/// by default only save when application is not playing
+		/// </summary>
+		internal static bool ShouldSave => !Application.isPlaying;
+
 		private static async Task InternalEnableProfilingAsync(MethodInfo method,
 			bool save = true,
 			bool enablePatch = true,

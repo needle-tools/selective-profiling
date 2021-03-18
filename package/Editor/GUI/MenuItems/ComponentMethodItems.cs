@@ -54,21 +54,20 @@ namespace Needle.SelectiveProfiling
 			}
 
 			// var onlyUser = AccessUtils.GetLevel(ctx.GetType()) == AccessUtils.Level.User;
-			var onlyUser = false;
+			const bool onlyUser = false;
 			AddMethods(ctx.GetType(), onlyUser, 1);
 
 		}
 
 		private static void OnSelected(MethodInfo method)
 		{
-			var prov = SelectiveProfiler.IsProfiling(method, true);
-			if (prov)
+			if (SelectiveProfiler.IsProfiling(method, true))
 			{
 				SelectiveProfiler.DisableProfiling(method);
 			}
 			else
 			{
-				SelectiveProfiler.EnableProfiling(method, !Application.isPlaying, true, true);
+				SelectiveProfiler.EnableProfiling(method, SelectiveProfiler.ShouldSave, true, true);
 			}
 		}
 	}
