@@ -17,11 +17,19 @@ namespace Needle.SelectiveProfiling
 	[FilePath("ProjectSettings/SelectiveProfiler.asset", FilePathAttribute.Location.ProjectFolder)]
 	internal class SelectiveProfilerSettings : ScriptableSingleton<SelectiveProfilerSettings>
 	{
+		[InitializeOnLoadMethod]
+		private static void Init()
+		{
+			if(!Application.isPlaying)
+				Undo.undoRedoPerformed += () => instance.Save();
+		}
+
+
 		internal void Save()
 		{
 			base.Save(true);
 		}
-
+		
 		public bool Enabled = true;
 		public bool ImmediateMode = false;
 		
@@ -35,6 +43,7 @@ namespace Needle.SelectiveProfiling
 		
 		public int MethodsCount => Methods.Count;
 
+		
 		public void Get(ref MethodInformation mi)
 		{
 			foreach (var m in Methods)
@@ -62,7 +71,7 @@ namespace Needle.SelectiveProfiling
 		{
 			var removed = false;
 			if(withUndo)
-				Undo.RegisterCompleteObjectUndo(this, "Removed " + info);
+				Undo.RegisterCompleteObjectUndo(this, "Removed " + info + "/" + this);
 
 			for (var index = Methods.Count - 1; index >= 0; index--)
 			{
