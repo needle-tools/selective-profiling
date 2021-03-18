@@ -11,9 +11,6 @@ namespace MyNamespace
 
 		void Update()
 		{
-			Profiler.BeginSample("test");
-			Debug.Log("Raycast");
-			Profiler.EndSample();
 			var ray = new Ray(Vector3.zero, Vector3.up).InverseTransformDir(transform);
 			var hits = Physics.RaycastNonAlloc(ray, _hitBuffer, 1000, LayerMask.GetMask("Default"));
 			Debug.Assert(Compare());
