@@ -28,23 +28,48 @@ namespace Needle.SelectiveProfiling
 				if (type == null) return;
 				if (onlyUser && AccessUtils.GetLevel(type) != AccessUtils.Level.User) return;
 
-				var methods = type.GetMethods(AccessUtils.AllDeclared);
 				const string separator = "/";
+				var basePath = "Profiling/" + type.Name + separator;
+				var methods = type.GetMethods(AccessUtils.AllDeclared);
+				
+				// var patchAll =
+				
 				foreach (var m in methods)
 				{
-					items.Add(new ContextItem("Profiling/" + type.Name + separator + m, () => OnSelected(m)));
+					var allowed = AccessUtils.AllowPatching(m, false, false);
+					if (!allowed) continue;
+					var name = m.ToString();
+					if(SelectiveProfiler.IsProfiling(m, true)) 
+						name += " ✓";
+					const int maxNameLength = 80;
+					if (name.Length > maxNameLength)
+						name = name.Substring(Mathf.Max(0, name.Length - maxNameLength));
+					var item = new ContextItem(basePath + name, () => OnSelected(m));
+					// ReSharper disable once ConditionIsAlwaysTrueOrFalse
+					item.Enabled = allowed;
+					items.Add(item);
 				}
 
 				AddMethods(type.BaseType, onlyUser, maxLevel, ++currentLevel);
 			}
 
-			AddMethods(ctx.GetType(), AccessUtils.GetLevel(ctx.GetType()) == AccessUtils.Level.User, 1);
+			// var onlyUser = AccessUtils.GetLevel(ctx.GetType()) == AccessUtils.Level.User;
+			var onlyUser = false;
+			AddMethods(ctx.GetType(), onlyUser, 1);
 
 		}
 
 		private static void OnSelected(MethodInfo method)
 		{
-			SelectiveProfiler.EnableProfiling(method);
+			var prov = SelectiveProfiler.IsProfiling(method, true);
+			if (prov)
+			{
+				SelectiveProfiler.DisableProfiling(method);
+			}
+			else
+			{
+				SelectiveProfiler.EnableProfiling(method, !Application.isPlaying, true, true);
+			}
 		}
 	}
 }

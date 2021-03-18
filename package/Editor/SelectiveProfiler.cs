@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
@@ -38,8 +39,13 @@ namespace Needle.SelectiveProfiling
 			EnableProfiling(method, false, true, true);
 		}
 
-		public static bool IsProfiling(MethodInfo method)
+		public static bool IsProfiling(MethodInfo method, bool onlySaved = false)
 		{
+			if (onlySaved)
+			{
+				var info = new MethodInformation(method);
+				return SelectiveProfilerSettings.instance.IsSavedAndEnabled(info);
+			}
 			return Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
@@ -66,15 +72,8 @@ namespace Needle.SelectiveProfiling
 
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
-			if (!method.HasMethodBody())
-			{
-				if (settings.DebugLog)
-					Debug.LogWarning("Method has no body: " + method);
-				return;
-			}
-
 			var isDeep = source != null && method != source;
-			if (AccessUtils.AllowPatching(method, isDeep, settings.DebugLog) == false)
+			if (!AccessUtils.AllowPatching(method, isDeep, settings.DebugLog))
 			{
 				return;
 			}
@@ -91,6 +90,7 @@ namespace Needle.SelectiveProfiling
 
 			void HandleDeepProfiling()
 			{
+				if (!Application.isPlaying) return;
 				var nextLevel = ++depth;
 				if (nextLevel < settings.MaxDepth)
 				{
@@ -99,7 +99,7 @@ namespace Needle.SelectiveProfiling
 			}
 
 			var mi = new MethodInformation(method);
-			settings.Get(ref mi);
+			settings.GetInstance(ref mi);
 			if (enableIfMuted) mi.Enabled = true;
 			
 			if (patches.TryGetValue(mi, out var existingProfilingInfo))
@@ -144,8 +144,17 @@ namespace Needle.SelectiveProfiling
 		public static void DisableProfiling(MethodInfo method)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
-			var existing = patches.Values.FirstOrDefault(e => e.Method == method);
-			existing?.Disable();
+			var mi = new MethodInformation(method);
+			if (patches.TryGetValue(mi, out var prof))
+			{
+				prof.Disable();
+			}
+
+			if (!Application.isPlaying)
+			{
+				SelectiveProfilerSettings.instance.GetInstance(ref mi);
+				SelectiveProfilerSettings.instance.UpdateState(mi, false, true);
+			}
 		}
 
 		internal static bool DebugLog => SelectiveProfilerSettings.instance.DebugLog;
@@ -286,13 +295,6 @@ namespace Needle.SelectiveProfiling
 		{
 			if (!deepProfiling) return;
 			if (method == null) return;
-			if (!method.HasMethodBody())
-			{
-				if (DebugLog)
-					Debug.Log("Skip called method. No body: " + method);
-				return;
-			}
-
 			if (callsFound.Contains(method)) return;
 			// Debug.Log("FOUND " + method);
 			callsFound.Add(method);

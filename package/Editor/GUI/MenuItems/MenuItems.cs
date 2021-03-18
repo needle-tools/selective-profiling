@@ -21,7 +21,7 @@ namespace Needle.SelectiveProfiling
 		private static void ProfileAllMethods(MenuCommand cmd)
 		{
 			foreach (var m in AccessUtils.GetMethods(cmd.context, AccessUtils.All, typeof(MonoBehaviour)))
-				SelectiveProfiler.EnableProfiling(m);
+				SelectiveProfiler.EnableProfiling(m, !Application.isPlaying);
 		}
 
 		[MenuItem(Component + "Disable: Profile All User Methods", true)]
@@ -44,7 +44,7 @@ namespace Needle.SelectiveProfiling
 			{
 				if (AccessUtils.GetLevel(comp.GetType()) != AccessUtils.Level.User) continue;
 				foreach (var m in AccessUtils.GetMethods(comp, AccessUtils.All, typeof(MonoBehaviour)))
-					SelectiveProfiler.EnableProfiling(m);
+					SelectiveProfiler.EnableProfiling(m, !Application.isPlaying);
 			}
 		}
 
@@ -62,11 +62,11 @@ namespace Needle.SelectiveProfiling
 		}
 		
 		
-		[MenuItem("CONTEXT/MonoImporter/Profile")]
-		private static void Profile(MenuCommand command)
-		{
-			var importer = command.context as AssetImporter;
-			Debug.Log("doing nothing yet " +  importer?.assetPath);
-		}
+		// [MenuItem("CONTEXT/MonoImporter/Profile")]
+		// private static void Profile(MenuCommand command)
+		// {
+		// 	var importer = command.context as AssetImporter;
+		// 	Debug.Log("doing nothing yet " +  importer?.assetPath);
+		// }
 	}
 }

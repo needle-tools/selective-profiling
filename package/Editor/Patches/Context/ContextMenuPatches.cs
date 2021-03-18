@@ -21,7 +21,6 @@ namespace Needle.SelectiveProfiling
 
 		public static void RegisterProvider(IContextMenuItemProvider prov)
 		{
-			Debug.Log("register " + prov);
 			if (!itemProviders.Contains(prov))
 				itemProviders.Add(prov);
 		}
@@ -55,8 +54,6 @@ namespace Needle.SelectiveProfiling
 				enabled.Clear();
 				separator.Clear();
 				items.Clear();
-
-				Debug.Log("Test");
 				
 				// collect items
 				foreach (var prov in itemProviders)

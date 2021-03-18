@@ -44,7 +44,7 @@ namespace Needle.SelectiveProfiling
 		public int MethodsCount => Methods.Count;
 
 		
-		public void Get(ref MethodInformation mi)
+		public void GetInstance(ref MethodInformation mi)
 		{
 			foreach (var m in Methods)
 			{
@@ -99,6 +99,12 @@ namespace Needle.SelectiveProfiling
 		public void SetMuted(MethodInformation info, bool mute, bool withUndo = true)
 		{
 			UpdateState(info, !mute, withUndo);
+		}
+
+		public bool IsSavedAndEnabled(MethodInformation mi)
+		{
+			var m = Methods.FirstOrDefault(entry => entry.Equals(mi));
+			return m?.Enabled ?? false;
 		}
 
 		public void ClearAll()

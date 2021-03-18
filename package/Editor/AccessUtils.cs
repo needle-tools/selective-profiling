@@ -156,6 +156,13 @@ namespace Needle.SelectiveProfiling.Utils
 				return method.ToString();
 			}
 
+			if (!method.HasMethodBody())
+			{
+				if (debugLog)
+					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Method has no body: " + GetMethodLogName());
+				return false;
+			}
+
 			if (method.DeclaringType == typeof(Profiler))
 			{
 				if(debugLog)
