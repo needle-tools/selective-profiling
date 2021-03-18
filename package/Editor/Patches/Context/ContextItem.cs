@@ -5,15 +5,13 @@ namespace Needle.SelectiveProfiling
 	internal class ContextItem
 	{
 		public string Path;
-		public bool Separator;
-		public bool Enabled;
 		public Action Selected;
+		public bool Separator = false;
+		public bool Enabled = true;
 
-		public ContextItem(string path, bool separator, bool enabled, Action selected)
+		public ContextItem(string path, Action selected)
 		{
 			Path = path;
-			Separator = separator;
-			Enabled = enabled;
 			Selected = selected;
 		}
 	}

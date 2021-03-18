@@ -17,7 +17,6 @@ MonoBehaviour:
   - Needle.SelectiveProfiling.RayPatch
   - needle.EditorPatching.HarmonyUnityDebugLogPatch
   - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
-  - Needle.SelectiveProfiling.ContextMenuPatches
   disabledPatchIds:
   - MyNamespace.MySlowScript.Update
   - UnityEngine.Debug.Log

@@ -22,3 +22,8 @@ MonoBehaviour:
     Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: UnityEngine.Ray
     Method: UnityEngine.Vector3 get_origin()
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: ComponentWithTryCatch
+    Method: Void Update()
