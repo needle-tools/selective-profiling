@@ -89,7 +89,7 @@ namespace Needle.SelectiveProfiling
 					lastPatchedInImmediateMode = selectedId;
 					var name = frameDataView?.GetItemName(item.id);
 					if (AccessUtils.TryGetMethodFromName(name, out var methodInfo)) 
-						SelectiveProfiler.AddToAutoProfiling(methodInfo);
+						SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
 				}
 				
 				if (button != 1) return; // right

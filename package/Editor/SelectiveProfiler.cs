@@ -19,14 +19,23 @@ namespace Needle.SelectiveProfiling
 	{
 		public const string SamplePostfix = "[needle]";
 
-		internal static void AddToAutoProfiling(MethodInfo method)
+		// private static MethodInfo previouslySelectedImmediateProfilingMethod;
+
+		internal static void SelectedForImmediateProfiling(MethodInfo method)
 		{
 			if (method == null) return;
 			if (!Application.isPlaying) return;
 			if (!SelectiveProfilerSettings.instance.ImmediateMode) return;
-#pragma warning disable 4014
-			InternalEnableProfilingAsync(method, false, true, true, method);
-#pragma warning restore 4014
+			// if (previouslySelectedImmediateProfilingMethod != null && previouslySelectedImmediateProfilingMethod != method)
+			// {
+			// 	var mi = new MethodInformation(previouslySelectedImmediateProfilingMethod);
+			// 	if (!SelectiveProfilerSettings.instance.IsEnabledExplicitly(mi))
+			// 	{
+			// 		DisableProfiling(previouslySelectedImmediateProfilingMethod);
+			// 	}
+			// }
+			// previouslySelectedImmediateProfilingMethod = method;
+			EnableProfiling(method, false, true, true);
 		}
 
 		public static bool IsProfiling(MethodInfo method)
