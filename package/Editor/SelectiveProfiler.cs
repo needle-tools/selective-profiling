@@ -95,6 +95,7 @@ namespace Needle.SelectiveProfiling
 			
 			if (patches.TryGetValue(mi, out var existingProfilingInfo))
 			{
+				existingProfilingInfo.MethodInformation = mi;
 				HandleCallstackRegistration(existingProfilingInfo);
 				
 				if (!existingProfilingInfo.IsActive)
@@ -198,6 +199,17 @@ namespace Needle.SelectiveProfiling
 
 			EditorApplication.update -= OnEditorUpdate;
 			EditorApplication.update += OnEditorUpdate;
+
+			var settings = SelectiveProfilerSettings.instance;
+			if (settings.Enabled)
+			{
+				if (!PatchManager.IsActive(typeof(ProfilerFrameDataView_Patch).FullName))
+				{
+					if(DebugLog)
+						Debug.Log("Enabled profiler window patch");
+					PatchManager.EnablePatch(typeof(ProfilerFrameDataView_Patch)); 
+				}
+			}
 		}
 
 		private static readonly List<(MethodInformation method, bool state)> stateChangedList = new List<(MethodInformation, bool)>();

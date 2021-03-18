@@ -13,7 +13,7 @@ namespace Needle.SelectiveProfiling
 	{
 		public readonly EditorPatchProvider Patch;
 		public readonly MethodInfo Method;
-		public readonly MethodInformation MethodInformation;
+		public MethodInformation MethodInformation;
 
 		public bool IsActive => Patch != null && PatchManager.IsActive(Patch.ID());
 		internal string Identifier => Method?.GetMethodIdentifier();
