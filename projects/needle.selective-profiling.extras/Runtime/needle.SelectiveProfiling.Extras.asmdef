@@ -1,3 +1,17 @@
 {
-	"name": "needle.SelectiveProfiling.Extras"
+    "name": "needle.SelectiveProfiling.Extras",
+    "rootNamespace": "",
+    "references": [
+        "GUID:336404f647c61ce4db3b999a77d5db23",
+        "GUID:d82d2cfcf1be6184f855c27ef2ce89eb"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
