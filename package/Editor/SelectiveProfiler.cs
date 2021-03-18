@@ -81,7 +81,7 @@ namespace Needle.SelectiveProfiling
 			void HandleDeepProfiling()
 			{
 				var nextLevel = ++depth;
-				if (nextLevel <= settings.MaxDepth)
+				if (nextLevel < settings.MaxDepth)
 				{
 					HandleNestedCalls(method, nextLevel);
 				}

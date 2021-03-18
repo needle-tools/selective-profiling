@@ -7,20 +7,6 @@ namespace Needle.SelectiveProfiling
 {
 	internal static class Draw
 	{
-		private static GUIStyle _disabledLabel;
-		private static GUIStyle disabledLabel
-		{
-			get
-			{
-				if (_disabledLabel == null)
-				{
-					_disabledLabel = new GUIStyle(EditorStyles.label);
-					_disabledLabel.normal.textColor = Color.gray;
-					_disabledLabel.name = nameof(disabledLabel);
-				}
-				return _disabledLabel;
-			}
-		}
 		
 		public static bool WithHeaderFoldout(string foldoutStateName, string headerName, Action draw, bool defaultFoldoutState = false, int afterWhenOpen = 5)
 		{
@@ -38,6 +24,7 @@ namespace Needle.SelectiveProfiling
 			return foldout;
 		}
 
+		
 		private static readonly Dictionary<string, List<MethodInformation>> scopes = new Dictionary<string, List<MethodInformation>>();
 
 		public static void ScopesList(SelectiveProfilerSettings settings)
@@ -81,11 +68,17 @@ namespace Needle.SelectiveProfiling
 				{
 					var scope = kvp.Key;
 					EditorGUILayout.BeginHorizontal();
-					var show = EditorGUILayout.Foldout(GetFoldout(scope), scope);
-					if (GUILayout.Button("Mute", GUILayout.Width(60)))
-						SetMuted(kvp.Value, true);
-					if (GUILayout.Button("Unmute", GUILayout.Width(70)))
-						SetMuted(kvp.Value, false);
+					var show = EditorGUILayout.Foldout(GetFoldout(scope), scope,  GUIStyles.BoldFoldout);
+					if (GUILayout.Button("Enable all", GUILayout.Width(80)))
+						SetState(kvp.Value, true, scope);
+					if (GUILayout.Button("Disable all", GUILayout.Width(80)))
+						SetState(kvp.Value, false, scope);
+					if (GUILayout.Button("Remove all", GUILayout.Width(80)))
+					{
+						settings.RegisterUndo("Remove all in " + scope);
+						foreach (var entry in kvp.Value)
+							settings.Remove(entry, false);
+					}
 					EditorGUILayout.EndHorizontal();
 					SetFoldout(scope, show);
 					if (show)
@@ -94,24 +87,25 @@ namespace Needle.SelectiveProfiling
 						var list = kvp.Value;
 						foreach (var entry in list)
 						{
-							// EditorGUILayout.BeginHorizontal();
-							EditorGUILayout.LabelField(new GUIContent(entry.ClassWithMethod(), entry.MethodIdentifier()), GUILayout.ExpandWidth(true));
-							// if(GUILayout.Button("Mute", GUILayout.Width(60)))
-							// 	settings.SetMuted(entry, true);
-							// if(GUILayout.Button("Unmute", GUILayout.Width(70)))
-							// 	settings.SetMuted(entry, false);
-							// EditorGUILayout.EndHorizontal();
+							EditorGUILayout.BeginHorizontal();
+							var state = EditorGUILayout.ToggleLeft(new GUIContent(entry.ClassWithMethod(), entry.MethodIdentifier()), entry.Enabled,
+								GUIStyles.Label(entry.Enabled), GUILayout.ExpandWidth(true));
+							if (state != entry.Enabled) settings.UpdateState(entry, state, true);
+							EditorGUILayout.EndHorizontal();
 						}
 
 						EditorGUI.indentLevel--;
 					}
+
+					GUILayout.Space(5);
 				}
 
 				EditorGUI.indentLevel--;
 
-				void SetMuted(IList<MethodInformation> list, bool muted)
+				void SetState(IEnumerable<MethodInformation> list, bool state, string scope)
 				{
-					foreach (var e in list) settings.SetMuted(e, muted);
+					settings.RegisterUndo((state ? "Enable" : "Disable") + " " + scope);
+					foreach (var e in list) settings.UpdateState(e, state, false);
 				}
 			}
 		}
@@ -138,17 +132,20 @@ namespace Needle.SelectiveProfiling
 				foldout = EditorGUILayout.Foldout(foldout, label + " [" + list.Count + "]");
 				GUILayout.FlexibleSpace();
 				EditorGUI.BeginDisabledGroup(list.Count <= 0);
-				var toggleMuteAll = GUILayout.Button((activeList ? "Disable all" : "Unmute all"), GUILayout.Width(80));
+				var enableAll = GUILayout.Button("Enable all", GUILayout.Width(80));
+				var muteAll = GUILayout.Button("Disable all", GUILayout.Width(80));
 				var removeAll = GUILayout.Button("Remove all", GUILayout.Width(80));
 				EditorGUI.EndDisabledGroup();
 				EditorGUILayout.EndHorizontal();
 
-				if (toggleMuteAll || removeAll)
+				if (muteAll || removeAll || enableAll)
 				{
 					for (var index = list.Count - 1; index >= 0; index--)
 					{
 						if (removeAll) removeList.Add(list[index]);
-						else if (toggleMuteAll) settings.SetMuted(list[index], activeList);
+						else if (enableAll) settings.SetMuted(list[index], false);
+						// ReSharper disable once ConditionIsAlwaysTrueOrFalse
+						else if (muteAll) settings.SetMuted(list[index], true);
 					}
 
 					ApplyRemoveList();
@@ -163,7 +160,7 @@ namespace Needle.SelectiveProfiling
 						EditorGUILayout.BeginHorizontal();
 						EditorGUI.BeginDisabledGroup(!activeList);
 						var muted = !m.Enabled;
-						var style = muted ? disabledLabel : EditorStyles.label;
+						var style = GUIStyles.Label(m.Enabled);
 						EditorGUILayout.LabelField(new GUIContent(m.ClassWithMethod(), m.MethodIdentifier()), style, GUILayout.ExpandWidth(true));
 						EditorGUI.EndDisabledGroup();
 						if (GUILayout.Button(muted ? "Enable" : "Disable", GUILayout.Width(60)))
@@ -198,10 +195,14 @@ namespace Needle.SelectiveProfiling
 				if (!active)
 				{
 					if (GUILayout.Button("Enable", GUILayout.Width(80)))
-						p.Enable();
+					{
+						p.Enable(true);
+					}
 				}
 				else if (GUILayout.Button("Disable", GUILayout.Width(80)))
+				{
 					p.Disable();
+				}
 
 				EditorGUILayout.EndHorizontal();
 			}

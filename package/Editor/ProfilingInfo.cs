@@ -28,10 +28,11 @@ namespace Needle.SelectiveProfiling
 			this.MethodInformation = mi;
 		}
 
-		public Task Enable()
+		public Task Enable(bool force = false)
 		{
-			if (!MethodInformation.Enabled)
+			if (!force && !MethodInformation.Enabled)
 				return Task.CompletedTask;
+			MethodInformation.Enabled = true;
 			var ts = Patch.Enable();
 			if (!enabled)
 			{
@@ -43,6 +44,7 @@ namespace Needle.SelectiveProfiling
 
 		public void Disable()
 		{
+			MethodInformation.Enabled = false;
 			Patch.Disable();
 			if (enabled)
 			{

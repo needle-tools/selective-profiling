@@ -48,8 +48,7 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		// [SerializeField]
-		// private List<ProfilingConfiguration> Configurations = new List<ProfilingConfiguration>();
+		internal void RegisterUndo(string actionName) => Undo.RegisterCompleteObjectUndo(this, actionName);
 
 		public void Add(MethodInformation info)
 		{
@@ -60,7 +59,7 @@ namespace Needle.SelectiveProfiling
 			MethodStateChanged?.Invoke(info, true);
 		}
 
-		public void Remove(MethodInformation info)
+		public void Remove(MethodInformation info, bool withUndo = true)
 		{
 			var removed = false;
 
@@ -75,18 +74,23 @@ namespace Needle.SelectiveProfiling
 			
 			if (removed)
 			{
-				Undo.RegisterCompleteObjectUndo(this, "Removed " + info);
+				if(withUndo)
+					Undo.RegisterCompleteObjectUndo(this, "Removed " + info);
 				NotifyStateChanged(info, false);
 			}
 		}
 
-		public void SetMuted(MethodInformation info, bool mute)
+		public void UpdateState(MethodInformation info, bool state, bool withUndo)
 		{
-			var enable = !mute;
-			if (info.Enabled == enable) return;
-			Undo.RegisterCompleteObjectUndo(this, "Set " + info + ": " + enable);
-			info.Enabled = enable;
-			MethodStateChanged?.Invoke(info, enable); 
+			if (info.Enabled == state) return;
+			if(withUndo) Undo.RegisterCompleteObjectUndo(this, "Set " + info + ": " + state);
+			info.Enabled = state;
+			MethodStateChanged?.Invoke(info, state); 
+		}
+
+		public void SetMuted(MethodInformation info, bool mute, bool withUndo = true)
+		{
+			UpdateState(info, !mute, withUndo);
 		}
 
 		public void ClearAll()
