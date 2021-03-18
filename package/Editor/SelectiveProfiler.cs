@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
 using needle.EditorPatching;
+using Needle.SelectiveProfiling.Attributes;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.Profiling;
@@ -186,16 +187,23 @@ namespace Needle.SelectiveProfiling
 		{
 			var settings = SelectiveProfilerSettings.instance;
 			if (!settings.Enabled) return;
-			
-			// bool ProfilerWindowIsOpen()
-			// {
-			// 	var w = Resources.FindObjectsOfTypeAll(typeof(EditorWindow).Assembly.GetType("UnityEditor.ProfilerWindow")).FirstOrDefault();
-			// 	return w;
-			// }
-			//
-			// while (!ProfilerWindowIsOpen()) 
-			// 	await Task.Delay(2000);
 			while (!Profiler.enabled) await Task.Delay(100);
+			
+			
+#if UNITY_2020_1_OR_NEWER
+			var typesToProfile = TypeCache.GetTypesWithAttribute<AlwaysProfile>();
+			foreach (var type in typesToProfile)
+			{
+				var methods = AccessUtils.GetMethods(type, AccessUtils.AllDeclared, typeof(MonoBehaviour));
+				foreach (var method in methods) 
+					EnableProfiling(method, false, true, false);
+			}
+			var methodsToProfile = TypeCache.GetMethodsWithAttribute<AlwaysProfile>();
+			foreach (var method in methodsToProfile)
+			{
+				EnableProfiling(method, false, true, false); 
+			}
+#endif
 			
 			var ml = settings.MethodsList;
 			if (ml != null && ml.Count > 0)

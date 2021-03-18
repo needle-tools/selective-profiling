@@ -17,31 +17,4 @@ MonoBehaviour:
   DeepProfiling: 1
   MaxDepth: 3
   DebugLog: 1
-  Methods:
-  - Enabled: 0
-    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.Ray
-    Method: UnityEngine.Vector3 get_origin()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: ComponentWithTryCatch
-    Method: Void Update()
-  - Enabled: 0
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.ComponentWithRaycasts
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: ComponentWithTryCatch
-    Method: Void OtherMethod(Boolean)
-  - Enabled: 1
-    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.MonoBehaviour
-    Method: UnityEngine.Coroutine StartCoroutine(System.String)
-  - Enabled: 1
-    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.MonoBehaviour
-    Method: Void CancelInvoke(System.String)
+  Methods: []
