@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
-using UnityEditor.Profiling;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling
@@ -20,7 +19,7 @@ namespace Needle.SelectiveProfiling
 		internal string Identifier => Method?.GetMethodIdentifier();
 
 		private bool enabled;
-		
+
 		public ProfilingInfo(EditorPatchProvider patch, MethodInfo info, MethodInformation mi)
 		{
 			this.Patch = patch;
@@ -39,6 +38,7 @@ namespace Needle.SelectiveProfiling
 				enabled = true;
 				OnEnable();
 			}
+
 			return ts;
 		}
 
@@ -63,7 +63,7 @@ namespace Needle.SelectiveProfiling
 		{
 			return Patch?.ID() + " - " + Identifier;
 		}
-		
+
 		private HashSet<ProfilingInfo> callers;
 		private HashSet<ProfilingInfo> callees;
 
@@ -73,7 +73,7 @@ namespace Needle.SelectiveProfiling
 		{
 			if (stack.Contains(this)) return false;
 			var settings = SelectiveProfilerSettings.instance;
-			if (settings.IsEnabledExplicitly(MethodInformation)) return true; 
+			if (settings.IsEnabledExplicitly(MethodInformation)) return true;
 			stack.Add(this);
 			if (callers != null)
 			{
@@ -83,22 +83,23 @@ namespace Needle.SelectiveProfiling
 					if (c.HasExplicitlyEnabledCaller(stack)) return true;
 				}
 			}
+
 			return false;
 		}
-		
+
 		internal void AddCaller(ProfilingInfo caller)
 		{
 			if (caller == null) return;
 			if (caller == this) return;
 			if (callers == null) callers = new HashSet<ProfilingInfo>();
-			
-			if (!callers.Contains(caller)) 
+
+			if (!callers.Contains(caller))
 			{
 				callers.Add(caller);
-				// Debug.Log(Method.Name + " called by\n" + string.Join("\n", callers.Select(c => c.Method.Name)));
+				if (SelectiveProfiler.DebugLog)
+					Debug.Log(Method.Name + " called by\n" + string.Join("\n", callers.Select(c => c.Method.Name)));
 				caller.AddCallee(this);
 			}
-			
 		}
 
 		private void RemoveCaller(ProfilingInfo caller)
@@ -111,7 +112,7 @@ namespace Needle.SelectiveProfiling
 			if (callers.Count <= 0 || !HasExplicitlyEnabledCaller(callstack))
 			{
 				// if not check if is explicitly enabled
-				if(!SelectiveProfilerSettings.instance.IsEnabledExplicitly(MethodInformation))
+				if (!SelectiveProfilerSettings.instance.IsEnabledExplicitly(MethodInformation))
 					Disable();
 			}
 		}
@@ -139,10 +140,12 @@ namespace Needle.SelectiveProfiling
 
 		private void OnDisable()
 		{
-			// Debug.Log("Disabled " + this);
+			if (SelectiveProfiler.DebugLog)
+				Debug.Log("Disabled " + this);
 			if (callees != null)
 			{
-				// Debug.Log(callees.Count + " callees\n" + string.Join("\n", callees.Select(c => c)));
+				if (SelectiveProfiler.DebugLog)
+					Debug.Log(callees.Count + " callees\n" + string.Join("\n", callees.Select(c => c)));
 				foreach (var cl in callees)
 				{
 					cl.RemoveCaller(this);
