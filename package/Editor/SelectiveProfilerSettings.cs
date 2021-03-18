@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -32,27 +33,37 @@ namespace Needle.SelectiveProfiling
 		// TODO: refactor to config
 		[SerializeField]
 		private List<MethodInformation> Methods = new List<MethodInformation>();
-		[SerializeField]
-		private List<MethodInformation> Muted = new List<MethodInformation>();
+		
+		public int MethodsCount => Methods.Count;
 
-		public int AllSelectedMethodsCount => Methods.Count + Muted.Count;
+		public void Get(ref MethodInformation mi)
+		{
+			foreach (var m in Methods)
+			{
+				if (m.Equals(mi))
+				{
+					mi = m;
+					break;
+				}
+			}
+		}
 
 		// [SerializeField]
 		// private List<ProfilingConfiguration> Configurations = new List<ProfilingConfiguration>();
-		
+
 		public void Add(MethodInformation info)
 		{
-			if (Methods.Contains(info)) return;
+			if (Methods.Any(m => m.Equals(info))) return;
 			Undo.RegisterCompleteObjectUndo(this, "Add " + info);
+			info.Enabled = true;
 			Methods.Add(info);
-			Muted.RemoveAll(m => m.Equals(info));
 			MethodStateChanged?.Invoke(info, true);
 		}
 
 		public void Remove(MethodInformation info)
 		{
 			var removed = false;
-			
+
 			for (var index = Methods.Count - 1; index >= 0; index--)
 			{
 				var method = Methods[index];
@@ -61,15 +72,7 @@ namespace Needle.SelectiveProfiling
 				removed = true;
 				break;
 			}
-			for (var index = Muted.Count - 1; index >= 0; index--)
-			{
-				var method = Muted[index];
-				if (!method.Equals(info)) continue;
-				Muted.RemoveAt(index);
-				removed = true;
-				break;
-			}
-
+			
 			if (removed)
 			{
 				Undo.RegisterCompleteObjectUndo(this, "Removed " + info);
@@ -79,29 +82,30 @@ namespace Needle.SelectiveProfiling
 
 		public void SetMuted(MethodInformation info, bool mute)
 		{
-			if (mute)
-			{
-				Undo.RegisterCompleteObjectUndo(this, "Mute " + info);
-				if (Muted.Contains(info)) return;
-				Muted.Add(info);
-				Methods.RemoveAll(m => m.Equals(info));
-				MethodStateChanged?.Invoke(info, false); 
-			}
-			else Add(info);
+			var enable = !mute;
+			if (info.Enabled == enable) return;
+			Undo.RegisterCompleteObjectUndo(this, "Set " + info + ": " + enable);
+			info.Enabled = enable;
+			MethodStateChanged?.Invoke(info, enable); 
 		}
 
 		public void ClearAll()
 		{
 			Undo.RegisterCompleteObjectUndo(this, "Clear Selective Profiler Data");
 			Methods.Clear();
-			Muted.Clear();
 			Cleared?.Invoke();
 		}
 
 		public IReadOnlyList<MethodInformation> MethodsList => Methods;
-		public IReadOnlyList<MethodInformation> MutedMethods => Muted;
-		public bool IsMuted(MethodInformation m) => Muted.Contains(m);
-		public bool IsEnabledExplicitly(MethodInformation mi) => MethodsList.Contains(mi);
+
+		// public bool IsMuted(MethodInformation m)
+		// {
+		// 	var match = Methods.FirstOrDefault(e => e.Equals(m));
+		// 	if (match != null) return !match.Enabled;
+		// 	return true;
+		// }
+
+		public bool IsEnabledExplicitly(MethodInformation mi) => MethodsList.FirstOrDefault(m => m.Equals(mi) && m.Enabled) != null;
 
 		public static event Action<MethodInformation, bool> MethodStateChanged;
 		public static event Action Cleared;

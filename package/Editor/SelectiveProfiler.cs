@@ -88,6 +88,9 @@ namespace Needle.SelectiveProfiling
 			}
 
 			var mi = new MethodInformation(method);
+			settings.Get(ref mi);
+			if (enableIfMuted) mi.Enabled = true;
+			
 			if (patches.TryGetValue(mi, out var existingProfilingInfo))
 			{
 				HandleCallstackRegistration(existingProfilingInfo);
@@ -116,8 +119,8 @@ namespace Needle.SelectiveProfiling
 
 			if (enablePatch)
 			{
-				var muted = settings.IsMuted(mi);
-				if (muted) settings.SetMuted(mi, true);
+				var muted = !mi.Enabled;
+				if (enableIfMuted && muted) settings.SetMuted(mi, false);
 				if (!muted)
 				{
 					await info.Enable();
@@ -205,7 +208,6 @@ namespace Needle.SelectiveProfiling
 					{
 						if (changed.method.TryResolveMethod(out var method))
 						{
-							Debug.Log("ENABLE " + method);
 							EnableProfiling(method);
 						}
 					}
@@ -278,10 +280,10 @@ namespace Needle.SelectiveProfiling
 				// dont save nested calls
 				else
 				{
-					Debug.Log(source + " calls " + method);
+					// Debug.Log(source + " calls " + method);
 					await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 				}
-			}
+			} 
 		}
 
 		

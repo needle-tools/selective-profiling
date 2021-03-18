@@ -13,10 +13,10 @@ namespace Needle.SelectiveProfiling
 		private const string GameObject = "GameObject/" + Submenu;
 
 		[MenuItem(Component + "Enable: Profile All User Methods", true)]
-		private static bool EnableDeepProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == AccessUtils.Level.User;
+		private static bool ProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == AccessUtils.Level.User;
 
 		[MenuItem(Component + "Enable: Profile All User Methods", false, Priority)]
-		private static void EnableDeepProfileAllMethods(MenuCommand cmd)
+		private static void ProfileAllMethods(MenuCommand cmd)
 		{
 			foreach (var m in AccessUtils.GetMethods(cmd.context, AccessUtils.All, typeof(MonoBehaviour)))
 				SelectiveProfiler.EnableProfiling(m);
@@ -57,6 +57,14 @@ namespace Needle.SelectiveProfiling
 				foreach (var m in AccessUtils.GetMethods(comp, AccessUtils.All, typeof(MonoBehaviour)))
 					SelectiveProfiler.DisableProfiling(m);
 			}
+		}
+		
+		
+		[MenuItem("CONTEXT/MonoImporter/Profile")]
+		private static void Profile(MenuCommand command)
+		{
+			var importer = command.context as AssetImporter;
+			Debug.Log("doing nothing yet " +  importer?.assetPath);
 		}
 	}
 }

@@ -7,6 +7,21 @@ namespace Needle.SelectiveProfiling
 {
 	internal static class Draw
 	{
+		private static GUIStyle _disabledLabel;
+		private static GUIStyle disabledLabel
+		{
+			get
+			{
+				if (_disabledLabel == null)
+				{
+					_disabledLabel = new GUIStyle(EditorStyles.label);
+					_disabledLabel.normal.textColor = Color.gray;
+					_disabledLabel.name = nameof(disabledLabel);
+				}
+				return _disabledLabel;
+			}
+		}
+		
 		public static bool WithHeaderFoldout(string foldoutStateName, string headerName, Action draw, bool defaultFoldoutState = false, int afterWhenOpen = 5)
 		{
 			var foldout = EditorGUILayout.BeginFoldoutHeaderGroup(SessionState.GetBool(foldoutStateName, defaultFoldoutState), new GUIContent(headerName));
@@ -57,7 +72,7 @@ namespace Needle.SelectiveProfiling
 
 				scopes.Clear();
 				foreach (var method in settings.MethodsList) AddToScope(method);
-				foreach (var method in settings.MutedMethods) AddToScope(method);
+				// foreach (var method in settings.MutedMethods) AddToScope(method);
 
 				bool GetFoldout(string key) => SessionState.GetBool("SelectiveProfilerScopeFoldout-" + key, false);
 				void SetFoldout(string key, bool value) => SessionState.SetBool("SelectiveProfilerScopeFoldout-" + key, value);
@@ -123,7 +138,7 @@ namespace Needle.SelectiveProfiling
 				foldout = EditorGUILayout.Foldout(foldout, label + " [" + list.Count + "]");
 				GUILayout.FlexibleSpace();
 				EditorGUI.BeginDisabledGroup(list.Count <= 0);
-				var toggleMuteAll = GUILayout.Button((activeList ? "Mute all" : "Unmute all"), GUILayout.Width(70));
+				var toggleMuteAll = GUILayout.Button((activeList ? "Disable all" : "Unmute all"), GUILayout.Width(80));
 				var removeAll = GUILayout.Button("Remove all", GUILayout.Width(80));
 				EditorGUI.EndDisabledGroup();
 				EditorGUILayout.EndHorizontal();
@@ -147,12 +162,13 @@ namespace Needle.SelectiveProfiling
 						var m = list[index];
 						EditorGUILayout.BeginHorizontal();
 						EditorGUI.BeginDisabledGroup(!activeList);
-						EditorGUILayout.LabelField(new GUIContent(m.ClassWithMethod(), m.MethodIdentifier()), GUILayout.ExpandWidth(true));
+						var muted = !m.Enabled;
+						var style = muted ? disabledLabel : EditorStyles.label;
+						EditorGUILayout.LabelField(new GUIContent(m.ClassWithMethod(), m.MethodIdentifier()), style, GUILayout.ExpandWidth(true));
 						EditorGUI.EndDisabledGroup();
-						var muted = settings.IsMuted(m);
-						if (GUILayout.Button(muted ? "Unmute" : "Mute", GUILayout.Width(60)))
+						if (GUILayout.Button(muted ? "Enable" : "Disable", GUILayout.Width(60)))
 							settings.SetMuted(m, !muted);
-						if (GUILayout.Button("x", GUILayout.Width(30)))
+						if (GUILayout.Button("x", GUILayout.Width(20)))
 							removeList.Add(m);
 						EditorGUILayout.EndHorizontal();
 					}
@@ -165,7 +181,7 @@ namespace Needle.SelectiveProfiling
 			}
 
 			GUIState.MethodsListFoldout = DrawMethods(settings.MethodsList, true, GUIState.MethodsListFoldout, "Methods");
-			GUIState.MutedMethodsFoldout = DrawMethods(settings.MutedMethods, false, GUIState.MutedMethodsFoldout, "Muted");
+			// GUIState.MutedMethodsFoldout = DrawMethods(settings.MutedMethods, false, GUIState.MutedMethodsFoldout, "Muted");
 		}
 
 		internal static void DrawProfilerPatchesList()

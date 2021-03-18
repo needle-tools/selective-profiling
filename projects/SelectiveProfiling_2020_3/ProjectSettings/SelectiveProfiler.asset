@@ -14,60 +14,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Enabled: 1
   ImmediateMode: 0
-  DeepProfiling: 0
+  DeepProfiling: 1
   MaxDepth: 3
-  DebugLog: 1
+  DebugLog: 0
   Methods:
-  - Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.Ray
-    Method: UnityEngine.Vector3 get_origin()
-  Muted:
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
-    Method: Void OnBeforeCleanup()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
-    Method: Void OnDestroy()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
-    Method: Void Awake()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
-    Method: Void Reset()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
-    Method: UnityEngine.XR.ARFoundation.ARSessionOrigin get_ArSessionOrigin()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Void OnDrawGizmosSelected()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Boolean CheckMatchingSampleBuffer(UnityEngine.RaycastHit, System.Collections.Generic.IList`1[UnityEngine.Vector3])
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Void OnDisable()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Void OnEnable()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Void Start()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
-    Method: Void OnValidate()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: ComponentWithTryCatch
     Method: Void Update()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
-    Method: UnityEngine.Pose TransformPoseToSessionSpaceIfNecessary(UnityEngine.Pose)
-  - Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.EventSystems.EventSystem
-    Method: Void Update()
-  - Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
-    Method: Void OnPostCleanup()
-  - Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+  - Enabled: 0
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: ComponentWithTryCatch
+    Method: Void OtherMethod(Boolean)
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.ComponentWithRaycasts
+    Method: Void Update()
+  - Enabled: 0
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.ComponentWithRaycasts
+    Method: Boolean Compare()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.EventSystem
     Method: Void Update()

@@ -30,7 +30,7 @@ namespace Needle.SelectiveProfiling
 
 		public Task Enable()
 		{
-			if (SelectiveProfilerSettings.instance.IsMuted(this.MethodInformation))
+			if (!MethodInformation.Enabled)
 				return Task.CompletedTask;
 			var ts = Patch.Enable();
 			if (!enabled)
@@ -43,7 +43,6 @@ namespace Needle.SelectiveProfiling
 
 		public void Disable()
 		{
-			Debug.Log("disable "+ enabled + " - " + this);
 			Patch.Disable();
 			if (enabled)
 			{
@@ -94,7 +93,7 @@ namespace Needle.SelectiveProfiling
 			if (!callers.Contains(caller)) 
 			{
 				callers.Add(caller);
-				Debug.Log(Method.Name + " called by\n" + string.Join("\n", callers.Select(c => c.Method.Name)));
+				// Debug.Log(Method.Name + " called by\n" + string.Join("\n", callers.Select(c => c.Method.Name)));
 				caller.AddCallee(this);
 			}
 			
@@ -138,10 +137,10 @@ namespace Needle.SelectiveProfiling
 
 		private void OnDisable()
 		{
-			Debug.Log("Disabled " + this);
+			// Debug.Log("Disabled " + this);
 			if (callees != null)
 			{
-				Debug.Log(callees.Count + " callees\n" + string.Join("\n", callees.Select(c => c)));
+				// Debug.Log(callees.Count + " callees\n" + string.Join("\n", callees.Select(c => c)));
 				foreach (var cl in callees)
 				{
 					cl.RemoveCaller(this);

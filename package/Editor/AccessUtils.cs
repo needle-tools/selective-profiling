@@ -85,6 +85,7 @@ namespace Needle.SelectiveProfiling.Utils
 
 
 		public static BindingFlags All => AccessTools.all;
+		public static BindingFlags AllDeclared => AccessTools.allDeclared;
 
 		public enum Level
 		{
@@ -121,6 +122,7 @@ namespace Needle.SelectiveProfiling.Utils
 					var methods = t.GetMethods(flags);
 					foreach (var method in methods)
 					{
+						if (maxType != null && method.DeclaringType == maxType) yield break;
 						yield return method;
 					}
 					t = t.BaseType;

@@ -54,7 +54,7 @@ namespace Needle.SelectiveProfiling
 
 			GUILayout.Space(5);
 			EditorGUILayout.LabelField("Data", EditorStyles.boldLabel); 
-			PatchesFoldout = EditorGUILayout.Foldout(PatchesFoldout, "Selected Methods [Active " + settings.MethodsList.Count + " of " + settings.AllSelectedMethodsCount + "]");
+			PatchesFoldout = EditorGUILayout.Foldout(PatchesFoldout, "Selected Methods [Active " + settings.MethodsList.Count + " of " + settings.MethodsCount + "]");
 			if (PatchesFoldout)
 			{
 				EditorGUI.indentLevel++;

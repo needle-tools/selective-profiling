@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afdf0214f431a58499bf178c72b5bc72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DebugLog: 1
+  DebugLog: 0
   enabledPatchIds:
   - Needle.SelectiveProfiling.RayPatch
   - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
@@ -123,3 +123,10 @@ MonoBehaviour:
   - UnityEngine.Vector3.get_magnitude
   - UnityEngine.Vector3.get_normalized
   - UnityEngine.PhysicsScene.Internal_RaycastNonAlloc
+  - ComponentWithTryCatch.OtherMethod
+  - ComponentWithTryCatch.Update
+  - UnityEngine.Transform.InverseTransformDirection
+  - UnityEngine.Vector3.Normalize
+  - UnityEngine.Ray.set_direction
+  - UnityEngine.Vector3.Magnitude
+  - UnityEngine.Vector3.op_Division
