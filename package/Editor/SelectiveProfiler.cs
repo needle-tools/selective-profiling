@@ -112,6 +112,11 @@ namespace Needle.SelectiveProfiling
 			{
 				existingProfilingInfo.MethodInformation = mi;
 				HandleCallstackRegistration(existingProfilingInfo);
+
+				if (ShouldSave || save)
+				{
+					settings.Add(mi);
+				}
 				
 				if (!existingProfilingInfo.IsActive)
 				{
@@ -297,7 +302,7 @@ namespace Needle.SelectiveProfiling
 			if (obj == PlayModeStateChange.ExitingPlayMode)
 			{
 				foreach (var patch in patches)
-					PatchManager.UnregisterAndDisablePatch(patch.Value.Patch);
+					PatchManager.UnregisterAndDisablePatch(patch.Value.Patch); 
 			}
 		}
 
