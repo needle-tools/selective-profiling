@@ -24,7 +24,6 @@ namespace Needle.SelectiveProfiling
 		{
 			patches.Add(new Profiler_SelectionChanged());
 			patches.Add(new Profiler_CellGUI());
-			patches.Add(new ContextMenuPatches.GenericMenuPatch());
 		}
 
 
