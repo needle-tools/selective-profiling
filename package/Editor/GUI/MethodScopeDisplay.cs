@@ -2,6 +2,7 @@
 {
 	internal enum MethodScopeDisplay
 	{
+		All,
 		Assembly,			
 		Namespace,
 		Type,

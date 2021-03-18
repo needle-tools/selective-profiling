@@ -49,34 +49,38 @@ namespace Needle.SelectiveProfiling
 			scroll = EditorGUILayout.BeginScrollView(scroll);
 			
 			EditorGUILayout.Space(10);
-			Draw.WithHeaderFoldout("SelectedMethodsFoldout", "Selected Methods", () =>
+			Draw.WithHeaderFoldout("SelectedMethodsFoldout", "Profiled Methods", () =>
 			{
-				Draw.SavedMethods(settings);
 				Draw.ScopesList(settings);
+				if(SelectiveProfiler.DevelopmentMode)
+					Draw.SavedMethods(settings);
+			});
+
+			Draw.WithHeaderFoldout("TypesExplorer", "Types Explorer", () =>
+			{
+				EditorGUILayout.LabelField("test");
+				DrawTypesExplorer();
 			});
 			
-			Draw.WithHeaderFoldout("PatchesFoldout", "Patches", () =>
-			{
-				var patches = SelectiveProfiler.Patches;
-				if (patches == null || SelectiveProfiler.PatchesCount <= 0)
-				{
-					EditorGUILayout.LabelField("No active patched methods");
-				}
-				else
-				{
-					var h = SelectiveProfiler.PatchesCount * EditorGUIUtility.singleLineHeight * 1.2f;
-					h = Mathf.Min(500, h);
-					scrollPatches = EditorGUILayout.BeginScrollView(scrollPatches, GUILayout.MinHeight(h));
-					Draw.DrawProfilerPatchesList();
-					EditorGUILayout.EndScrollView();
-				}
-			});
-
-
-			Draw.WithHeaderFoldout("TypesExplorer", "Types Explorer", DrawTypesExplorer);
 			
 			if (SelectiveProfiler.DevelopmentMode)
 			{
+				Draw.WithHeaderFoldout("PatchesFoldout", "Patches", () =>
+				{
+					var patches = SelectiveProfiler.Patches;
+					if (patches == null || SelectiveProfiler.PatchesCount <= 0)
+					{
+						EditorGUILayout.LabelField("No active patched methods");
+					}
+					else
+					{
+						var h = Mathf.Min(10, SelectiveProfiler.PatchesCount) * EditorGUIUtility.singleLineHeight * 1.2f;
+						scrollPatches = EditorGUILayout.BeginScrollView(scrollPatches, GUILayout.MinHeight(h), GUILayout.MaxHeight(Screen.height), GUILayout.ExpandHeight(true));
+						Draw.DrawProfilerPatchesList();
+						EditorGUILayout.EndScrollView();
+					}
+				});
+
 				Draw.WithHeaderFoldout("DebugOptionsFoldout", "Debug Options", () =>
 				{
 					DrawDeepProfilingDebug(settings);
@@ -149,7 +153,7 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 
-			if (matches != null && !requestRepaint)
+			if (matches != null && !requestRepaint && matches.Count > 0)
 			{
 				if (!string.IsNullOrWhiteSpace(filter))
 					EditorGUILayout.LabelField("Matching " + matches.Count + " / " + TypesExplorer.MethodsCount);

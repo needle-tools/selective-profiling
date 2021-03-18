@@ -30,7 +30,6 @@ namespace Needle.SelectiveProfiling
 		
 		public bool DebugLog;
 		
-		// TODO: refactor to config
 		[SerializeField]
 		private List<MethodInformation> Methods = new List<MethodInformation>();
 		
@@ -62,6 +61,8 @@ namespace Needle.SelectiveProfiling
 		public void Remove(MethodInformation info, bool withUndo = true)
 		{
 			var removed = false;
+			if(withUndo)
+				Undo.RegisterCompleteObjectUndo(this, "Removed " + info);
 
 			for (var index = Methods.Count - 1; index >= 0; index--)
 			{
@@ -74,8 +75,6 @@ namespace Needle.SelectiveProfiling
 			
 			if (removed)
 			{
-				if(withUndo)
-					Undo.RegisterCompleteObjectUndo(this, "Removed " + info);
 				NotifyStateChanged(info, false);
 			}
 		}

@@ -26,16 +26,34 @@ namespace Needle.SelectiveProfiling
 
 		
 		private static readonly Dictionary<string, List<MethodInformation>> scopes = new Dictionary<string, List<MethodInformation>>();
+		private static readonly Dictionary<string, ScopeMeta> scopesMeta = new Dictionary<string, ScopeMeta>();
+
+		private class ScopeMeta
+		{
+			public int Enabled;
+			public int Disabled;
+			public int Total;
+
+			internal void Add(MethodInformation mi)
+			{
+				if (mi.Enabled) Enabled += 1;
+				else Disabled += 1;
+				Total += 1;
+			}
+		}
 
 		public static void ScopesList(SelectiveProfilerSettings settings)
 		{
-			GUIState.ScopesListFoldout = EditorGUILayout.Foldout(GUIState.ScopesListFoldout, "Scopes");
-			if (GUIState.ScopesListFoldout)
+			// GUIState.ScopesListFoldout = EditorGUILayout.Foldout(GUIState.ScopesListFoldout, "Scopes");
+			// if (GUIState.ScopesListFoldout)
 			{
+				// EditorGUI.indentLevel++;
 				string GetScopeKey(MethodInformation method)
 				{
 					switch (GUIState.SelectedScope)
 					{
+						case MethodScopeDisplay.All:
+							return "All";
 						case MethodScopeDisplay.Assembly:
 							return method.ExtractAssemblyName();
 						case MethodScopeDisplay.Namespace:
@@ -50,16 +68,19 @@ namespace Needle.SelectiveProfiling
 				{
 					var scope = GetScopeKey(method);
 					if (!scopes.ContainsKey(scope))
+					{
 						scopes.Add(scope, new List<MethodInformation>());
+						scopesMeta.Add(scope, new ScopeMeta());
+					}
 					scopes[scope].Add(method);
+					scopesMeta[scope].Add(method);
 				}
 
-				EditorGUI.indentLevel++;
 				GUIState.SelectedScope = (MethodScopeDisplay) EditorGUILayout.EnumPopup("Scope", GUIState.SelectedScope);
 
 				scopes.Clear();
+				scopesMeta.Clear();
 				foreach (var method in settings.MethodsList) AddToScope(method);
-				// foreach (var method in settings.MutedMethods) AddToScope(method);
 
 				bool GetFoldout(string key) => SessionState.GetBool("SelectiveProfilerScopeFoldout-" + key, false);
 				void SetFoldout(string key, bool value) => SessionState.SetBool("SelectiveProfilerScopeFoldout-" + key, value);
@@ -67,13 +88,14 @@ namespace Needle.SelectiveProfiling
 				foreach (var kvp in scopes)
 				{
 					var scope = kvp.Key;
+					var meta = scopesMeta[scope];
 					EditorGUILayout.BeginHorizontal();
-					var show = EditorGUILayout.Foldout(GetFoldout(scope), scope,  GUIStyles.BoldFoldout);
-					if (GUILayout.Button("Enable all", GUILayout.Width(80)))
+					var show = EditorGUILayout.Foldout(GetFoldout(scope), scope + " [" + meta.Enabled + "/" + meta.Total + "]", GUIStyles.BoldFoldout);
+					if (GUILayout.Button("All", GUILayout.Width(70)))
 						SetState(kvp.Value, true, scope);
-					if (GUILayout.Button("Disable all", GUILayout.Width(80)))
+					if (GUILayout.Button("None", GUILayout.Width(70)))
 						SetState(kvp.Value, false, scope);
-					if (GUILayout.Button("Remove all", GUILayout.Width(80)))
+					if (GUILayout.Button("x", GUILayout.Width(20)))
 					{
 						settings.RegisterUndo("Remove all in " + scope);
 						foreach (var entry in kvp.Value)
@@ -90,23 +112,35 @@ namespace Needle.SelectiveProfiling
 							EditorGUILayout.BeginHorizontal();
 							var state = EditorGUILayout.ToggleLeft(new GUIContent(entry.ClassWithMethod(), entry.MethodIdentifier()), entry.Enabled,
 								GUIStyles.Label(entry.Enabled), GUILayout.ExpandWidth(true));
-							if (state != entry.Enabled) settings.UpdateState(entry, state, true);
+							if (state != entry.Enabled)
+							{
+								settings.UpdateState(entry, state, true);
+								settings.Save();
+							}
+
+							if (GUILayout.Button("x", GUILayout.Width(20)))
+							{
+								settings.Remove(entry);
+								settings.Save();
+							}
+
 							EditorGUILayout.EndHorizontal();
 						}
 
 						EditorGUI.indentLevel--;
+						GUILayout.Space(5);
 					}
 
-					GUILayout.Space(5);
 				}
 
-				EditorGUI.indentLevel--;
 
 				void SetState(IEnumerable<MethodInformation> list, bool state, string scope)
 				{
 					settings.RegisterUndo((state ? "Enable" : "Disable") + " " + scope);
 					foreach (var e in list) settings.UpdateState(e, state, false);
 				}
+				
+				// EditorGUI.indentLevel--;
 			}
 		}
 
@@ -177,8 +211,7 @@ namespace Needle.SelectiveProfiling
 				return foldout;
 			}
 
-			GUIState.MethodsListFoldout = DrawMethods(settings.MethodsList, true, GUIState.MethodsListFoldout, "Methods");
-			// GUIState.MutedMethodsFoldout = DrawMethods(settings.MutedMethods, false, GUIState.MutedMethodsFoldout, "Muted");
+			GUIState.MethodsListFoldout = DrawMethods(settings.MethodsList, true, GUIState.MethodsListFoldout, "Saved Methods");
 		}
 
 		internal static void DrawProfilerPatchesList()
