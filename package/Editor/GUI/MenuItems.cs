@@ -7,6 +7,8 @@ namespace Needle.SelectiveProfiling
 	internal static class MenuItems
 	{
 		internal const string Menu = "Needle/SelectiveProfiler/";
+		internal const string ToolsMenu = "Tools/SelectiveProfiler/";
+		internal const string WindowsMenu = "Window/Analysis/";
 		private const int Priority = 10;
 		private const string Submenu = "Profiling/";
 		private const string Component = "CONTEXT/Component/" + Submenu;

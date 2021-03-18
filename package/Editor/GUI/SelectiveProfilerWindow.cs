@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using HarmonyLib;
+using needle.EditorPatching;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,7 +11,8 @@ namespace Needle.SelectiveProfiling
 {
 	public class SelectiveProfilerWindow : EditorWindow
 	{
-		[MenuItem(MenuItems.Menu + nameof(Open))]
+		[MenuItem(MenuItems.ToolsMenu + "Open Selective Profiler Window", false, 0)]
+		[MenuItem(MenuItems.WindowsMenu + "Selective Profiler", false, 50000)]
 		public static void Open()
 		{
 			if(HasOpenInstances<SelectiveProfilerWindow>())

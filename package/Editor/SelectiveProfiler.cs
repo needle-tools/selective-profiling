@@ -308,11 +308,14 @@ namespace Needle.SelectiveProfiling
 			get => SessionState.GetBool("SelectiveProfilerDevelopment", false);
 			set => SessionState.SetBool("SelectiveProfilerDevelopment", value);
 		}
-		[MenuItem(MenuItems.Menu + nameof(EnableDevelopmentMode))]
+		[MenuItem(MenuItems.ToolsMenu + "Dev/" + nameof(EnableDevelopmentMode), false, 50000)]
 		private static void EnableDevelopmentMode() => DevelopmentMode = true;
-		[MenuItem(MenuItems.Menu + nameof(DisableDevelopmentMode))]
+		[MenuItem(MenuItems.ToolsMenu + "Dev/" + nameof(EnableDevelopmentMode), true, 50000)]
+		private static bool EnableDevelopmentMode_Validate() => !DevelopmentMode;
+		[MenuItem(MenuItems.ToolsMenu + "Dev/" + nameof(DisableDevelopmentMode), false,  50000)]
 		private static void DisableDevelopmentMode() => DevelopmentMode = false;
-
+		[MenuItem(MenuItems.ToolsMenu + "Dev/" + nameof(DisableDevelopmentMode), true, 50000)]
+		private static bool DisableDevelopmentMode_Validate() => DevelopmentMode;
 
 		internal static bool stepDeepProfile;
 
