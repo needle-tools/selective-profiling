@@ -10,6 +10,8 @@ using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.Profiling;
 using UnityEngine;
+using UnityEngine.Profiling;
+using Object = System.Object;
 
 namespace Needle.SelectiveProfiling
 {
@@ -151,19 +153,33 @@ namespace Needle.SelectiveProfiling
 		}
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-		private static async void InitRuntime()
+		private static void InitRuntime()
+		{
+			ApplyProfiledMethods();
+		}
+
+		private static async void ApplyProfiledMethods()
 		{
 			var settings = SelectiveProfilerSettings.instance;
-			if (settings.Enabled)
+			if (!settings.Enabled) return;
+			
+			// bool ProfilerWindowIsOpen()
+			// {
+			// 	var w = Resources.FindObjectsOfTypeAll(typeof(EditorWindow).Assembly.GetType("UnityEditor.ProfilerWindow")).FirstOrDefault();
+			// 	return w;
+			// }
+			//
+			// while (!ProfilerWindowIsOpen()) 
+			// 	await Task.Delay(2000);
+			while (!Profiler.enabled) await Task.Delay(100);
+			
+			var ml = settings.MethodsList;
+			if (ml != null && ml.Count > 0)
 			{
-				var ml = settings.MethodsList;
-				if (ml != null)
+				foreach (var m in ml.ToArray())
 				{
-					foreach (var m in ml.ToArray())
-					{
-						if (m.TryResolveMethod(out var info))
-							await EnableProfilingAsync(info, false);
-					}
+					if (m.TryResolveMethod(out var info))
+						await EnableProfilingAsync(info, false);
 				}
 			}
 		}

@@ -130,3 +130,4 @@ MonoBehaviour:
   - UnityEngine.Ray.set_direction
   - UnityEngine.Vector3.Magnitude
   - UnityEngine.Vector3.op_Division
+  - MyNamespace.MySlowScript.TwoLevelsDeepCalledFromAnotherMethod

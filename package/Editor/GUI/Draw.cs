@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using HarmonyLib;
 using UnityEditor;
 using UnityEngine;
 
@@ -82,7 +84,14 @@ namespace Needle.SelectiveProfiling
 				scopesMeta.Clear();
 				foreach (var method in settings.MethodsList) AddToScope(method);
 
-				bool GetFoldout(string key) => SessionState.GetBool("SelectiveProfilerScopeFoldout-" + key, false);
+				if (settings.MethodsList.Count <= 0)
+				{
+					EditorGUILayout.HelpBox("No methods selected for profiling", MessageType.None);
+					return;
+				}
+				
+
+				bool GetFoldout(string key) => SessionState.GetBool("SelectiveProfilerScopeFoldout-" + key, GUIState.SelectedScope == MethodScopeDisplay.All);
 				void SetFoldout(string key, bool value) => SessionState.SetBool("SelectiveProfilerScopeFoldout-" + key, value);
 
 				foreach (var kvp in scopes)
@@ -238,6 +247,87 @@ namespace Needle.SelectiveProfiling
 				}
 
 				EditorGUILayout.EndHorizontal();
+			}
+		}
+		
+		
+		private static string filter
+		{
+			get => SessionState.GetString(nameof(SelectiveProfilerWindow) + "Filter", string.Empty);
+			set => SessionState.SetString(nameof(SelectiveProfilerWindow) + "Filter", value);
+		}
+		private static readonly List<Match> matches = new List<Match>();
+		private static CancellationTokenSource cancelSearch;
+		private static Vector2 scrollTypesList;
+		private static int allowDrawCount;
+		private static int defaultAllowDrawCount = 100;
+		internal static bool MethodsExplorerRequestRepaint;
+
+		internal static void MethodsExplorer()
+		{
+			EditorGUI.BeginChangeCheck();
+			;
+			EditorGUILayout.BeginHorizontal();
+			filter = EditorGUILayout.TextField("Filter", filter, GUILayout.ExpandWidth(true));
+			if (GUILayout.Button("Refresh", GUILayout.Width(70)))
+				MethodsExplorerRequestRepaint = true;
+			EditorGUILayout.EndHorizontal();
+
+			if (EditorGUI.EndChangeCheck())
+			{
+				allowDrawCount = defaultAllowDrawCount;
+				matches.Clear();
+				cancelSearch?.Cancel();
+				cancelSearch = null;
+				MethodsExplorerRequestRepaint = false;
+				if (filter.Length > 0 && !string.IsNullOrWhiteSpace(filter))
+				{
+					cancelSearch = new CancellationTokenSource();
+					TypesExplorer.TryFindMethod(filter, entry =>
+					{
+						MethodsExplorerRequestRepaint = true;
+						matches.Add(new Match()
+						{
+							Key = entry.FullName,
+							Method = entry.Entry
+						});
+
+					}, cancelSearch.Token);
+				}
+			}
+
+			if (matches != null && !MethodsExplorerRequestRepaint && matches.Count > 0)
+			{
+				if (!string.IsNullOrWhiteSpace(filter))
+					EditorGUILayout.LabelField("Matching " + matches.Count + " / " + TypesExplorer.MethodsCount);
+				var h = Mathf.Min(matches.Count, 10) * EditorGUIUtility.singleLineHeight * 1.2f;
+				scrollTypesList = EditorGUILayout.BeginScrollView(scrollTypesList, GUILayout.MinHeight(h), GUILayout.MaxHeight(Screen.height));
+				for (var index = 0; index < matches.Count; index++)
+				{
+					if (MethodsExplorerRequestRepaint) break;
+					var match = matches[index];
+					EditorGUILayout.BeginHorizontal();
+					EditorGUILayout.LabelField(new GUIContent(match.Key, match.Method.FullDescription()), GUILayout.ExpandWidth(true));
+					if (GUILayout.Button("Add", GUILayout.Width(50)))
+					{
+						SelectiveProfilerSettings.instance.Add(new MethodInformation(match.Method));
+						// SelectiveProfiler.EnableProfiling(match.Method);
+					}
+
+					EditorGUILayout.EndHorizontal();
+					if (index > allowDrawCount)
+					{
+						EditorGUILayout.LabelField("Truncated: " + matches.Count + ". Max: " + allowDrawCount, GUILayout.ExpandWidth(true));
+						EditorGUILayout.BeginHorizontal();
+						GUILayout.Space(18);
+						if (GUILayout.Button("Show More", GUILayout.Height(30)))
+							allowDrawCount *= 2;
+						EditorGUILayout.EndHorizontal();
+						break;
+					}
+				}
+
+				EditorGUILayout.EndScrollView();
 			}
 		}
 	}

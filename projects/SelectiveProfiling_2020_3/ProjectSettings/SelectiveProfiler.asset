@@ -18,17 +18,18 @@ MonoBehaviour:
   MaxDepth: 2
   DebugLog: 0
   Methods:
-  - Enabled: 1
-    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.EventSystems.EventSystem
+  - Enabled: 0
+    Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.MySlowScript
     Method: Void Update()
   - Enabled: 0
-    Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void CallingAnotherMethod()
-  - Enabled: 0
-    Assembly: Needle.SelectiveProfiling.Runtime, Version=0.0.0.0, Culture=neutral,
+    Type: MyNamespace.ComponentWithRaycasts
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void TwoLevelsDeepCalledFromAnotherMethod()
+    Type: ComponentWithTryCatch
+    Method: Void Update()

@@ -43,7 +43,7 @@ namespace Needle.SelectiveProfiling
 		
 		internal static MethodScopeDisplay SelectedScope
 		{
-			get => (MethodScopeDisplay)SessionState.GetInt("SelectedScopeDisplay", (int) (MethodScopeDisplay.Type));
+			get => (MethodScopeDisplay)SessionState.GetInt("SelectedScopeDisplay", (int) (MethodScopeDisplay.All));
 			set => SessionState.SetInt("SelectedScopeDisplay", (int) value);
 		}
 
