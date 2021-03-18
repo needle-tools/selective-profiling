@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
-  ImmediateMode: 1
+  ImmediateMode: 0
   DeepProfiling: 1
   MaxDepth: 3
-  DebugLog: 1
   Methods: []
+  DebugLog: 0
