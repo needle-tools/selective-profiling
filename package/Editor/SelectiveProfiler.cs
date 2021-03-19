@@ -183,18 +183,16 @@ namespace Needle.SelectiveProfiling
 		}
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-		private static void InitRuntime()
+		private static async void InitRuntime()
 		{
+			var settings = SelectiveProfilerSettings.instance;
+			if (!settings.Enabled) return;
+			while (!Profiler.enabled) await Task.Delay(100);
 			ApplyProfiledMethods();
 		}
 
 		private static async void ApplyProfiledMethods()
 		{
-			var settings = SelectiveProfilerSettings.instance;
-			if (!settings.Enabled) return;
-			while (!Profiler.enabled) await Task.Delay(100);
-			
-			
 #if UNITY_2020_1_OR_NEWER
 			var typesToProfile = TypeCache.GetTypesWithAttribute<AlwaysProfile>();
 			foreach (var type in typesToProfile)
@@ -209,7 +207,7 @@ namespace Needle.SelectiveProfiling
 				EnableProfiling(method, false, true, false); 
 			}
 #endif
-			
+			var settings = SelectiveProfilerSettings.instance;
 			var ml = settings.MethodsList;
 			if (ml != null && ml.Count > 0)
 			{

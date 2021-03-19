@@ -131,3 +131,8 @@ MonoBehaviour:
   - UnityEngine.Vector3.Magnitude
   - UnityEngine.Vector3.op_Division
   - MyNamespace.MySlowScript.TwoLevelsDeepCalledFromAnotherMethod
+  - DefaultNamespace.ThisIsAlwaysProfiled.Update
+  - DefaultNamespace.ThisIsAlwaysProfiled.AnotherMethod
+  - DefaultNamespace.ThisIsAlwaysProfiled.SomeCall
+  - DefaultNamespace.ClassWithProfiledMethod.ThisMethodShouldAlwaysBeProfiled
+  - DefaultNamespace.ClassWithProfiledMethod.SomeCall

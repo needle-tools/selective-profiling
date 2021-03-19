@@ -17,4 +17,24 @@ MonoBehaviour:
   DeepProfiling: 1
   MaxDepth: 2
   DebugLog: 0
-  Methods: []
+  Methods:
+  - Enabled: 0
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.MySlowScript
+    Method: Void Update()
+  - Enabled: 0
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.ComponentWithRaycasts
+    Method: Void Update()
+  - Enabled: 0
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: ComponentWithTryCatch
+    Method: Void Update()
+  - Enabled: 0
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: DefaultNamespace.ClassWithProfiledMethod
+    Method: Void Update()
