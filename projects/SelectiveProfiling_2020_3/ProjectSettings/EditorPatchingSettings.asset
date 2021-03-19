@@ -327,3 +327,7 @@ MonoBehaviour:
   - UnityEngine.StackTraceUtility.ExtractStackTrace
   - UnityEngine.Application.CallLogCallback
   - UnityEngine.StackTraceUtility.ExtractFormattedStackTrace
+  - DefaultNamespace.ComponentCallingMethods.Update
+  - DefaultNamespace.ComponentCallingMethods.MethodWithStringParameter
+  - DefaultNamespace.ComponentCallingMethods.MethodWithTuple
+  - DefaultNamespace.ComponentCallingMethods+SomeNestedClass.SomeMethod

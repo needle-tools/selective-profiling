@@ -8,6 +8,10 @@ namespace Needle.SelectiveProfiling
 	{
 		private void Update()
 		{
+			for (var i = 0; i < 100; i++)
+			{
+				var some_str = "123" + i;
+			}
 			for (var i = 0; i < 10; i++) new MyClass();
 			for (var i = 0; i < 10; i++) new MyOtherClass();
 			var ints = new int[100];
