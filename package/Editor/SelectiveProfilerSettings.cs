@@ -27,7 +27,10 @@ namespace Needle.SelectiveProfiling
 
 			if (instance.FirstInstall)
 			{ 
-				Debug.Log("Thank you for installing Selective Profiler.");
+				Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "<b>Thank you for installing Selective Profiler Alpha</b>. " +
+				                                                           "You should now be able to right click methods in the Unity Profiler to open profiling options.\n\n" +
+				                                                           "For more information please read the documentation on github: <b>https://github.com/needle-tools/selective-profiling</b>\n" +
+				                                                           "or join us on discord: <b>https://discord.gg/CFZDp4b</b>");
 				instance.FirstInstall = false;
 				instance.Save();
 				
