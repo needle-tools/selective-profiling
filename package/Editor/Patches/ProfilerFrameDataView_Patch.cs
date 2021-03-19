@@ -178,7 +178,7 @@ namespace Needle.SelectiveProfiling
 		
 		private static void EnableProfilingFromProfilerWindow(MethodInfo method)
 		{
-			SelectiveProfiler.EnableProfiling(method, true, true, true, true);
+			SelectiveProfiler.EnableProfiling(method, SelectiveProfiler.ShouldSave, true, true, true);
 		}
 	}
 }
