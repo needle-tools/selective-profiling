@@ -21,7 +21,7 @@ MonoBehaviour:
   DebugLog: 0
   SkipProperties: 1
   Methods:
-  - Enabled: 0
+  - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: Needle.SelectiveProfiling.ComponentCreatingLotsOfGarbage

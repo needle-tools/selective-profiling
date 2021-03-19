@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
@@ -28,22 +29,22 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				// object creation
 				if(code == OpCodes.Newobj && operand is ConstructorInfo ctor && ctor.DeclaringType != null)
 				{
-					return "new " + ctor.DeclaringType.Name;
+					var dt = ctor.DeclaringType;
+					return "new " + GetNiceTypeName(dt);
 				}
 				
 				if (code == OpCodes.Newarr)
 				{
 					if (operand is Type t)
 					{
-						return "new " + t.Name.ToCSharpTypeName() + "[]";
+						return "new " + GetNiceTypeName(t) + "[]";
 					}
 				}
 				
 				// method calls
 				if (operand is MethodInfo m)
 				{
-					
-					var c = m.DeclaringType?.Name;
+					var c = GetNiceTypeName(m.DeclaringType);
 					return c != null ? c + "." + m.Name : m.Name;
 				}
 			}
@@ -73,10 +74,35 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			return operand.ToString();
 		}
 
-		// public static string GetHighlightedIL(this IEnumerable<CodeInstruction> il)
-		// {
-		// 	
-		// }
+
+		private static string GetNiceTypeName(Type type, bool isGenericArgument = false)
+		{
+			if (type == null) return string.Empty;
+			
+			var name = type.Name.ToCSharpTypeName();
+			var sub = name.IndexOf("`", StringComparison.InvariantCultureIgnoreCase);
+			if (sub > 0) name = name.Substring(0, sub);
+			
+			if (type.IsGenericType)
+			{
+				name += GetNiceGenericArguments(type);
+			}
+
+			if (!isGenericArgument && type.DeclaringType != null)
+			{
+				name = GetNiceTypeName(type.DeclaringType) + "." + name;
+			}
+
+			return name;
+		}
+		
+		private static string GetNiceGenericArguments(Type t)
+		{
+			if (t == null) return string.Empty;
+			if (t.IsGenericType)
+				return "<" + string.Join(", ", t.GetGenericArguments().Select(arg => GetNiceTypeName(arg, true))) + ">";
+			return string.Empty;
+		}
 		
 		// -> https://stackoverflow.com/a/56352803
 		private static string ToCSharpTypeName(this string dotNetTypeName, bool isNull = false)
@@ -103,7 +129,6 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				case "Int16":   csTypeName = "short"; break;
 				case "UInt16":  csTypeName = "ushort"; break;
 				case "String":  csTypeName = "string"; break;
-
 				default: csTypeName = typeName; break; // do nothing
 			}
 			return $"{csTypeName}{nullable}";
