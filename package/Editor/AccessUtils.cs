@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
+using JetBrains.Annotations;
 using UnityEditor.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -13,6 +14,15 @@ using Object = UnityEngine.Object;
 
 namespace Needle.SelectiveProfiling.Utils
 {
+	[Flags]
+	public enum Level
+	{
+		System = 1 << 1,
+		Unity = 1 << 2,
+		User = 1 << 3,
+		Unknown = 1 << 4,
+	}
+	
 	internal static class AccessUtils
 	{
 		private static readonly Dictionary<string, Assembly> assemblyMap = new Dictionary<string, Assembly>();
@@ -87,13 +97,6 @@ namespace Needle.SelectiveProfiling.Utils
 		public static BindingFlags All => AccessTools.all;
 		public static BindingFlags AllDeclared => AccessTools.allDeclared;
 
-		public enum Level
-		{
-			Unknown = 0,
-			System = 1,
-			Unity = 2,
-			User = 3,
-		}
 		
 
 		public static IEnumerable<MethodInfo> GetMethods(object obj, BindingFlags flags, Type maxType)
@@ -133,6 +136,13 @@ namespace Needle.SelectiveProfiling.Utils
 
 			foreach (var rec in RecursiveGetTypes(type))
 				yield return rec;
+		}
+
+		public static bool AllowedLevel([NotNull] MethodInfo method, Level levels)
+		{
+			if (method == null) throw new ArgumentNullException(nameof(method));
+			var level = GetLevel(method.DeclaringType);
+			return (level & levels) != 0;
 		}
 		
 		public static Level GetLevel(Type type)

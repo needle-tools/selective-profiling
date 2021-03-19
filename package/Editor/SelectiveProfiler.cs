@@ -323,6 +323,7 @@ namespace Needle.SelectiveProfiling
 
 			var local = callsFound.ToArray(); 
 			callsFound.Clear();
+			var settings = SelectiveProfilerSettings.instance;
 			foreach (var method in local)
 			{
 				// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
@@ -335,6 +336,15 @@ namespace Needle.SelectiveProfiling
 				// dont save nested calls
 				else
 				{
+					var dt = method.DeclaringType;
+					if (dt != null)
+					{
+						if (!AccessUtils.AllowedLevel(method, settings.DeepProfileMaxLevel))
+						{
+							continue;
+						}
+					}
+					
 					// Debug.Log(source + " calls " + method);
 					await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 				}

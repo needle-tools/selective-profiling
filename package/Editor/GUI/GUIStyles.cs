@@ -36,6 +36,21 @@ namespace Needle.SelectiveProfiling
 				return _boldFoldout;
 			}
 		}
+		
+		private static GUIStyle _boldFoldoutDisabled;
+		public static GUIStyle BoldFoldoutDisabled
+		{
+			get
+			{
+				if (_boldFoldoutDisabled == null)
+				{
+					_boldFoldoutDisabled = new GUIStyle(EditorStyles.foldout);
+					_boldFoldoutDisabled.fontStyle = FontStyle.Bold;
+					_boldFoldoutDisabled.normal.textColor = DisabledTextColor;
+				}
+				return _boldFoldoutDisabled;
+			}
+		}
 
 	}
 }

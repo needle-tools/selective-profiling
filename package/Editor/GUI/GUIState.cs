@@ -22,6 +22,12 @@ namespace Needle.SelectiveProfiling
 		// 	set => SessionState.SetBool(nameof(ActivePatchesFoldout), value);
 		// }
 		
+
+		public static bool PatchesFoldout
+		{
+			get => SessionState.GetBool(nameof(PatchesFoldout), false);
+			set => SessionState.SetBool(nameof(PatchesFoldout), value);
+		}
 		
 		public static bool MethodsListFoldout
 		{

@@ -16,6 +16,7 @@ MonoBehaviour:
   ImmediateMode: 0
   DeepProfiling: 1
   MaxDepth: 2
+  DeepProfileMaxLevel: -1
   DebugLog: 0
   Methods:
   - Enabled: 0
@@ -28,7 +29,7 @@ MonoBehaviour:
       PublicKeyToken=null
     Type: MyNamespace.ComponentWithRaycasts
     Method: Void Update()
-  - Enabled: 0
+  - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: ComponentWithTryCatch
@@ -38,3 +39,55 @@ MonoBehaviour:
       PublicKeyToken=null
     Type: DefaultNamespace.ClassWithProfiledMethod
     Method: Void Update()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void OnValidate()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void Start()
+  - Enabled: 0
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void OnEnable()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void OnDisable()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Boolean CheckMatchingSampleBuffer(UnityEngine.RaycastHit, System.Collections.Generic.IList`1[UnityEngine.Vector3])
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void OnDrawGizmosSelected()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
+    Method: UnityEngine.Pose TransformPoseToSessionSpaceIfNecessary(UnityEngine.Pose)
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
+    Method: Void Reset()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
+    Method: Void Awake()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
+    Method: Void OnDestroy()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
+    Method: Void OnBeforeCleanup()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
+    Method: Void OnPostCleanup()

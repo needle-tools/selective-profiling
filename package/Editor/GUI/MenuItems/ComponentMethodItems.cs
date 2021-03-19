@@ -26,7 +26,7 @@ namespace Needle.SelectiveProfiling
 			{
 				if (currentLevel > maxLevel) return;
 				if (type == null) return;
-				if (onlyUser && AccessUtils.GetLevel(type) != AccessUtils.Level.User) return;
+				if (onlyUser && AccessUtils.GetLevel(type) != Level.User) return;
 
 				const string separator = "/";
 				var basePath = "Profiling/" + type.Name + separator;

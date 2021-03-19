@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using HarmonyLib;
+using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -26,6 +27,58 @@ namespace Needle.SelectiveProfiling
 			return foldout;
 		}
 
+		
+		internal static void DefaultSelectiveProfilerUI(SelectiveProfilerSettings settings, bool inFoldouts)
+		{
+			void DrawSettings()
+			{
+				if (!inFoldouts)
+				{
+					EditorGUILayout.LabelField("General", EditorStyles.boldLabel);
+				}
+				settings.Enabled = EditorGUILayout.ToggleLeft(new GUIContent("Enabled", ""), settings.Enabled);
+				settings.ImmediateMode = EditorGUILayout.ToggleLeft(new GUIContent("Immediate Mode", "Automatically profile selected method in Unity Profiler Window"), settings.ImmediateMode);
+			
+				GUILayout.Space(5);
+				EditorGUILayout.LabelField("Deep Profiling", EditorStyles.boldLabel);
+				settings.DeepProfiling = EditorGUILayout.ToggleLeft(new GUIContent("Use Deep Profiling", "When true all calls within a newly profiled method will be recursively added to be profiled as well"), settings.DeepProfiling);
+				settings.MaxDepth = EditorGUILayout.IntField(new GUIContent("Max Depth", "When deep profiling is enabled this controls how many levels deep we should follow nested method calls"), settings.MaxDepth);
+				settings.DeepProfileMaxLevel = (Level) EditorGUILayout.EnumFlagsField(new GUIContent("Allowed", ""), settings.DeepProfileMaxLevel);
+
+
+				if (SelectiveProfiler.DevelopmentMode)
+				{
+					GUIState.PatchesFoldout = EditorGUILayout.Foldout(GUIState.PatchesFoldout, "Selected Methods [Active " + settings.MethodsList.Count + " of " + settings.MethodsCount + "]");
+					if (GUIState.PatchesFoldout)
+					{
+						EditorGUI.indentLevel++;
+						Draw.SavedMethods(settings);
+						EditorGUI.indentLevel--;
+					}
+				}
+			}
+
+			void DrawProfiledMethods()
+			{
+				if (!inFoldouts)
+				{
+					GUILayout.Space(5);
+					EditorGUILayout.LabelField("Profiling State", EditorStyles.boldLabel);
+				}
+				ScopesList(settings);
+			}
+			
+
+			if (inFoldouts)
+				WithHeaderFoldout("Settings", "Settings", DrawSettings, true);
+			else
+				DrawSettings();
+			
+			if (inFoldouts)
+				WithHeaderFoldout("ProfiledMethods", "Profiled Methods", DrawProfiledMethods, true);
+			else
+				DrawProfiledMethods();
+		}
 		
 		private static readonly Dictionary<string, List<MethodInformation>> scopes = new Dictionary<string, List<MethodInformation>>();
 		private static readonly Dictionary<string, ScopeMeta> scopesMeta = new Dictionary<string, ScopeMeta>();
@@ -99,7 +152,11 @@ namespace Needle.SelectiveProfiling
 					var scope = kvp.Key;
 					var meta = scopesMeta[scope];
 					EditorGUILayout.BeginHorizontal();
-					var show = EditorGUILayout.Foldout(GetFoldout(scope), scope + " [" + meta.Enabled + "/" + meta.Total + "]", GUIStyles.BoldFoldout);
+					var show = EditorGUILayout.Foldout(GetFoldout(scope), 
+						scope + " [" + meta.Enabled + "/" + meta.Total + "]", 
+						true,
+						meta.Enabled <= 0 ? GUIStyles.BoldFoldoutDisabled : GUIStyles.BoldFoldout
+							);
 					if (GUILayout.Button("All", GUILayout.Width(70)))
 						SetState(kvp.Value, true, scope);
 					if (GUILayout.Button("None", GUILayout.Width(70)))

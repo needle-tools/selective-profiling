@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -35,6 +36,7 @@ namespace Needle.SelectiveProfiling
 		
 		public bool DeepProfiling = false;
 		public int MaxDepth = 2;
+		public Level DeepProfileMaxLevel = (Level)~0;
 		
 		public bool DebugLog;
 		

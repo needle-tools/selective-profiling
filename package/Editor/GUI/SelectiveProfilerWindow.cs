@@ -51,18 +51,19 @@ namespace Needle.SelectiveProfiling
 			scroll = EditorGUILayout.BeginScrollView(scroll);
 			
 			EditorGUILayout.Space(10);
-			Draw.WithHeaderFoldout("SelectedMethodsFoldout", "Profiled Methods", () =>
-			{
-				Draw.ScopesList(settings);
-				if(SelectiveProfiler.DevelopmentMode)
-					Draw.SavedMethods(settings);
-			}, true);
-
-			Draw.WithHeaderFoldout("TypesExplorer", "Methods Explorer", () =>
-			{
-				Draw.MethodsExplorer();
-			}, true);
 			
+			Draw.DefaultSelectiveProfilerUI(settings, true);
+			
+			
+			
+			// Draw.WithHeaderFoldout("SelectedMethodsFoldout", "Profiled Methods", () =>
+			// {
+			// 	Draw.ScopesList(settings);
+			// 	if(SelectiveProfiler.DevelopmentMode)
+			// 		Draw.SavedMethods(settings);
+			// }, true);
+
+			Draw.WithHeaderFoldout("TypesExplorer", "Methods Explorer", Draw.MethodsExplorer, true);
 			
 			if (SelectiveProfiler.DevelopmentMode)
 			{

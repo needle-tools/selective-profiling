@@ -15,7 +15,7 @@ namespace Needle.SelectiveProfiling
 		private const string GameObject = "GameObject/" + Submenu;
 
 		[MenuItem(Component + "Enable: Profile All User Methods", true)]
-		private static bool ProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == AccessUtils.Level.User;
+		private static bool ProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == Level.User;
 
 		[MenuItem(Component + "Enable: Profile All User Methods", false, Priority)]
 		private static void ProfileAllMethods(MenuCommand cmd)
@@ -25,7 +25,7 @@ namespace Needle.SelectiveProfiling
 		}
 
 		[MenuItem(Component + "Disable: Profile All User Methods", true)]
-		private static bool DisableDeepProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == AccessUtils.Level.User;
+		private static bool DisableDeepProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == Level.User;
 
 		[MenuItem(Component + "Disable: Profile All User Methods", false, Priority)]
 		private static void DisableDeepProfileAllMethods(MenuCommand cmd)
@@ -42,7 +42,7 @@ namespace Needle.SelectiveProfiling
 			if (!obj) return;
 			foreach (var comp in obj.GetComponentsInChildren<Component>())
 			{
-				if (AccessUtils.GetLevel(comp.GetType()) != AccessUtils.Level.User) continue;
+				if (AccessUtils.GetLevel(comp.GetType()) != Level.User) continue;
 				foreach (var m in AccessUtils.GetMethods(comp, AccessUtils.All, typeof(MonoBehaviour)))
 					SelectiveProfiler.EnableProfiling(m, SelectiveProfiler.ShouldSave);
 			}
@@ -55,7 +55,7 @@ namespace Needle.SelectiveProfiling
 			if (!obj) return;
 			foreach (var comp in obj.GetComponentsInChildren<Component>())
 			{
-				if (AccessUtils.GetLevel(comp.GetType()) != AccessUtils.Level.User) continue;
+				if (AccessUtils.GetLevel(comp.GetType()) != Level.User) continue;
 				foreach (var m in AccessUtils.GetMethods(comp, AccessUtils.All, typeof(MonoBehaviour)))
 					SelectiveProfiler.DisableProfiling(m);
 			}

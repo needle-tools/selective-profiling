@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using needle.EditorPatching;
@@ -52,3 +54,5 @@ namespace _Tests
 		}
 	}
 }
+
+#endif
