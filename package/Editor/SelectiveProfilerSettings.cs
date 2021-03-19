@@ -54,10 +54,12 @@ namespace Needle.SelectiveProfiling
 		public bool ImmediateMode = false;
 		
 		public bool DeepProfiling = false;
-		public int MaxDepth = 2;
+		public int MaxDepth = 1;
 		public Level DeepProfileMaxLevel = (Level)~0;
 		
 		public bool DebugLog;
+
+		public bool SkipProperties = true;
 		
 		[SerializeField]
 		private List<MethodInformation> Methods = new List<MethodInformation>();

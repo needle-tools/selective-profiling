@@ -53,6 +53,10 @@ namespace Needle.SelectiveProfiling
 				}
 				settings.Enabled = EditorGUILayout.ToggleLeft(new GUIContent("Enabled", ""), settings.Enabled);
 				settings.ImmediateMode = EditorGUILayout.ToggleLeft(new GUIContent("Immediate Mode", "Automatically profile selected method in Unity Profiler Window"), settings.ImmediateMode);
+				settings.SkipProperties =
+					EditorGUILayout.ToggleLeft(
+						new GUIContent("Skip Properties", "Patching property getters does fail in some cases and should generally not be necessary"),
+						settings.SkipProperties);
 			
 				GUILayout.Space(5);
 				EditorGUILayout.LabelField("Deep Profiling", EditorStyles.boldLabel);
@@ -60,6 +64,7 @@ namespace Needle.SelectiveProfiling
 				settings.MaxDepth = EditorGUILayout.IntField(new GUIContent("Max Depth", "When deep profiling is enabled this controls how many levels deep we should follow nested method calls"), settings.MaxDepth);
 				settings.DeepProfileMaxLevel = (Level) EditorGUILayout.EnumFlagsField(new GUIContent("Allowed", ""), settings.DeepProfileMaxLevel);
 
+				
 
 				if (SelectiveProfiler.DevelopmentMode)
 				{

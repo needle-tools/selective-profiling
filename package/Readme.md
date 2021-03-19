@@ -1,18 +1,21 @@
 # Selective Profiling for Unity
-## Runtime deep profiling individual methods 🔬
+## Runtime deep profile individual methods 🔬
+With selective profiler you can choose individual methods to profile from Unity Profiler. Just select a method in the Profiler window and choose ``Profile`` to automatically get more precice information.
+
+
 
 ![](Documentation~/profiler-select.png)
 
-With selective profiler you can choose individual methods to profile from Unity Profiler. Just select a method in the Profiler window and choose ``Profile`` to automatically get more precice information.
-
-## Features 🧬
-- Select methods in the Unity Profiler to start or stop deep profiling, at any time! No domain reload or restart needed. 
-- Mark methods or classes in your project to be always deep profiled without having to turn on Deep Profiling for your whole project.
-
-
 ![](Documentation~/beforeafter.png)
 
+
+
+## Features 🧬
+- ### Select methods in the Unity Profiler to start or stop deep profiling, at any time! No domain reload or restart needed. 
 ![](Documentation~/profiler-select.gif)
+- ### Mark methods or classes in your project with ``[AlwaysProfile]`` to be always deep profiled without having to turn on Deep Profiling for your whole project or selecting specific methods.
+
+
 
 ## Installation 💾
 1) 
@@ -54,9 +57,9 @@ Internally when a method gets selected for profiling we wrap every call instruct
 For injection we use [Harmony](https://github.com/pardeike/Harmony), an awesome library by Andreas Pardeike. Harmony allows to modify almost any code at runtime by modifying the underlying IL instructions.
 
 ## Known issues / limitations 😰
-- Occasionally injections break method functionality or cause errors ([see issue](https://github.com/needle-tools/selective-profiling/issues/2)). If it happens it is recommended to disabling the ``Deep Profile`` option in ``Project Settings/Needle/Selective Profiling`` or decreasing the ``Max Level``. In that case please also [open an issue](https://github.com/needle-tools/selective-profiling/issues/new) with as much information about your project and profiled method as possible.
 - Generic classes or methods are currently not supported. [See issue](https://github.com/needle-tools/selective-profiling/issues/6)
-- In the Profiler window currently some methods (usually ending with brackets ``()``) can be selected for profiling.
+- In the Profiler window currently some methods (usually ending with brackets ``()``) can be selected for profiling. We're still looking into on how to use the Profiler API to get method information for selected rows.
+- Occasionally injections break method functionality or cause errors ([see issue](https://github.com/needle-tools/selective-profiling/issues/2)). It seems to only happen with properties though. Profiling code inside properties should seldomly be important and therefor it is disabled by default (See setting ``Skip Properties``). Otherwise it is recommended to try disabling the ``Deep Profile`` option in ``Project Settings/Needle/Selective Profiling`` or decreasing the ``Max Level``. In any case please also [open an issue](https://github.com/needle-tools/selective-profiling/issues/new) with as much information about your project and profiled method as possible to help us find and fix issues like that.
 
 
 ## Contact ✒️

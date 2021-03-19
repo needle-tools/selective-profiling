@@ -169,21 +169,16 @@ namespace Needle.SelectiveProfiling.Utils
 			if (!method.HasMethodBody())
 			{
 				if (debugLog)
-					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Method has no body: " + GetMethodLogName());
+					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, 
+						"Method has no body: " + GetMethodLogName());
 				return false;
 			}
 
 			if (method.DeclaringType == typeof(Profiler))
 			{
 				if(debugLog)
-					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Profiling types in Unity Profiler is not allowed: " + GetMethodLogName());
-				return false;
-			}
-
-			if (GetLevel(method.DeclaringType) == Level.System)
-			{
-				if(debugLog)
-					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Profiling system level types is not allowed: " + GetMethodLogName());
+					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, 
+						"Profiling types in Unity Profiler is not allowed: " + GetMethodLogName());
 				return false;
 			}
 			
@@ -194,6 +189,27 @@ namespace Needle.SelectiveProfiling.Utils
 			{
 				if(debugLog)
 					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Profiling generic types is not supported: " + GetMethodLogName() + "\nSee issue: https://github.com/needle-tools/selective-profiling/issues/6");
+				return false;
+			}
+
+			// See https://github.com/needle-tools/selective-profiling/issues/2 
+			var settings = SelectiveProfilerSettings.instance;
+			if (settings.SkipProperties)
+			{
+				if (method.IsSpecialName && method.Name.StartsWith("get_") || method.Name.StartsWith("set_"))
+				{
+					if(debugLog)
+						Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, 
+							"Profiling properties is disabled in settings: " + GetMethodLogName() + "\nFor more information please refer to https://github.com/needle-tools/selective-profiling/issues/2");
+					return false;
+				}
+			}
+
+			if (GetLevel(method.DeclaringType) == Level.System)
+			{
+				if(debugLog)
+					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, 
+						"Profiling system level types is not allowed: " + GetMethodLogName());
 				return false;
 			}
 
