@@ -1,5 +1,5 @@
 # Selective Profiling for Unity
-## Runtime deep profiling individual methods 🔬
+## Runtime deep profile individual methods 🔬
 
 ![](package/Documentation~/profiler-select.png)
 
