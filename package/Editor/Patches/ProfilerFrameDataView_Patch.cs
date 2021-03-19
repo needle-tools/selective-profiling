@@ -123,7 +123,8 @@ namespace Needle.SelectiveProfiling
 							
 							menu.AddItem(new GUIContent("Enable profiling for all"), false, () =>
 							{
-								foreach (var m in availableMethods) SelectiveProfiler.EnableProfiling(m);
+								foreach (var m in availableMethods)
+									EnableProfilingFromProfilerWindow(m);
 							});
 							menu.AddItem(new GUIContent("Disable profiling for all"), false, () =>
 							{
@@ -135,7 +136,6 @@ namespace Needle.SelectiveProfiling
 							{
 								AddMenuItem(menu, m);
 							}
-
 
 						}
 						else
@@ -151,11 +151,14 @@ namespace Needle.SelectiveProfiling
 			// https://docs.unity3d.com/ScriptReference/Profiling.HierarchyFrameDataView.GetItemCallstack.html
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerModules/CPUorGPUProfilerModule.cs#L194
 		}
-
+		
+		
+		
 		private static void AddMenuItem(GenericMenu menu, MethodInfo methodInfo)
 		{
 			var active = SelectiveProfiler.IsProfiling(methodInfo);
 			var ret = methodInfo.ReturnType.Name;
+			// remove void return types
 			if (ret == "Void") ret = string.Empty;
 			else ret += " ";
 			var methodName = methodInfo.Name + "(" + string.Join(",", methodInfo.GetParameters()?.Select(p => p.ParameterType)) + ")";
@@ -164,13 +167,18 @@ namespace Needle.SelectiveProfiling
 				{
 					if (!active)
 					{
-						SelectiveProfiler.EnableProfiling(methodInfo, true, true, true, true);
+						EnableProfilingFromProfilerWindow(methodInfo);
 					}
 					else
 					{
 						SelectiveProfiler.DisableProfiling(methodInfo);
 					}
 				});
+		}
+		
+		private static void EnableProfilingFromProfilerWindow(MethodInfo method)
+		{
+			SelectiveProfiler.EnableProfiling(method, true, true, true, true);
 		}
 	}
 }
