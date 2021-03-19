@@ -186,3 +186,24 @@ MonoBehaviour:
   - Needle.XR.ARSimulation.Extensions.BoundedPlaneHelper.FromPlane
   - UnityEngine.XR.ARFoundation.ARPlaneMeshVisualizer.Update
   - UnityEngine.XR.ARFoundation.ARSessionOrigin.Update
+  - Needle.XR.ARSimulation.ARSimulationLoaderSettings.get_Instance
+  - UnityEditor.AssetDatabase.FindAssets
+  - UnityEditor.AssetDatabase.GUIDToAssetPath
+  - UnityEditor.AssetDatabase.GUIDToAssetPath_Internal
+  - UnityEngine.XR.Management.XRGeneralSettings.get_Instance
+  - UnityEngine.Camera.get_allCamerasCount
+  - UnityEngine.XR.Management.XRGeneralSettings.get_Manager
+  - UnityEngine.Quaternion.Normalize
+  - UnityEngine.XR.Management.XRManagerSettings.get_activeLoaders
+  - UnityEngine.Transform.get_parentInternal
+  - UnityEngine.Quaternion.Dot
+  - UnityEngine.Mathf.Sqrt
+  - UnityEngine.Quaternion.get_identity
+  - UnityEngine.RaycastHit.get_rigidbody
+  - UnityEngine.RaycastHit.get_collider
+  - Needle.XR.ARSimulation.Extensions.MeshHelper.OrderClockwise
+  - Needle.XR.ARSimulation.Simulation.Geometry.Geometry.Cross
+  - UnityEngine.Vector3.Dot
+  - UnityEngine.GUIContent.set_image
+  - UnityEngine.GUIContent.set_text
+  - UnityEngine.GUIContent.set_tooltip

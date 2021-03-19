@@ -16,9 +16,10 @@ MonoBehaviour:
   Enabled: 1
   ImmediateMode: 0
   DeepProfiling: 1
-  MaxDepth: 1
+  MaxDepth: 3
   DeepProfileMaxLevel: -1
   DebugLog: 0
+  SkipProperties: 1
   Methods:
   - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
