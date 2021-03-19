@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using MyNamespace;
-using Needle.SelectiveProfiling.Attributes;
+﻿using Needle.SelectiveProfiling;
 using UnityEngine;
 
 namespace DefaultNamespace

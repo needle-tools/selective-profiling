@@ -2,18 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
 using needle.EditorPatching;
-using Needle.SelectiveProfiling.Attributes;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
-using UnityEditor.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
-using Object = System.Object;
 
 namespace Needle.SelectiveProfiling
 {
@@ -50,14 +46,14 @@ namespace Needle.SelectiveProfiling
 			return Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
-		public static async void EnableProfiling([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool enableIfMuted = false)
+		public static async void EnableProfiling([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool enableIfMuted = false , bool forceLogs = false)
 		{
-			await EnableProfilingAsync(method, save, enablePatch, enableIfMuted);
+			await EnableProfilingAsync(method, save, enablePatch, enableIfMuted, forceLogs);
 		}
 
-		public static Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool enableIfMuted = false)
+		public static Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool enableIfMuted = false, bool forceLogs = false)
 		{
-			return InternalEnableProfilingAsync(method, save, enablePatch, enableIfMuted);
+			return InternalEnableProfilingAsync(method, save, enablePatch, enableIfMuted, null, 0, forceLogs);
 		}
 
 		/// <summary>
@@ -70,7 +66,8 @@ namespace Needle.SelectiveProfiling
 			bool enablePatch = true,
 			bool enableIfMuted = false,
 			MethodInfo source = null,
-			int depth = 0
+			int depth = 0,
+			bool forceLogs = false
 		)
 		{
 			var settings = SelectiveProfilerSettings.instance;
@@ -79,7 +76,7 @@ namespace Needle.SelectiveProfiling
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
 			var isDeep = source != null && method != source;
-			if (!AccessUtils.AllowPatching(method, isDeep, settings.DebugLog))
+			if (!AccessUtils.AllowPatching(method, isDeep, settings.DebugLog || forceLogs))
 			{
 				return;
 			}
@@ -245,6 +242,7 @@ namespace Needle.SelectiveProfiling
 
 		private static void OnEditorUpdate()
 		{
+			if (!SelectiveProfilerSettings.instance.Enabled) return;
 			if (stateChangedList.Count > 0)
 			{
 				var handled = 0;

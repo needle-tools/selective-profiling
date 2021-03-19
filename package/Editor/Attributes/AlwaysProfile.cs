@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Needle.SelectiveProfiling.Attributes
+namespace Needle.SelectiveProfiling
 {
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 	public class AlwaysProfile : Attribute

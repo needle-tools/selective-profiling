@@ -16,11 +16,11 @@ MonoBehaviour:
   Enabled: 1
   ImmediateMode: 0
   DeepProfiling: 1
-  MaxDepth: 2
+  MaxDepth: 1
   DeepProfileMaxLevel: -1
   DebugLog: 0
   Methods:
-  - Enabled: 0
+  - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: MyNamespace.MySlowScript
@@ -34,11 +34,6 @@ MonoBehaviour:
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: ComponentWithTryCatch
-    Method: Void Update()
-  - Enabled: 0
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: DefaultNamespace.ClassWithProfiledMethod
     Method: Void Update()
   - Enabled: 1
     Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
@@ -92,3 +87,7 @@ MonoBehaviour:
     Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: Needle.XR.ARSimulation.Simulation.SimulatedARElement
     Method: Void OnPostCleanup()
+  - Enabled: 0
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
+    Method: Void Update()

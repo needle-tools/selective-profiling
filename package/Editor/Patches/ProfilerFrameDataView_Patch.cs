@@ -117,7 +117,7 @@ namespace Needle.SelectiveProfiling
 									{
 										if (!active)
 										{
-											SelectiveProfiler.EnableProfiling(methodInfo, true, true, true);
+											SelectiveProfiler.EnableProfiling(methodInfo, true, true, true, true);
 										}
 										else
 										{

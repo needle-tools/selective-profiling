@@ -193,7 +193,7 @@ namespace Needle.SelectiveProfiling.Utils
 			if ((method.DeclaringType?.IsGenericType ?? false) || method.IsGenericMethod)// && (method.ReturnType.IsGenericType || method.IsGenericMethod || method.ContainsGenericParameters))
 			{
 				if(debugLog)
-					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Profiling generic types is not supported: " + GetMethodLogName());
+					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, "Profiling generic types is not supported: " + GetMethodLogName() + "\nSee issue: https://github.com/needle-tools/selective-profiling/issues/6");
 				return false;
 			}
 

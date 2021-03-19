@@ -51,8 +51,8 @@ namespace Needle.SelectiveProfiling
 			GUILayout.Space(5);
 			if (GUILayout.Button(new GUIContent("Save"), GUILayout.Width(80))) 
 				SelectiveProfilerSettings.instance.Save();
-			if (GUILayout.Button(new GUIContent("Clear"), GUILayout.Width(80))) 
-				SelectiveProfilerSettings.instance.ClearAll();
+			// if (GUILayout.Button(new GUIContent("Clear"), GUILayout.Width(80))) 
+			// 	SelectiveProfilerSettings.instance.ClearAll();
 			if (GUILayout.Button(new GUIContent("Open Selective Profiler"), GUILayout.Width(160))) 
 				SelectiveProfilerWindow.Open();
 			EditorGUILayout.EndHorizontal();
