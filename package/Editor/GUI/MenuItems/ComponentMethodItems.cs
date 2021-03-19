@@ -54,8 +54,8 @@ namespace Needle.SelectiveProfiling
 			}
 
 			// var onlyUser = AccessUtils.GetLevel(ctx.GetType()) == AccessUtils.Level.User;
-			const bool onlyUser = false;
-			AddMethods(ctx.GetType(), onlyUser, 1);
+			const bool _onlyUser = false;
+			AddMethods(ctx.GetType(), _onlyUser, 1);
 
 		}
 
