@@ -45,16 +45,17 @@ With selective profiler you can choose individual methods to profile from Unity 
 
   **NOTE**: when selecting methods in edit mode they will be saved to the selected methods list. Selected methods in playmode will not be saved.
   
-- ### How to remove previously selected methods
-  Open ``Project Settings/Needle/Selective Profiler`` and remove the methods you dont want to profile anymore from the profiling list. You remove a method completely by clicking the X or you can mute a method by disabling the toggle (which means it will not be profiled if any other method calls the method and deep profiling is enabled).
+- ### How to remove previously saved methods
+  At edit time you right click methods in the profiler window to enable or disable profiling them.
+  Generally to see what is currently saved open ``Project Settings/Needle/Selective Profiler``. In the settings window you can see an overview of all saved methods. You can remove a method completely by clicking the X or to mute a method disable the toggle which means it will not be profiled and if deep profiling is enabled and other method call this method it will be skipped.
   
-- ### How to Always deep profile classes or methods?
+- ### How to always deep profile classes or methods?
    Just add a ``[AlwaysProfile]`` attribute to your class or method you want to profile
 
 ## Technical background 💉
-Internally when a method gets selected for profiling we wrap every call instruction inside that selected method with ``Profiler.Begin`` and ``End`` calls. The resulting output is the same as if you would have added those calls manually in your code.
+Internally when a method gets selected for profiling we wrap every call instruction inside that selected method with ``Profiler.Begin`` and ``End`` calls. **The resulting output is the same as if you would have added those calls manually in your code!**
 
-For injection we use [Harmony](https://github.com/pardeike/Harmony), an awesome library by Andreas Pardeike. Harmony allows to modify almost any code at runtime by modifying the underlying IL instructions.
+For injection we use [Harmony](https://github.com/pardeike/Harmony), an awesome library by Andreas Pardeike. Harmony allows to modify almost any code at runtime by modifying the underlying IL instructions. Those modifications are only in memory and dont affect your C# code or built Unity game/player.
 
 ## Known issues / limitations 😰
 - Generic classes or methods are currently not supported. [See issue](https://github.com/needle-tools/selective-profiling/issues/6)
