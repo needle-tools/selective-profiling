@@ -15,7 +15,7 @@ namespace Needle.SelectiveProfiling
 {
 	public static class SelectiveProfiler
 	{
-		public const string SamplePostfix = "[needle]";
+		public const string SamplePostfix = "~";
 
 		// private static MethodInfo previouslySelectedImmediateProfilingMethod;
 
