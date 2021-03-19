@@ -98,40 +98,51 @@ namespace Needle.SelectiveProfiling
 						SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
 				}
 
-				if (button != 1) return; // right
+				if (button != 1)
+				{
+					return;
+				}
 
-
+				// right click
 				if (cellRect.Contains(Event.current.mousePosition))
 				{
 					if (m_FrameDataViewField != null)
 					{
+						var menu = new GenericMenu();
+						if (!settings.Enabled) return;
 						var name = frameDataView?.GetItemName(item.id);
 						if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
 						{
-							var menu = new GenericMenu();
-							if (settings.Enabled)
-							{
-								var active = SelectiveProfiler.IsProfiling(methodInfo);
-								menu.AddItem(new GUIContent($"{(active ? "Remove" : "Add")} Profiling to \"{methodInfo.DeclaringType?.Name}.{methodInfo}\""),
-									active, () =>
-									{
-										if (!active)
-										{
-											SelectiveProfiler.EnableProfiling(methodInfo, true, true, true, true);
-										}
-										else
-										{
-											SelectiveProfiler.DisableProfiling(methodInfo);
-										}
-									});
-							}
-							else
-							{
-							}
-
+							AddMenuItem(menu, methodInfo);
 							menu.ShowAsContext();
 						}
-						else Debug.Log("Did not find type for " + name);
+						else if(ProfilerHelper.TryGetMethodsInChildren(item.id, frameDataView, out var methodsFound))
+						{
+							var availableMethods = 
+								methodsFound.Where(e => AccessUtils.AllowPatching(e, false, false)).ToList();
+							
+							menu.AddItem(new GUIContent("Enable profiling for all"), false, () =>
+							{
+								foreach (var m in availableMethods) SelectiveProfiler.EnableProfiling(m);
+							});
+							menu.AddItem(new GUIContent("Disable profiling for all"), false, () =>
+							{
+								foreach (var m in availableMethods) SelectiveProfiler.DisableProfiling(m);
+							});
+							menu.AddSeparator(string.Empty);
+							
+							foreach (var m in availableMethods)
+							{
+								AddMenuItem(menu, m);
+							}
+
+
+						}
+						else
+						{
+							menu.AddDisabledItem(new GUIContent("Nothing to profile in " + name));
+						}
+						menu.ShowAsContext();
 					}
 				}
 			}
@@ -139,6 +150,27 @@ namespace Needle.SelectiveProfiling
 			// TODO: figure out how to use https://docs.unity3d.com/ScriptReference/Profiling.FrameDataView.ResolveMethodInfo.html
 			// https://docs.unity3d.com/ScriptReference/Profiling.HierarchyFrameDataView.GetItemCallstack.html
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerModules/CPUorGPUProfilerModule.cs#L194
+		}
+
+		private static void AddMenuItem(GenericMenu menu, MethodInfo methodInfo)
+		{
+			var active = SelectiveProfiler.IsProfiling(methodInfo);
+			var ret = methodInfo.ReturnType.Name;
+			if (ret == "Void") ret = string.Empty;
+			else ret += " ";
+			var methodName = methodInfo.Name + "(" + string.Join(",", methodInfo.GetParameters()?.Select(p => p.ParameterType)) + ")";
+			menu.AddItem(new GUIContent($"Profile | {ret}{methodInfo.DeclaringType?.Name}.{methodName}"),
+				active, () =>
+				{
+					if (!active)
+					{
+						SelectiveProfiler.EnableProfiling(methodInfo, true, true, true, true);
+					}
+					else
+					{
+						SelectiveProfiler.DisableProfiling(methodInfo);
+					}
+				});
 		}
 	}
 }
