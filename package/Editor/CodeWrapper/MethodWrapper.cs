@@ -35,15 +35,17 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			for (var index = 0; index < instructions.Count; index++)
 			{
 				var inst = instructions[index];
-
+				var prevStart = start;
+				
 				// if a method call loads variables make sure to insert code before variable loading
 				if (TranspilerUtils.LoadVarCodes.Contains(inst.opcode) || inst.opcode == OpCodes.Ldstr || inst.opcode == OpCodes.Ldobj || inst.IsLdarg() || inst.IsLdarga())
 				{
 					if(start < 0)
 						start = index;
 				}
-				
-				if (inst.Branches(out _) || inst.labels != null && inst.labels.Count > 0)
+
+				var hasLabel = inst.Branches(out _) || inst.labels != null && inst.labels.Count > 0;
+				if (hasLabel)
 				{
 					// make sure to insert sample after branching labels
 					start = index + 1;
@@ -57,7 +59,8 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				{
 					start = index + 1;
 				}
-				else if (inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt)
+				
+				if (inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt || inst.opcode == OpCodes.Newobj || inst.opcode == OpCodes.Newarr)
 				{
 					if (inst.operand is MethodInfo mi)
 					{
@@ -69,6 +72,8 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 						}
 					}
 
+					if (start > index && hasLabel) start = prevStart;
+
 					// we arrived at the actual method call
 					wrapper.Start = start == -1 ? index : start;
 					wrapper.MethodIndex = index;
@@ -79,7 +84,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				}
 			}
 
-			if (debugLog)
+			// if (debugLog)
 			{
 				var prefix = CurrentMethod != null ? "<b>Transpiled</b> " + CurrentMethod.DeclaringType?.Name + "." + CurrentMethod.Name + "\n" : string.Empty;
 				Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, prefix + IL_Before + "\n\n----\n\n" + string.Join("\n", instructions) + "\n\n");

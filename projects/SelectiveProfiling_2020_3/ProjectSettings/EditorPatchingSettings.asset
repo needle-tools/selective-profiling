@@ -293,3 +293,37 @@ MonoBehaviour:
   - UnityEngine.Transform.TransformPoint
   - UnityEngine.XR.ARFoundation.TransformExtensions.TransformPose
   - UnityEngine.Pose.GetTransformedBy
+  - UnityEngine.PhysicsScene.Internal_Raycast
+  - Needle.SelectiveProfiling.ComponentCreatingLotsOfGarbage.Update
+  - UnityEngine.Experimental.Rendering.ScriptableRuntimeReflectionSystemWrapper.Internal_ScriptableRuntimeReflectionSystemWrapper_TickRealtimeProbes
+  - UnityEngine.UIElements.UIR.Utility.RaiseRegisterIntermediateRenderers
+  - UnityEngine.SendMouseEvents.DoSendMouseEvents
+  - UnityEngineInternal.Input.NativeInputSystem.ShouldRunUpdate
+  - UnityEngineInternal.Input.NativeInputSystem.NotifyUpdate
+  - UnityEngineInternal.Input.NativeInputSystem.NotifyBeforeUpdate
+  - UnityEngine.AI.NavMesh.Internal_CallOnNavMeshPreUpdate
+  - UnityEngine.Canvas.SendWillRenderCanvases
+  - UnityEngine.Canvas.SendPreWillRenderCanvases
+  - UnityEngine.Application.InvokeOnBeforeRender
+  - UnityEngine.Camera.FireOnPreRender
+  - UnityEngine.Camera.FireOnPostRender
+  - UnityEngine.Rendering.SupportedRenderingFeatures.IsLightmapBakeTypeSupportedByRef
+  - UnityEngine.Rendering.SupportedRenderingFeatures.IsLightmapBakeTypeSupported
+  - UnityEngine.BeforeRenderHelper.Invoke
+  - UnityEngine.Camera.GetAllCameras
+  - UnityEngine.Display.RelativeMouseAt
+  - UnityEngine.Vector3.op_Inequality
+  - UnityEngine.Vector3.op_Equality
+  - UnityEngine.Rect.Contains
+  - UnityEngine.Mathf.Approximately
+  - UnityEngine.Mathf.Abs
+  - UnityEngine.CameraRaycastHelper.RaycastTry
+  - UnityEngine.CameraRaycastHelper.RaycastTry2D
+  - UnityEngine.SendMouseEvents.SendEvents
+  - UnityEngine.SendMouseEvents+HitInfo.op_Implicit
+  - UnityEngine.SendMouseEvents+HitInfo.SendMessage
+  - UnityEngine.SendMouseEvents+HitInfo.Compare
+  - ComponentWithTryCatch.<OtherMethod>g__Nested|1_0
+  - UnityEngine.StackTraceUtility.ExtractStackTrace
+  - UnityEngine.Application.CallLogCallback
+  - UnityEngine.StackTraceUtility.ExtractFormattedStackTrace

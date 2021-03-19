@@ -55,7 +55,7 @@ namespace Needle.SelectiveProfiling
 				
 				void SetSampleName(CodeInstruction instruction, int index)
 				{
-					var methodName = TranspilerUtils.TryGetMethodName(instruction.operand, false);
+					var methodName = TranspilerUtils.TryGetMethodName(instruction.opcode, instruction.operand, false);
 					InsertBefore[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
 				}
 				ICodeWrapper wrapper = new MethodWrapper(
