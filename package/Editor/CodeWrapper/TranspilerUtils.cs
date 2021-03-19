@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using UnityEditor.Profiling;
-using UnityEngine;
+
+// always true/false + disable compiler warning
+// ReSharper disable ConditionIsAlwaysTrueOrFalse
+#pragma warning disable 162
 
 namespace Needle.SelectiveProfiling.CodeWrapper
 {
 	internal static class TranspilerUtils
 	{
+		private const bool IncludeParameterNames = false;
+		
 		public static readonly HashSet<OpCode> LoadVarCodes = new HashSet<OpCode>()
 		{
 			OpCodes.Ldloc_0,
@@ -132,13 +136,17 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			}
 			
 			var _method = method.Name;
+			var _isPropertyGetter = _method.StartsWith(getterPrefix);
 			if (method.IsSpecialName) _method = GetNicePropertyName(_method);
 
 			if (method.IsGenericMethod) 
 				_method += GetNiceGenericArguments(method.GetGenericArguments());
 
-			var parameters = method.GetParameters();
-			_method += GetNiceParameters(parameters);
+			if (!_isPropertyGetter)
+			{
+				var parameters = method.GetParameters();
+				_method += GetNiceParameters(parameters);
+			}
 			
 			return !string.IsNullOrEmpty(_class) 
 				? _class + "." + _method 
@@ -147,18 +155,28 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 		private static string GetNiceParameters(params ParameterInfo[] parameters)
 		{
-			var p = string.Join(", ", parameters.Select(parameterInfo => GetNiceTypeName(parameterInfo.ParameterType) + " " + parameterInfo.Name));
+			string GetParameterName(ParameterInfo parameterInfo)
+			{
+				if (!IncludeParameterNames) return GetNiceTypeName(parameterInfo.ParameterType);
+				return GetNiceTypeName(parameterInfo.ParameterType) + " " + parameterInfo.Name;
+			}
+			
+			var p = string.Join(", ", parameters.Select(GetParameterName));
 			return "(" + p + ")";
 		}
 
+		private const string getterPrefix = "get_";
+		private const string setterPrefix = "set_";
+		private const string operationPrefix = "op_";
+		
 		private static string GetNicePropertyName(string propertyName)
 		{
-			const string getterPrefix = "get_";
-			const string setterPrefix = "set_";
 			if (propertyName.StartsWith(getterPrefix))
 				propertyName = propertyName.Substring(getterPrefix.Length) + " get";
 			else  if (propertyName.StartsWith(setterPrefix))
 				propertyName = propertyName.Substring(setterPrefix.Length) + " set";
+			else if(propertyName.StartsWith(operationPrefix))
+				propertyName = propertyName.Substring(operationPrefix.Length);
 			return propertyName;
 		}
 		

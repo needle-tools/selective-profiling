@@ -31,8 +31,12 @@ MonoBehaviour:
       PublicKeyToken=null
     Type: DefaultNamespace.ThisIsAlwaysProfiled
     Method: Void SomeCall()
-  - Enabled: 1
+  - Enabled: 0
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: DefaultNamespace.ComponentCallingMethods
+    Method: Void Update()
+  - Enabled: 0
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.EventSystem
     Method: Void Update()
