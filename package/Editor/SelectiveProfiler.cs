@@ -167,9 +167,15 @@ namespace Needle.SelectiveProfiling
 				SelectiveProfilerSettings.instance.UpdateState(mi, false, true);
 			}
 		}
+		
+
+		internal static IEnumerable<string> ExpectedPatches()
+		{
+			yield return typeof(ProfilerFrameDataView_Patch).FullName;
+			yield return typeof(ContextMenuPatches).FullName;
+		}
 
 		internal static bool DebugLog => SelectiveProfilerSettings.instance.DebugLog;
-
 		internal static bool TranspilerShouldSkipCallsInProfilerType => true;
 
 		internal static IEnumerable<ProfilingInfo> Patches => patches.Values;
@@ -232,18 +238,7 @@ namespace Needle.SelectiveProfiling
 			SelectiveProfilerSettings.Cleared += MethodsCleared;
 
 			EditorApplication.update -= OnEditorUpdate;
-			EditorApplication.update += OnEditorUpdate;
-
-			var settings = SelectiveProfilerSettings.instance;
-			if (settings.Enabled)
-			{
-				if (!PatchManager.IsActive(typeof(ProfilerFrameDataView_Patch).FullName))
-				{
-					if(DebugLog)
-						Debug.Log("Enabled profiler window patch");
-					PatchManager.EnablePatch(typeof(ProfilerFrameDataView_Patch)); 
-				}
-			}
+			EditorApplication.update += OnEditorUpdate; 
 		}
 
 		private static readonly List<(MethodInformation method, bool state)> stateChangedList = new List<(MethodInformation, bool)>();

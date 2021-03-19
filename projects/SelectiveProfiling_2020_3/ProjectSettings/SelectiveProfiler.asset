@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f52273eee02c4063a24a332d916bdea0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  FirstInstall: 0
   Enabled: 1
   ImmediateMode: 0
   DeepProfiling: 1

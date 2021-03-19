@@ -15,8 +15,8 @@ MonoBehaviour:
   DebugLog: 0
   enabledPatchIds:
   - Needle.SelectiveProfiling.RayPatch
-  - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
   - needle.EditorPatching.HarmonyUnityDebugLogPatch
+  - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
   - Needle.SelectiveProfiling.ContextMenuPatches
   disabledPatchIds:
   - MyNamespace.MySlowScript.Update

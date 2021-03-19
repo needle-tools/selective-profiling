@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using HarmonyLib;
+using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEngine;
@@ -30,6 +32,19 @@ namespace Needle.SelectiveProfiling
 		
 		internal static void DefaultSelectiveProfilerUI(SelectiveProfilerSettings settings, bool inFoldouts)
 		{
+			if (!SelectiveProfiler.ExpectedPatches().All(PatchManager.IsActive))
+			{
+				var notEnabledList = SelectiveProfiler.ExpectedPatches().Where(p => !PatchManager.IsActive(p));
+				EditorGUILayout.HelpBox("Some patches for Selective Profiler are not enabled. Some functionality might not work as expected or be missing.\n"+string.Join(", ", notEnabledList), MessageType.Warning);
+				if (GUILayout.Button("Enable patches"))
+				{
+					foreach (var exp in SelectiveProfiler.ExpectedPatches())
+						PatchManager.EnablePatch(exp);
+				}
+
+				GUILayout.Space(10); 
+			}
+			
 			void DrawSettings()
 			{
 				if (!inFoldouts)

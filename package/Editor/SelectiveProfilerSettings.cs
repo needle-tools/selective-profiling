@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEngine;
@@ -23,6 +24,18 @@ namespace Needle.SelectiveProfiling
 		{
 			if(!Application.isPlaying)
 				Undo.undoRedoPerformed += () => instance.Save();
+
+			if (instance.FirstInstall)
+			{ 
+				Debug.Log("Thank you for installing Selective Profiler.");
+				instance.FirstInstall = false;
+				instance.Save();
+				
+				foreach (var exp in SelectiveProfiler.ExpectedPatches())
+				{
+					PatchManager.EnablePatch(exp); 
+				}
+			}
 		}
 
 
@@ -30,6 +43,9 @@ namespace Needle.SelectiveProfiling
 		{
 			base.Save(true);
 		}
+
+		[SerializeField]
+		internal bool FirstInstall = true;
 		
 		public bool Enabled = true;
 		public bool ImmediateMode = false;
@@ -44,7 +60,6 @@ namespace Needle.SelectiveProfiling
 		private List<MethodInformation> Methods = new List<MethodInformation>();
 		
 		public int MethodsCount => Methods.Count;
-
 		
 		public void GetInstance(ref MethodInformation mi)
 		{
