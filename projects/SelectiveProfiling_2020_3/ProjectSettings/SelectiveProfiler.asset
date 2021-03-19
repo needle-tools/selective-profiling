@@ -92,3 +92,55 @@ MonoBehaviour:
     Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: UnityEngine.XR.ARFoundation.ARSessionOrigin
     Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Void EndGUI(Int32)
+  - Enabled: 0
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Void BeginGUI(Int32, Int32, Int32)
+  - Enabled: 0
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Event
+    Method: Void Internal_MakeMasterEventCurrent(Int32)
+  - Enabled: 0
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Compatibility.InputHelper
+    Method: Void OnGUI()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneMeshVisualizer
+    Method: Void OnDisable()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Compatibility.AutoMaterial
+    Method: Void OnDisable()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSession
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPoseDriver
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneMeshVisualizer
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlane
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPoseProvider
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.ExampleComponents.InstantiateAtRaycastHitExample
+    Method: Void Update()

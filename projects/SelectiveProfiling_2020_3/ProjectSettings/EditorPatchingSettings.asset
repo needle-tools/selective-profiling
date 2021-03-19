@@ -207,3 +207,8 @@ MonoBehaviour:
   - UnityEngine.GUIContent.set_image
   - UnityEngine.GUIContent.set_text
   - UnityEngine.GUIContent.set_tooltip
+  - UnityEngine.GUIUtility.EndGUI
+  - UnityEngine.GUIUtility.BeginGUI
+  - UnityEngine.Event.Internal_MakeMasterEventCurrent
+  - Needle.XR.ARSimulation.Compatibility.InputHelper.OnGUI
+  - UnityEngine.XR.ARFoundation.ARPoseDriver.Update
