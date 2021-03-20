@@ -45,7 +45,7 @@ namespace Needle.SelectiveProfiling
 		public void Disable()
 		{
 			MethodInformation.Enabled = false;
-			Patch.Disable();
+			Patch.Disable(false);
 			if (enabled)
 			{
 				enabled = false;
