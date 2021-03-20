@@ -18,7 +18,7 @@ public class MyScript : MonoBehaviour
         // var h = new HarmonyLib.Harmony("test");
         // PatchManager.ResolvePatcher += 
         // h.PatchAll();
-        il2cppchain
+        // il2cppchain
     }
 
     // Update is called once per frame
