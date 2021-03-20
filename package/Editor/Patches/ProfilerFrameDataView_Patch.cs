@@ -10,6 +10,7 @@ using UnityEditor.IMGUI.Controls;
 using UnityEditor.MPE;
 using UnityEditor.Profiling;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Debug = UnityEngine.Debug;
 
 // ReSharper disable UnusedMember.Local
@@ -92,6 +93,7 @@ namespace Needle.SelectiveProfiling
 				{
 					lastPatchedInImmediateMode = selectedId;
 					var name = frameDataView?.GetItemName(item.id);
+					// TODO: add support for standalone profiler
 					if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
 						SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
 				}
@@ -114,32 +116,25 @@ namespace Needle.SelectiveProfiling
 							AddMenuItem(menu, methodInfo);
 							menu.ShowAsContext();
 						}
-						else if(ProfilerHelper.TryGetMethodsInChildren(item.id, frameDataView, out var methodsFound))
+						else if (ProfilerHelper.TryGetMethodsInChildren(item.id, frameDataView, out var methodsFound))
 						{
-							var availableMethods = 
+							var availableMethods =
 								methodsFound.Where(e => AccessUtils.AllowPatching(e, false, false)).ToList();
-							
-							menu.AddItem(new GUIContent("Enable profiling for all"), false, () =>
-							{
-								foreach (var m in availableMethods)
-									EnableProfilingFromProfilerWindow(m);
-							});
-							menu.AddItem(new GUIContent("Disable profiling for all"), false, () =>
-							{
-								foreach (var m in availableMethods) SelectiveProfiler.DisableProfiling(m);
-							});
+
+							menu.AddItem(new GUIContent("Enable profiling for all"), false, () => EnableProfilingFromProfilerWindow(availableMethods));
+							menu.AddItem(new GUIContent("Disable profiling for all"), false, () => DisableProfilingFromProfilerWindow(availableMethods));
 							menu.AddSeparator(string.Empty);
-							
+
 							foreach (var m in availableMethods)
 							{
 								AddMenuItem(menu, m);
 							}
-
 						}
 						else
 						{
 							menu.AddDisabledItem(new GUIContent("Nothing to profile in " + name));
 						}
+
 						menu.ShowAsContext();
 					}
 				}
@@ -149,9 +144,7 @@ namespace Needle.SelectiveProfiling
 			// https://docs.unity3d.com/ScriptReference/Profiling.HierarchyFrameDataView.GetItemCallstack.html
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerModules/CPUorGPUProfilerModule.cs#L194
 		}
-		
-		
-		
+
 		private static void AddMenuItem(GenericMenu menu, MethodInfo methodInfo)
 		{
 			var active = SelectiveProfiler.IsProfiling(methodInfo);
@@ -160,49 +153,48 @@ namespace Needle.SelectiveProfiling
 			if (ret == "Void") ret = string.Empty;
 			else ret += " ";
 			var methodName = methodInfo.Name + "(" + string.Join(",", methodInfo.GetParameters()?.Select(p => p.ParameterType)) + ")";
-			menu.AddItem(new GUIContent($"Profile | {ret}{methodInfo.DeclaringType?.Name}.{methodName}"),
-				active, () =>
-				{
-					if (!active)
+			
+			// need to split this into two menu items until we sync state of activated methods between standalone profiler and main process
+			// if (SelectiveProfiler.IsStandaloneProcess)
+			// {
+			// 	menu.AddItem(new GUIContent($"{ret}{methodInfo.DeclaringType?.Name}.{methodName}/Start Deep Profile"), false,
+			// 		() => EnableProfilingFromProfilerWindow(methodInfo));
+			// 	menu.AddItem(new GUIContent($"{ret}{methodInfo.DeclaringType?.Name}.{methodName}/Stop Deep Profile"), false,
+			// 		() => DisableProfilingFromProfilerWindow(methodInfo));
+			// }
+			// else
+			{
+				menu.AddItem(new GUIContent($"Profile | {ret}{methodInfo.DeclaringType?.Name}.{methodName}"),
+					active, () =>
 					{
-						EnableProfilingFromProfilerWindow(methodInfo);
-					}
-					else
-					{
-						SelectiveProfiler.DisableProfiling(methodInfo);
-					}
-				});
+						if (!active) EnableProfilingFromProfilerWindow(methodInfo);
+						else DisableProfilingFromProfilerWindow(methodInfo);
+					});
+			}
 		}
-		
+
+
+		private static void EnableProfilingFromProfilerWindow(IEnumerable<MethodInfo> methods)
+		{
+			foreach (var m in methods)
+				EnableProfilingFromProfilerWindow(m);
+		}
+
 		private static void EnableProfilingFromProfilerWindow(MethodInfo method)
 		{
+			// Standalone process always return "false" for playing
 			SelectiveProfiler.EnableProfiling(method, SelectiveProfiler.ShouldSave, true, true, true);
 		}
 
-
-
-
-		private static bool isStandaloneProfiler;
-		private static Action disconnectAction;
-		
-		[RoleProvider(ProcessLevel.Master, ProcessEvent.AfterDomainReload)]
-		private static void Init()
+		private static void DisableProfilingFromProfilerWindow(IEnumerable<MethodInfo> methods)
 		{
-			if (!ChannelService.IsRunning()) ChannelService.Start();
-
-			void OnMessageFromStandaloneProfiler(string eventType, object[] args)
-			{
-				Debug.Log(args[0]);
-			}
-
-			disconnectAction = EventService.RegisterEventHandler("someEvent", OnMessageFromStandaloneProfiler);
+			foreach (var m in methods)
+				SelectiveProfiler.DisableProfiling(m);
 		}
 
-		[RoleProvider(ProcessLevel.Slave, ProcessEvent.AfterDomainReload)]
-		private static void Slave()
+		private static void DisableProfilingFromProfilerWindow(MethodInfo method)
 		{
-			isStandaloneProfiler = true;
-			EventService.Emit("someEvent", "message from child");
+			SelectiveProfiler.DisableProfiling(method);
 		}
 	}
 }

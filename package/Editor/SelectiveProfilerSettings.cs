@@ -19,53 +19,69 @@ namespace Needle.SelectiveProfiling
 	[FilePath("ProjectSettings/SelectiveProfiler.asset", FilePathAttribute.Location.ProjectFolder)]
 	internal class SelectiveProfilerSettings : ScriptableSingleton<SelectiveProfilerSettings>
 	{
+		private static SelectiveProfilerSettings _settingsFromMainProcess;
+		internal static SelectiveProfilerSettings Instance
+		{
+			get
+			{
+				if (SelectiveProfiler.IsStandaloneProcess && _settingsFromMainProcess != null)
+				{
+					Debug.Log("Update settings");
+					return _settingsFromMainProcess;
+				}
+				return instance;
+			}
+			set
+			{
+				if (SelectiveProfiler.IsStandaloneProcess) _settingsFromMainProcess = value;
+				else throw new NotSupportedException("Updating profiler settings instance is only allowed in standalone profiler process");
+			}
+		}
+		
 		[InitializeOnLoadMethod]
 		private static void Init()
 		{
-			if(!Application.isPlaying)
+			if (!Application.isPlaying)
 				Undo.undoRedoPerformed += () => instance.Save();
 
 			if (instance.FirstInstall)
-			{ 
+			{
 				Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "<b>Thank you for installing Selective Profiler Alpha</b>. " +
 				                                                           "You should now be able to right click methods in the Unity Profiler to open profiling options.\n\n" +
 				                                                           "For more information please read the documentation on github: <b>https://github.com/needle-tools/selective-profiling</b>\n" +
 				                                                           "or join us on discord: <b>https://discord.gg/CFZDp4b</b>");
 				instance.FirstInstall = false;
 				instance.Save();
-				
+
 				foreach (var exp in SelectiveProfiler.ExpectedPatches())
 				{
-					PatchManager.EnablePatch(exp); 
+					PatchManager.EnablePatch(exp);
 				}
 			}
 		}
-
 
 		internal void Save()
 		{
 			base.Save(true);
 		}
 
-		[SerializeField]
-		internal bool FirstInstall = true;
-		
+		[SerializeField] internal bool FirstInstall = true;
+
 		public bool Enabled = true;
 		public bool ImmediateMode = false;
-		
+
 		public bool DeepProfiling = false;
 		public int MaxDepth = 1;
-		public Level DeepProfileMaxLevel = (Level)~0;
-		
+		public Level DeepProfileMaxLevel = (Level) ~0;
+
 		public bool DebugLog;
 
 		public bool SkipProperties = true;
-		
-		[SerializeField]
-		private List<MethodInformation> Methods = new List<MethodInformation>();
-		
+
+		[SerializeField] private List<MethodInformation> Methods = new List<MethodInformation>();
+
 		public int MethodsCount => Methods.Count;
-		
+
 		public void GetInstance(ref MethodInformation mi)
 		{
 			foreach (var m in Methods)
@@ -92,7 +108,7 @@ namespace Needle.SelectiveProfiling
 		public void Remove(MethodInformation info, bool withUndo = true)
 		{
 			var removed = false;
-			if(withUndo)
+			if (withUndo)
 				Undo.RegisterCompleteObjectUndo(this, "Removed " + info + "/" + this);
 
 			for (var index = Methods.Count - 1; index >= 0; index--)
@@ -103,7 +119,7 @@ namespace Needle.SelectiveProfiling
 				removed = true;
 				break;
 			}
-			
+
 			if (removed)
 			{
 				NotifyStateChanged(info, false);
@@ -113,9 +129,9 @@ namespace Needle.SelectiveProfiling
 		public void UpdateState(MethodInformation info, bool state, bool withUndo)
 		{
 			if (info.Enabled == state) return;
-			if(withUndo) Undo.RegisterCompleteObjectUndo(this, "Set " + info + ": " + state);
+			if (withUndo) Undo.RegisterCompleteObjectUndo(this, "Set " + info + ": " + state);
 			info.Enabled = state;
-			MethodStateChanged?.Invoke(info, state); 
+			MethodStateChanged?.Invoke(info, state);
 		}
 
 		public void SetMuted(MethodInformation info, bool mute, bool withUndo = true)
@@ -155,7 +171,7 @@ namespace Needle.SelectiveProfiling
 			MethodStateChanged?.Invoke(info, state);
 		}
 	}
-	
+
 #if !UNITY_2020_1_OR_NEWER
     public class ScriptableSingleton<T> : ScriptableObject where T : ScriptableObject
     {

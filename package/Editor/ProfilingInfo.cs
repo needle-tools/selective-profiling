@@ -37,6 +37,11 @@ namespace Needle.SelectiveProfiling
 			{
 				enabled = true;
 				OnEnable();
+				
+				if (!SelectiveProfiler.IsStandaloneProcess)
+				{
+					SelectiveProfiler.QueueCommand(new ProfiledMethodStateChanged(MethodInformation, true));
+				}
 			}
 
 			return ts;
@@ -50,6 +55,11 @@ namespace Needle.SelectiveProfiling
 			{
 				enabled = false;
 				OnDisable();
+				
+				if (!SelectiveProfiler.IsStandaloneProcess)
+				{
+					SelectiveProfiler.QueueCommand(new ProfiledMethodStateChanged(MethodInformation, false));
+				}
 			}
 		}
 
