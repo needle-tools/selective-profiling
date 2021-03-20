@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,10 +7,10 @@ using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.MPE;
 using UnityEditor.Profiling;
 using UnityEngine;
-using UnityEngine.UIElements;
-using Object = UnityEngine.Object;
+using Debug = UnityEngine.Debug;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedType.Global
@@ -25,7 +24,6 @@ namespace Needle.SelectiveProfiling
 			patches.Add(new Profiler_SelectionChanged());
 			patches.Add(new Profiler_CellGUI());
 		}
-
 
 		private static int selectedId = -1;
 
@@ -179,6 +177,32 @@ namespace Needle.SelectiveProfiling
 		private static void EnableProfilingFromProfilerWindow(MethodInfo method)
 		{
 			SelectiveProfiler.EnableProfiling(method, SelectiveProfiler.ShouldSave, true, true, true);
+		}
+
+
+
+
+		private static bool isStandaloneProfiler;
+		private static Action disconnectAction;
+		
+		[RoleProvider(ProcessLevel.Master, ProcessEvent.AfterDomainReload)]
+		private static void Init()
+		{
+			if (!ChannelService.IsRunning()) ChannelService.Start();
+
+			void OnMessageFromStandaloneProfiler(string eventType, object[] args)
+			{
+				Debug.Log(args[0]);
+			}
+
+			disconnectAction = EventService.RegisterEventHandler("someEvent", OnMessageFromStandaloneProfiler);
+		}
+
+		[RoleProvider(ProcessLevel.Slave, ProcessEvent.AfterDomainReload)]
+		private static void Slave()
+		{
+			isStandaloneProfiler = true;
+			EventService.Emit("someEvent", "message from child");
 		}
 	}
 }
