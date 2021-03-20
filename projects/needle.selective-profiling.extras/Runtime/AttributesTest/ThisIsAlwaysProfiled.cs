@@ -1,4 +1,6 @@
-﻿using Needle.SelectiveProfiling;
+﻿#if UNITY_EDITOR
+
+using Needle.SelectiveProfiling;
 using UnityEngine;
 
 namespace DefaultNamespace
@@ -19,3 +21,5 @@ namespace DefaultNamespace
 		private void SomeCall(){}
 	}
 }
+
+#endif

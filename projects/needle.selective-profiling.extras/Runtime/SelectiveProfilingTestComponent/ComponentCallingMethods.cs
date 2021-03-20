@@ -11,6 +11,7 @@ namespace DefaultNamespace
 			MethodWithGeneric(0);
 			MethodMultipleGenerics(0, "test");
 			MethodWithTuple(new Tuple<string, int>("test", 0));
+			MethodWithTupleShort(("test", 42));
 			MethodWithGeneric(new ClassWithGenerics<string, int>());
 			SomeNestedClass.SomeMethod();
 		}
@@ -28,6 +29,11 @@ namespace DefaultNamespace
 		private void MethodMultipleGenerics<T, U>(T myT, U myU){}
 
 		private void MethodWithTuple(Tuple<string, int> myTuple){}
+
+		private void MethodWithTupleShort((string, int) test)
+		{
+			
+		}
 
 		private static class SomeNestedClass
 		{

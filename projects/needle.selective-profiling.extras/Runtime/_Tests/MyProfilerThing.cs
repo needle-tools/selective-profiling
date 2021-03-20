@@ -138,25 +138,25 @@ namespace Needle.SelectiveProfiling._Tests
 			//     Debug.Log(sampler.name + ": " + recorder.elapsedNanoseconds);
 			// }
 
-			var s = Recorder.Get(SamplerPatch.MarkerName);
-			Debug.Log(s.elapsedNanoseconds + " - " + s.isValid);
-
-#if UNITY_2020_2_OR_NEWER
-			var info = new List<FrameDataView.MarkerInfo>();
-			using (var frameData = ProfilerDriver.GetRawFrameDataView(Time.frameCount, 0))
-			{
-				Debug.Log(frameData.valid);
-				// frameData.ResolveMethodInfo()
-
-				frameData.GetMarkers(info);
-				// var m = frameData.GetMarkerId(SamplerPatch.MarkerName);
-				// Debug.Log("MARKER " + m);
-				foreach (var i in info)
-				{
-					Debug.Log(i.name);
-				}
-			}
-#endif
+// 			var s = Recorder.Get(SamplerPatch.MarkerName);
+// 			Debug.Log(s.elapsedNanoseconds + " - " + s.isValid);
+//
+// #if UNITY_2020_2_OR_NEWER
+// 			var info = new List<FrameDataView.MarkerInfo>();
+// 			using (var frameData = ProfilerDriver.GetRawFrameDataView(Time.frameCount, 0))
+// 			{
+// 				Debug.Log(frameData.valid);
+// 				// frameData.ResolveMethodInfo()
+//
+// 				frameData.GetMarkers(info);
+// 				// var m = frameData.GetMarkerId(SamplerPatch.MarkerName);
+// 				// Debug.Log("MARKER " + m);
+// 				foreach (var i in info)
+// 				{
+// 					Debug.Log(i.name);
+// 				}
+// 			}
+// #endif
 		}
 
 		// Update is called once per frame
