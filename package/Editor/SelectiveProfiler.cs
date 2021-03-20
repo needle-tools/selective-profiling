@@ -10,12 +10,30 @@ using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
+using Object = UnityEngine.Object;
 
 namespace Needle.SelectiveProfiling
 {
 	public static class SelectiveProfiler
 	{
 		public static string SamplePostfix => DevelopmentMode || DebugLog ? "[needle]" : string.Empty;
+
+		private static readonly Stack<object> stack = new Stack<object>();
+		internal static string GetSampleName(object caller, string methodName)
+		{
+			if (caller == null) return methodName;
+
+			if (Application.isPlaying && caller is Object obj && obj)
+			{
+				if (stack.Contains(caller)) return methodName;
+				stack.Push(caller);
+				var id = obj.GetInstanceID();
+				methodName += id;
+				stack.Pop();
+			}
+
+			return methodName;
+		}
 
 		// private static MethodInfo previouslySelectedImmediateProfilingMethod;
 
@@ -43,15 +61,24 @@ namespace Needle.SelectiveProfiling
 				var info = new MethodInformation(method);
 				return SelectiveProfilerSettings.instance.IsSavedAndEnabled(info);
 			}
+
 			return Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
-		public static async void EnableProfiling([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool enableIfMuted = false , bool forceLogs = false)
+		public static async void EnableProfiling([NotNull] MethodInfo method,
+			bool save = true,
+			bool enablePatch = true,
+			bool enableIfMuted = false,
+			bool forceLogs = false)
 		{
 			await EnableProfilingAsync(method, save, enablePatch, enableIfMuted, forceLogs);
 		}
 
-		public static Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool enableIfMuted = false, bool forceLogs = false)
+		public static Task EnableProfilingAsync([NotNull] MethodInfo method,
+			bool save = true,
+			bool enablePatch = true,
+			bool enableIfMuted = false,
+			bool forceLogs = false)
 		{
 			return InternalEnableProfilingAsync(method, save, enablePatch, enableIfMuted, null, 0, forceLogs);
 		}

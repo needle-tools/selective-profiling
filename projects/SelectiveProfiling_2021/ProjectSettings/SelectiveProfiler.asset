@@ -15,7 +15,7 @@ MonoBehaviour:
   FirstInstall: 0
   Enabled: 1
   ImmediateMode: 0
-  DeepProfiling: 0
+  DeepProfiling: 1
   MaxDepth: 2
   DeepProfileMaxLevel: -1
   DebugLog: 0
@@ -34,4 +34,32 @@ MonoBehaviour:
   - Enabled: 1
     Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: Needle.XR.ARSimulation.Simulation.SimulatedARPlaneGeneration
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.ExampleComponents.InstantiateAtRaycastHitExample
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.Simulation.SimulatedARPoseProvider
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARCameraManager
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlane
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPlaneMeshVisualizer
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARPoseDriver
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: Unity.XR.ARFoundation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.XR.ARFoundation.ARSession
     Method: Void Update()

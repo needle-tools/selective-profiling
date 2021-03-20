@@ -53,10 +53,13 @@ namespace Needle.SelectiveProfiling
 				if (string.IsNullOrEmpty(prefix)) prefix = string.Empty;
 				if (string.IsNullOrEmpty(postfix)) postfix = string.Empty;
 				
-				void SetSampleName(CodeInstruction instruction, int index)
+				void SetSampleName(MethodBase currentMethod, CodeInstruction instruction, int index)
 				{
+					// load reference or null if static
+					InsertBefore[0] = new CodeInstruction(currentMethod == null || currentMethod.IsStatic ? OpCodes.Ldnull : OpCodes.Ldarg_0);
 					var methodName = TranspilerUtils.TryGetMethodName(instruction.opcode, instruction.operand, false);
-					InsertBefore[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
+					InsertBefore[1] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
+					InsertBefore[2] = CodeInstruction.Call(typeof(SelectiveProfiler), nameof(SelectiveProfiler.GetSampleName), new []{typeof(object), typeof(string)});
 				}
 				ICodeWrapper wrapper = new MethodWrapper(
 					new InstructionsWrapper(), 
@@ -90,7 +93,9 @@ namespace Needle.SelectiveProfiling
 
 			private static readonly List<CodeInstruction> InsertBefore = new List<CodeInstruction>()
 			{
+				new CodeInstruction(OpCodes.Ldarg_0), // load "this"
 				new CodeInstruction(OpCodes.Ldstr, "%MARKER%"),
+				new CodeInstruction(OpCodes.Nop), // will be replaced by load call to SelectiveProfiler.GetName
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 				new CodeInstruction(OpCodes.Nop),
 			};

@@ -13,13 +13,13 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 	public class MethodWrapper : ICodeWrapper
 	{
 		private readonly InstructionsWrapper wrapper;
-		private readonly Action<CodeInstruction, int> callback;
+		private readonly Action<MethodBase, CodeInstruction, int> callback;
 		private readonly bool debugLog;
 		private readonly bool skipProfilerMethods;
 
 		[CanBeNull] public MethodBase CurrentMethod;
 
-		public MethodWrapper(InstructionsWrapper wrapper, Action<CodeInstruction, int> onInstruction, bool debugLog, bool skipProfilerMethods)
+		public MethodWrapper(InstructionsWrapper wrapper, Action<MethodBase, CodeInstruction, int> onInstruction, bool debugLog, bool skipProfilerMethods)
 		{
 			this.wrapper = wrapper;
 			this.callback = onInstruction;
@@ -38,7 +38,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				var prevStart = start;
 				
 				// if a method call loads variables make sure to insert code before variable loading
-				if (TranspilerUtils.LoadVarCodes.Contains(inst.opcode) || inst.opcode == OpCodes.Ldstr || inst.opcode == OpCodes.Ldobj || inst.IsLdarg() || inst.IsLdarga())
+				if (TranspilerUtils.LoadVarCodes.Contains(inst.opcode) || inst.opcode == OpCodes.Ldnull || inst.opcode == OpCodes.Ldstr || inst.opcode == OpCodes.Ldobj || inst.IsLdarg() || inst.IsLdarga())
 				{
 					if(start < 0)
 						start = index;
@@ -77,7 +77,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// we arrived at the actual method call
 					wrapper.Start = start == -1 ? index : start;
 					wrapper.MethodIndex = index;
-					callback?.Invoke(inst, index);
+					callback?.Invoke(CurrentMethod, inst, index);
 					wrapper.Apply(instructions, before, after);
 					index = wrapper.MethodIndex;
 					start = -1;
