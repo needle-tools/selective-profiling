@@ -32,7 +32,7 @@ namespace Needle.SelectiveProfiling
 			if (!force && !MethodInformation.Enabled)
 				return Task.CompletedTask;
 			MethodInformation.Enabled = true;
-			var ts = Patch.Enable();
+			var ts = Patch.Enable(false);
 			if (!enabled)
 			{
 				enabled = true;

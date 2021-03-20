@@ -39,7 +39,7 @@ namespace Needle.SelectiveProfiling
 				if (GUILayout.Button("Enable patches"))
 				{
 					foreach (var exp in SelectiveProfiler.ExpectedPatches())
-						PatchManager.EnablePatch(exp);
+						PatchManager.EnablePatch(exp, true);
 				}
 
 				GUILayout.Space(10); 
