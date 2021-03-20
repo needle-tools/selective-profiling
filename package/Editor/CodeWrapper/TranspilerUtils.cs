@@ -136,20 +136,20 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			}
 			
 			var _method = method.Name;
-			var _isPropertyGetter = _method.StartsWith(getterPrefix);
+			var _isProperty = _method.StartsWith(getterPrefix) || _method.StartsWith(setterPrefix);
 			if (method.IsSpecialName) _method = GetNicePropertyName(_method);
 
 			if (method.IsGenericMethod) 
 				_method += GetNiceGenericArguments(method.GetGenericArguments());
 
-			if (!_isPropertyGetter)
+			if (!_isProperty)
 			{
 				var parameters = method.GetParameters();
 				_method += GetNiceParameters(parameters);
 			}
 			
 			return !string.IsNullOrEmpty(_class) 
-				? _class + "." + _method 
+				? _class + "." + _method
 				: _method;
 		}
 
@@ -172,9 +172,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		private static string GetNicePropertyName(string propertyName)
 		{
 			if (propertyName.StartsWith(getterPrefix))
-				propertyName = propertyName.Substring(getterPrefix.Length) + " get";
+				propertyName = "get " + propertyName.Substring(getterPrefix.Length);
 			else  if (propertyName.StartsWith(setterPrefix))
-				propertyName = propertyName.Substring(setterPrefix.Length) + " set";
+				propertyName = "set " + propertyName.Substring(setterPrefix.Length);
 			else if(propertyName.StartsWith(operationPrefix))
 				propertyName = propertyName.Substring(operationPrefix.Length);
 			return propertyName;

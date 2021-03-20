@@ -290,11 +290,11 @@ namespace Needle.SelectiveProfiling
 
 		private static void OnPlayModeChanged(PlayModeStateChange obj)
 		{
-			if (obj == PlayModeStateChange.ExitingPlayMode)
-			{
-				foreach (var patch in patches)
-					PatchManager.UnregisterAndDisablePatch(patch.Value.Patch); 
-			}
+			// if (obj == PlayModeStateChange.ExitingPlayMode)
+			// {
+			// 	foreach (var patch in patches)
+			// 		PatchManager.UnregisterAndDisablePatch(patch.Value.Patch); 
+			// }
 		}
 
 		private static readonly bool deepProfiling = SelectiveProfilerSettings.instance.DeepProfiling;
