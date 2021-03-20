@@ -46,21 +46,20 @@ namespace Needle.SelectiveProfiling
 		{
 			private static readonly Dictionary<MethodBase, ICodeWrapper> wrappers = new Dictionary<MethodBase, ICodeWrapper>();
 			private readonly MethodBase method;
+			private readonly string prefix;
+			private readonly string postfix;
 
 			public TranspilerPatch(MethodBase methods, string prefix, string postfix)
 			{
 				this.method = methods;
 				if (string.IsNullOrEmpty(prefix)) prefix = string.Empty;
 				if (string.IsNullOrEmpty(postfix)) postfix = string.Empty;
+				this.prefix = prefix;
+				this.postfix = postfix;
 				
-				void SetSampleName(CodeInstruction instruction, int index)
-				{
-					var methodName = TranspilerUtils.TryGetMethodName(instruction.opcode, instruction.operand, false);
-					InsertBefore[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
-				}
 				ICodeWrapper wrapper = new MethodWrapper(
 					new InstructionsWrapper(), 
-					SetSampleName,
+					OnBeforeInjectBeginSample,
 					SelectiveProfiler.DebugLog,
 					SelectiveProfiler.TranspilerShouldSkipCallsInProfilerType
 					);
@@ -80,24 +79,53 @@ namespace Needle.SelectiveProfiling
 				if (_inst == null) return null;
 				
 				if (!wrappers.TryGetValue(method, out var wrapper)) return _inst;
-				// var instructions = new List<CodeInstruction>(_inst);
 				var instructions = _inst as List<CodeInstruction> ?? _inst.ToList();
-				if (wrapper is MethodWrapper mr) mr.CurrentMethod = method;
-				wrapper.Apply(instructions, InsertBefore, InsertAfter);
+				if (SelectiveProfiler.InjectSampleWithCallback(method))
+				{
+					wrapper.Apply(method, instructions, InsertBeforeWithCallback, InsertAfter);
+				}
+				else
+				{
+					wrapper.Apply(method, instructions, InsertBeforeConstant, InsertAfter);
+				}
 				return instructions;
 			}
-
-
-			private static readonly List<CodeInstruction> InsertBefore = new List<CodeInstruction>()
+			
+			
+			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index)
+			{
+				var methodName = TranspilerUtils.TryGetMethodName(instruction.opcode, instruction.operand, false);
+				
+				if (SelectiveProfiler.InjectSampleWithCallback(currentMethod))
+				{
+					// load reference or null if static
+					InsertBeforeWithCallback[0] = new CodeInstruction(currentMethod == null || currentMethod.IsStatic ? OpCodes.Ldnull : OpCodes.Ldarg_0);
+					InsertBeforeWithCallback[1] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
+					InsertBeforeWithCallback[2] = CodeInstruction.Call(typeof(SelectiveProfiler), nameof(SelectiveProfiler.OnSampleCallback), new []{typeof(object), typeof(string)});
+				}
+				else
+				{
+					InsertBeforeConstant[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
+				}
+			}
+			
+			private static readonly List<CodeInstruction> InsertBeforeConstant = new List<CodeInstruction>()
 			{
 				new CodeInstruction(OpCodes.Ldstr, "%MARKER%"),
-				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 				new CodeInstruction(OpCodes.Nop),
+				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
+			};
+
+			private static readonly List<CodeInstruction> InsertBeforeWithCallback = new List<CodeInstruction>()
+			{
+				new CodeInstruction(OpCodes.Ldarg_0), // load "this"
+				new CodeInstruction(OpCodes.Ldstr, "%MARKER%"),
+				new CodeInstruction(OpCodes.Nop), // will be replaced by load call to SelectiveProfiler.GetName
+				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};
 
 			private static readonly List<CodeInstruction> InsertAfter = new List<CodeInstruction>()
 			{
-				new CodeInstruction(OpCodes.Nop),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample)),
 			};
 
@@ -122,31 +150,7 @@ namespace Needle.SelectiveProfiling
 			// 	CodeInstruction.Call(() => myMarker.End()),
 			// };
 
-//
-// 			public static readonly ProfilerMarker myMarker = new ProfilerMarker("MYMARKER");
-//
-// 			public void Sample()
-// 			{
-// 				Profiler.BeginSample("MYMARKER");
-// 				Debug.Log("Test");
-// 				Profiler.EndSample();
-// 			}
-//
-// 			private const string expected = @"nop NULL
-// ldsfld Unity.Profiling.ProfilerMarker DefaultNamespace.TranspilerTest::myMarker
-// stloc.0 NULL
-// ldloca.s 0 (Unity.Profiling.ProfilerMarker)
-// call System.Void Unity.Profiling.ProfilerMarker::Begin()
-// nop NULL
-// ldstr ''Test''
-// call static System.Void UnityEngine.Debug::Log(System.Object message)
-// nop NULL
-// ldsfld Unity.Profiling.ProfilerMarker DefaultNamespace.TranspilerTest::myMarker
-// stloc.0 NULL
-// ldloca.s 0 (Unity.Profiling.ProfilerMarker)
-// call System.Void Unity.Profiling.ProfilerMarker::End()
-// nop NULL
-// ret NULL";
+
 		}
 	}
 }

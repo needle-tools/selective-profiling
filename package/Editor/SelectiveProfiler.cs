@@ -10,6 +10,7 @@ using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
+using Object = UnityEngine.Object;
 
 namespace Needle.SelectiveProfiling
 {
@@ -43,15 +44,24 @@ namespace Needle.SelectiveProfiling
 				var info = new MethodInformation(method);
 				return SelectiveProfilerSettings.instance.IsSavedAndEnabled(info);
 			}
+
 			return Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
-		public static async void EnableProfiling([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool enableIfMuted = false , bool forceLogs = false)
+		public static async void EnableProfiling([NotNull] MethodInfo method,
+			bool save = true,
+			bool enablePatch = true,
+			bool enableIfMuted = false,
+			bool forceLogs = false)
 		{
 			await EnableProfilingAsync(method, save, enablePatch, enableIfMuted, forceLogs);
 		}
 
-		public static Task EnableProfilingAsync([NotNull] MethodInfo method, bool save = true, bool enablePatch = true, bool enableIfMuted = false, bool forceLogs = false)
+		public static Task EnableProfilingAsync([NotNull] MethodInfo method,
+			bool save = true,
+			bool enablePatch = true,
+			bool enableIfMuted = false,
+			bool forceLogs = false)
 		{
 			return InternalEnableProfilingAsync(method, save, enablePatch, enableIfMuted, null, 0, forceLogs);
 		}
@@ -392,6 +402,43 @@ namespace Needle.SelectiveProfiling
 #pragma warning restore 4014
 			if (deepProfileStepIndex < stepDeepProfileToIndex)
 				stepDeepProfile = true;
+		}
+		
+		
+		
+		
+		
+
+		// ReSharper disable once UnusedParameter.Global
+		internal static bool InjectSampleWithCallback(MethodBase method)
+		{
+			return false;
+		}
+
+		// public static HashSet<object> SpecialObjects = new HashSet<object>();
+
+		private static readonly Stack<object> sampleStack = new Stack<object>();
+		
+		// a call to this method will be injected when/if returning true in InjectSampleWithCallback
+		internal static string OnSampleCallback(object caller, string methodName)
+		{
+			if (caller == null) return methodName;
+
+			// if (!SpecialObjects.Contains(caller))
+			// {
+			// 	return "ignored";
+			// }
+			
+			if (Application.isPlaying && caller is Object obj && obj)
+			{
+				if (sampleStack.Contains(caller)) return methodName;
+				sampleStack.Push(caller);
+				var id = obj.GetInstanceID();
+				sampleStack.Pop();
+				methodName += id;
+			}
+
+			return methodName;
 		}
 	}
 }

@@ -18,7 +18,7 @@ MonoBehaviour:
   DeepProfiling: 1
   MaxDepth: 3
   DeepProfileMaxLevel: -1
-  DebugLog: 0
+  DebugLog: 1
   SkipProperties: 1
   Methods:
   - Enabled: 1
@@ -31,12 +31,22 @@ MonoBehaviour:
       PublicKeyToken=null
     Type: DefaultNamespace.ThisIsAlwaysProfiled
     Method: Void SomeCall()
-  - Enabled: 0
+  - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: DefaultNamespace.ComponentCallingMethods
     Method: Void Update()
-  - Enabled: 0
+  - Enabled: 1
     Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: UnityEngine.EventSystems.EventSystem
     Method: Void Update()
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: _Tests.GetProfilerSampleName
+    Method: Void GetSampleName()
+  - Enabled: 0
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: _Tests.GetProfilerSampleName
+    Method: Void GetStaticSampleName()
