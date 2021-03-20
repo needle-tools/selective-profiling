@@ -417,28 +417,29 @@ namespace Needle.SelectiveProfiling
 
 		// public static HashSet<object> SpecialObjects = new HashSet<object>();
 
-		private static readonly Stack<object> sampleStack = new Stack<object>();
+		// private static readonly Stack<object> sampleStack = new Stack<object>();
 		
 		// a call to this method will be injected when/if returning true in InjectSampleWithCallback
 		internal static string OnSampleCallback(object caller, string methodName)
 		{
-			if (caller == null) return methodName;
-
-			// if (!SpecialObjects.Contains(caller))
-			// {
-			// 	return "ignored";
-			// }
-			
-			if (Application.isPlaying && caller is Object obj && obj)
-			{
-				if (sampleStack.Contains(caller)) return methodName;
-				sampleStack.Push(caller);
-				var id = obj.GetInstanceID();
-				sampleStack.Pop();
-				methodName += id;
-			}
-
 			return methodName;
+			// if (caller == null) return methodName;
+			//
+			// // if (!SpecialObjects.Contains(caller))
+			// // {
+			// // 	return "ignored";
+			// // }
+			//
+			// if (Application.isPlaying && caller is Object obj && obj)
+			// {
+			// 	if (sampleStack.Contains(caller)) return methodName;
+			// 	sampleStack.Push(caller);
+			// 	var id = obj.GetInstanceID();
+			// 	sampleStack.Pop();
+			// 	methodName += id;
+			// }
+			//
+			// return methodName;
 		}
 	}
 }
