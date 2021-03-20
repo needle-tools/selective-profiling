@@ -13,21 +13,21 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 	public class MethodWrapper : ICodeWrapper
 	{
 		private readonly InstructionsWrapper wrapper;
-		private readonly Action<MethodBase, CodeInstruction, int> callback;
+		private readonly InjectionCallback beforeInject;
 		private readonly bool debugLog;
 		private readonly bool skipProfilerMethods;
-
-		[CanBeNull] public MethodBase CurrentMethod;
-
-		public MethodWrapper(InstructionsWrapper wrapper, Action<MethodBase, CodeInstruction, int> onInstruction, bool debugLog, bool skipProfilerMethods)
+		
+		public MethodWrapper(InstructionsWrapper wrapper, 
+			InjectionCallback beforeInject, 
+			bool debugLog, bool skipProfilerMethods)
 		{
 			this.wrapper = wrapper;
-			this.callback = onInstruction;
+			this.beforeInject = beforeInject;
 			this.debugLog = debugLog;
 			this.skipProfilerMethods = skipProfilerMethods;
 		}
 
-		public void Apply(IList<CodeInstruction> instructions, IList<CodeInstruction> before, IList<CodeInstruction> after)
+		public void Apply(MethodBase method, IList<CodeInstruction> instructions, IList<CodeInstruction> before, IList<CodeInstruction> after)
 		{
 			var IL_Before = string.Join("\n", instructions);
 			
@@ -77,8 +77,8 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// we arrived at the actual method call
 					wrapper.Start = start == -1 ? index : start;
 					wrapper.MethodIndex = index;
-					callback?.Invoke(CurrentMethod, inst, index);
-					wrapper.Apply(instructions, before, after);
+					beforeInject?.Invoke(method, inst, index);
+					wrapper.Apply(method, instructions, before, after);
 					index = wrapper.MethodIndex;
 					start = -1;
 				}
@@ -86,7 +86,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 			if (debugLog)
 			{
-				var prefix = CurrentMethod != null ? "<b>Transpiled</b> " + CurrentMethod.DeclaringType?.Name + "." + CurrentMethod.Name + "\n" : string.Empty;
+				var prefix = method != null ? "<b>Transpiled</b> " + method.DeclaringType?.Name + "." + method.Name + "\n" : string.Empty;
 				Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, prefix + IL_Before + "\n\n----\n\n" + string.Join("\n", instructions) + "\n\n");
 			}
 		}

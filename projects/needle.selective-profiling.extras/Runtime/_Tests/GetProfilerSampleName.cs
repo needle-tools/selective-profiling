@@ -7,13 +7,16 @@ namespace _Tests
 	{
 		void GetSampleName()
 		{
-			Profiler.BeginSample(Prof.GetName(this, "method name"));
+			// var sample = Prof.DoSample(this);
+			// if(sample)
+				Profiler.BeginSample(Prof.GetName(this, "method name"));
 			Debug.Log("HELLO");
-			Profiler.EndSample();
+			// if(sample)
+				Profiler.EndSample();
 		}
 
 		static void GetStaticSampleName()
-		{
+		{ 
 			Profiler.BeginSample(Prof.GetName(null, "static"));
 			Debug.Log("HELLO");
 			Profiler.EndSample();
@@ -22,6 +25,10 @@ namespace _Tests
 
 	public static class Prof
 	{
+		public static bool DoSample(object obj)
+		{
+			return true;
+		}
 		public static string GetName(object obj, string methodName) => "Test"; 
 	}
 }

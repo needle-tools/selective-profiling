@@ -18,23 +18,6 @@ namespace Needle.SelectiveProfiling
 	{
 		public static string SamplePostfix => DevelopmentMode || DebugLog ? "[needle]" : string.Empty;
 
-		private static readonly Stack<object> stack = new Stack<object>();
-		internal static string GetSampleName(object caller, string methodName)
-		{
-			if (caller == null) return methodName;
-
-			if (Application.isPlaying && caller is Object obj && obj)
-			{
-				if (stack.Contains(caller)) return methodName;
-				stack.Push(caller);
-				var id = obj.GetInstanceID();
-				methodName += id;
-				stack.Pop();
-			}
-
-			return methodName;
-		}
-
 		// private static MethodInfo previouslySelectedImmediateProfilingMethod;
 
 		internal static void SelectedForImmediateProfiling(MethodInfo method)
@@ -419,6 +402,43 @@ namespace Needle.SelectiveProfiling
 #pragma warning restore 4014
 			if (deepProfileStepIndex < stepDeepProfileToIndex)
 				stepDeepProfile = true;
+		}
+		
+		
+		
+		
+		
+
+		// ReSharper disable once UnusedParameter.Global
+		internal static bool InjectSampleWithCallback(MethodBase method)
+		{
+			return false;
+		}
+
+		// public static HashSet<object> SpecialObjects = new HashSet<object>();
+
+		private static readonly Stack<object> sampleStack = new Stack<object>();
+		
+		// a call to this method will be injected when/if returning true in InjectSampleWithCallback
+		internal static string OnSampleCallback(object caller, string methodName)
+		{
+			if (caller == null) return methodName;
+
+			// if (!SpecialObjects.Contains(caller))
+			// {
+			// 	return "ignored";
+			// }
+			
+			if (Application.isPlaying && caller is Object obj && obj)
+			{
+				if (sampleStack.Contains(caller)) return methodName;
+				sampleStack.Push(caller);
+				var id = obj.GetInstanceID();
+				sampleStack.Pop();
+				methodName += id;
+			}
+
+			return methodName;
 		}
 	}
 }

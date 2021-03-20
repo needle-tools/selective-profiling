@@ -6,8 +6,13 @@ namespace Needle.SelectiveProfiling
 {
 	public class ComponentCreatingLotsOfGarbage : MonoBehaviour
 	{
+		public bool IsSpecial = false;
+
 		private void Update()
 		{
+			// if (IsSpecial && !SelectiveProfiler.SpecialObjects.Contains(this)) SelectiveProfiler.SpecialObjects.Add(this);
+			// else if (!IsSpecial && SelectiveProfiler.SpecialObjects.Contains(this)) SelectiveProfiler.SpecialObjects.Remove(this);
+			
 			for (var i = 0; i < 100; i++)
 			{
 				var some_str = "123" + i;
