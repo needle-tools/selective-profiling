@@ -280,8 +280,8 @@ namespace Needle.SelectiveProfiling
 		{
 			if (!AllowToBeEnabled) return;
 			
-			EditorApplication.playModeStateChanged -= OnPlayModeChanged;
-			EditorApplication.playModeStateChanged += OnPlayModeChanged;
+			// EditorApplication.playModeStateChanged -= OnPlayModeChanged;
+			// EditorApplication.playModeStateChanged += OnPlayModeChanged;
 
 			SelectiveProfilerSettings.MethodStateChanged -= OnMethodChanged;
 			SelectiveProfilerSettings.MethodStateChanged += OnMethodChanged;
@@ -350,14 +350,14 @@ namespace Needle.SelectiveProfiling
 			stateChangedList.Add((method, enabled));
 		}
 
-		private static void OnPlayModeChanged(PlayModeStateChange obj)
-		{
-			// if (obj == PlayModeStateChange.ExitingPlayMode)
-			// {
-			// 	foreach (var patch in patches)
-			// 		PatchManager.UnregisterAndDisablePatch(patch.Value.Patch); 
-			// }
-		}
+		// private static void OnPlayModeChanged(PlayModeStateChange obj)
+		// {
+		// 	// if (obj == PlayModeStateChange.ExitingPlayMode)
+		// 	// {
+		// 	// 	foreach (var patch in patches)
+		// 	// 		PatchManager.UnregisterAndDisablePatch(patch.Value.Patch); 
+		// 	// }
+		// }
 
 		private static readonly bool deepProfiling = SelectiveProfilerSettings.Instance.DeepProfiling;
 		private static readonly HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
@@ -502,6 +502,7 @@ namespace Needle.SelectiveProfiling
 
 		internal static void SendCommandNow(NetworkCommand cmd)
 		{
+			if (!ChannelService.IsRunning()) return;
 			// send command to respective other channel
 			var channel = IsStandaloneProcess ? selectiveProfilerCommandEditorChannel : selectiveProfilerCommandStandaloneChannel;
 			EventService.Emit(channel, cmd);
