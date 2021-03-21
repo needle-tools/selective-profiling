@@ -9,6 +9,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.MPE;
 using UnityEditor.Profiling;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Profiling;
 using Debug = UnityEngine.Debug;
@@ -22,6 +23,7 @@ namespace Needle.SelectiveProfiling
 	{
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
+			if (!SelectiveProfiler.AllowToBeEnabled) return;
 			patches.Add(new Profiler_SelectionChanged());
 			patches.Add(new Profiler_CellGUI());
 		}

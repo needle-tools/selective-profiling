@@ -9,6 +9,7 @@ using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.MPE;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -78,6 +79,10 @@ namespace Needle.SelectiveProfiling
 		/// by default only save when application is not playing
 		/// </summary>
 		internal static bool ShouldSave => !Application.isPlaying;
+		/// <summary>
+		/// check editor state (this does not settings enabled state)
+		/// </summary>
+		internal static bool AllowToBeEnabled => !ProfilerDriver.deepProfiling;
 
 		private static async Task InternalEnableProfilingAsync(
 			MethodInfo method,
@@ -234,6 +239,7 @@ namespace Needle.SelectiveProfiling
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
 		private static async void InitRuntime()
 		{
+			if (ProfilerDriver.deepProfiling) return;
 			if (IsStandaloneProcess) return;
 			var settings = SelectiveProfilerSettings.Instance;
 			if (!settings.Enabled) return;
@@ -272,6 +278,8 @@ namespace Needle.SelectiveProfiling
 		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void Init()
 		{
+			if (!AllowToBeEnabled) return;
+			
 			EditorApplication.playModeStateChanged -= OnPlayModeChanged;
 			EditorApplication.playModeStateChanged += OnPlayModeChanged;
 
