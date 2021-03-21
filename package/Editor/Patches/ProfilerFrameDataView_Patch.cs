@@ -24,6 +24,7 @@ namespace Needle.SelectiveProfiling
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
 			if (!SelectiveProfiler.AllowToBeEnabled) return;
+			patches.Add(new Profiler_RowGUI());
 			patches.Add(new Profiler_SelectionChanged());
 			patches.Add(new Profiler_CellGUI());
 		}
@@ -39,6 +40,17 @@ namespace Needle.SelectiveProfiling
 				if (!_settings) _settings = SelectiveProfilerSettings.instance;
 				return _settings;
 			}
+		}
+
+		private static FieldInfo m_FrameDataViewField;
+		private static HierarchyFrameDataView m_frameDataView;
+		private static HierarchyFrameDataView GetFrameDataView(TreeViewItem item)
+		{
+			if (m_FrameDataViewField == null)
+				m_FrameDataViewField = item.GetType().GetField("m_FrameDataView", (BindingFlags) ~0);
+			if (m_frameDataView == null || !m_frameDataView.valid)
+				m_frameDataView = m_FrameDataViewField?.GetValue(item) as HierarchyFrameDataView;
+			return m_frameDataView;
 		}
 
 		private class Profiler_SelectionChanged : EditorPatch
@@ -59,6 +71,58 @@ namespace Needle.SelectiveProfiling
 		}
 
 
+		private class Profiler_RowGUI : EditorPatch
+		{
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
+				var m = t.GetMethod("BuildRows", (BindingFlags) ~0);
+				// var m1 = t.BaseType?.GetMethod("RowGUI", (BindingFlags) ~0);
+				targetMethods.Add(m);
+				// targetMethods.Add(m1);
+				return Task.CompletedTask;
+			}
+
+			private static void Postfix(ref IList<TreeViewItem> __result)
+			{
+				if (!Profiler.enabled) return;
+				
+				var items = __result;
+				var keep = new HashSet<int>();
+
+				bool IsChildOfAnyItemWeKeep(TreeViewItem item)
+				{
+					if (item == null) return false;
+					if (keep.Contains(item.id)) return true;
+					return IsChildOfAnyItemWeKeep(item.parent);
+				}
+
+				bool IsItemToInspect(TreeViewItem item)
+				{
+					var view = GetFrameDataView(item);
+					var name = view.GetItemName(item.id);
+					return name.EndsWith("ScriptRunBehaviourUpdate");
+				}
+				
+				for (var i = items.Count - 1; i >= 0; i--)
+				{
+					var item = items[i];
+					if (!IsItemToInspect(item))
+					{
+						continue;
+					}
+					keep.Add(item.id);
+				}
+				
+				for (var i = items.Count - 1; i >= 0; i--)
+				{
+					var item = items[i];
+					if (!IsChildOfAnyItemWeKeep(item)) 
+						items.RemoveAt(i);
+				}
+			}
+		}
+
 		private class Profiler_CellGUI : EditorPatch
 		{
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L647
@@ -69,9 +133,6 @@ namespace Needle.SelectiveProfiling
 				targetMethods.Add(m);
 				return Task.CompletedTask;
 			}
-
-			private static FieldInfo m_FrameDataViewField;
-			private static HierarchyFrameDataView frameDataView;
 
 			private static int lastPatchedInImmediateMode = -1;
 
@@ -85,11 +146,7 @@ namespace Needle.SelectiveProfiling
 
 				var button = Event.current.button;
 
-				if (m_FrameDataViewField == null)
-					m_FrameDataViewField = item.GetType().GetField("m_FrameDataView", (BindingFlags) ~0);
-
-				if (frameDataView == null || !frameDataView.valid)
-					frameDataView = m_FrameDataViewField?.GetValue(item) as HierarchyFrameDataView;
+				var frameDataView = GetFrameDataView(item);
 
 				if (button == 0 && item.id == selectedId && Settings.ImmediateMode && selectedId != lastPatchedInImmediateMode)
 				{
