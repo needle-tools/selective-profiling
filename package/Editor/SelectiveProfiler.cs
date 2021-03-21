@@ -17,7 +17,7 @@ namespace Needle.SelectiveProfiling
 {
 	public static class SelectiveProfiler
 	{
-		public static string SamplePostfix => DevelopmentMode || DebugLog ? "[needle]" : string.Empty;
+		public static string SamplePostfix => DevelopmentMode || DebugLog ? "[debug]" : string.Empty;
 
 		// private static MethodInfo previouslySelectedImmediateProfilingMethod;
 
