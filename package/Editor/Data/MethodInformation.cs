@@ -20,7 +20,8 @@ namespace Needle.SelectiveProfiling
 
 		internal MethodInformation(MethodInfo method)
 		{
-			UpdateFrom(method);
+			if(method != null)
+				UpdateFrom(method);
 		}
 
 		internal void UpdateFrom(MethodInfo method)
