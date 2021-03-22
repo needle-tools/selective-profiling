@@ -16,6 +16,25 @@ using UnityEditorInternal;
 
 namespace Needle.SelectiveProfiling
 {
+
+	[FilePath("UserSettings/SelectiveProfilerPinned.asset", FilePathAttribute.Location.ProjectFolder)]
+	internal class PinnedItems : ScriptableSingleton<PinnedItems>
+	{
+		[SerializeField] internal List<int> PinnedProfilerItems = new List<int>();
+		[SerializeField] internal List<int> UnpinnedProfilerItems = new List<int>();
+
+		public void ClearPinnedItems()
+		{
+			PinnedProfilerItems.Clear();
+			UnpinnedProfilerItems.Clear();
+		}
+
+		internal void Save()
+		{
+			base.Save(true);
+		}
+	}
+
 	[FilePath("ProjectSettings/SelectiveProfiler.asset", FilePathAttribute.Location.ProjectFolder)]
 	internal class SelectiveProfilerSettings : ScriptableSingleton<SelectiveProfilerSettings>
 	{
@@ -79,6 +98,7 @@ namespace Needle.SelectiveProfiling
 		public bool SkipProperties = true;
 
 		[SerializeField] private List<MethodInformation> Methods = new List<MethodInformation>();
+
 
 		public int MethodsCount => Methods.Count;
 

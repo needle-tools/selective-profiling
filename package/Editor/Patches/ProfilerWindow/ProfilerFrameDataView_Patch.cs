@@ -135,27 +135,31 @@ namespace Needle.SelectiveProfiling
 					{
 						var menu = new GenericMenu();
 
-						if (!ProfilerPinning.IsPinned(item.id))
+						if (ProfilerPinning.AllowPinning(GetFrameDataView(item), item))
 						{
-							menu.AddItem(new GUIContent("Pin"), false, () =>
+							if (!ProfilerPinning.IsPinned(item))
 							{
-								ProfilerPinning.Pin(item);
-								if (__instance is TreeView tv) tv.Reload();
-							});
-						}
-						else if(!ProfilerPinning.IsChildOfAnyPinnedItem(item, false))
-						{
-							menu.AddItem(new GUIContent("Unpin"), true, () =>
+								menu.AddItem(new GUIContent("Pin"), false, () =>
+								{
+									ProfilerPinning.Pin(item);
+									if (__instance is TreeView tv) tv.Reload(); 
+								});
+							}
+							else //if(!ProfilerPinning.IsChildOfAnyPinnedItem(item, false))
 							{
-								ProfilerPinning.Unpin(item);
-								if (__instance is TreeView tv) tv.Reload();
-							});
+								menu.AddItem(new GUIContent("Pin"), true, () =>
+								{
+									ProfilerPinning.Unpin(item);
+									if (__instance is TreeView tv) tv.Reload();
+								});
+							}
 						}
+						
+						if (!settings.Enabled) return;
 						
 						if(menu.GetItemCount() > 0)
 							menu.AddSeparator(string.Empty);
 
-						if (!settings.Enabled) return;
 						var name = frameDataView?.GetItemName(item.id);
 						if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
 						{

@@ -54,8 +54,6 @@ namespace Needle.SelectiveProfiling
 			
 			Draw.DefaultSelectiveProfilerUI(settings, true);
 			
-			
-			
 			// Draw.WithHeaderFoldout("SelectedMethodsFoldout", "Profiled Methods", () =>
 			// {
 			// 	Draw.ScopesList(settings);
@@ -92,6 +90,14 @@ namespace Needle.SelectiveProfiling
 
 			EditorGUILayout.Space(10);
 			EditorGUILayout.EndScrollView();
+			
+
+
+			if (GUILayout.Button("Clear Pinned Items"))
+			{
+				PinnedItems.instance.ClearPinnedItems();
+				PinnedItems.instance.Save();
+			}
 		}
 
 		private static void DrawDeepProfilingDebug(SelectiveProfilerSettings settings)

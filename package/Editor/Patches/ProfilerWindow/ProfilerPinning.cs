@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.Profiling;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling
@@ -10,45 +11,158 @@ namespace Needle.SelectiveProfiling
 	internal static class ProfilerPinning
 	{
 		private static readonly HashSet<int> pinnedItems = new HashSet<int>();
+		private static readonly HashSet<int> unpinnedItems = new HashSet<int>();
+		private static HierarchyFrameDataView GetFrameData(TreeViewItem item) => ProfilerFrameDataView_Patch.GetFrameDataView(item);
+
+		public static bool AllowPinning(HierarchyFrameDataView view, TreeViewItem item, string name = null)
+		{
+			return true;
+		}
 
 		public static bool HasPinnedItems() => pinnedItems != null && pinnedItems.Count > 0;
 
-		public static bool IsPinned(int id)
+		public static bool IsPinned(TreeViewItem item)
 		{
-			return pinnedItems.Contains(id);
+			var fd = GetFrameData(item);
+			var markerId = fd.GetItemMarkerID(item.id);
+			return pinnedItems.Contains(markerId);
 		}
 
 		public static void Pin(TreeViewItem item)
 		{
-			if (!pinnedItems.Contains(item.id))
-				pinnedItems.Add(item.id);
+			if (item != null)
+			{
+				var fd = GetFrameData(item);
+				var markerId = fd.GetItemMarkerID(item.id);
+				InternalPin(markerId, true);
+
+				void HandleChildren(TreeViewItem current)
+				{
+					if (current != null && current.hasChildren)
+					{
+						foreach (var ch in current.children)
+						{
+							if (ch == null) continue;
+							var childId = GetFrameData(ch)?.GetItemMarkerID(ch.id) ?? -1;
+							if (childId == -1) continue;
+							InternalPin(childId, false);
+							HandleChildren(ch);
+						}
+					}
+				}
+
+				HandleChildren(item);
+			}
 		}
 
-		public static void Unpin(TreeViewItem item)
+		public static void Unpin(TreeViewItem item, int level = 0)
 		{
 			if (item == null) return;
-			if (pinnedItems.Contains(item.id)) pinnedItems.Remove(item.id);
-
+			
+			var fd = GetFrameData(item);
+			var markerId = fd.GetItemMarkerID(item.id);
+			InternalUnpin(markerId, level <= 0, level <= 0, false);
+			
 			if (item.hasChildren)
 			{
+				level += 1;
 				foreach (var ch in item.children)
-					Unpin(ch);
+					Unpin(ch, level);
+			}
+		}
+
+		private static void InternalPin(int id, bool save)
+		{
+			if (!pinnedItems.Contains(id)) 
+				pinnedItems.Add(id);
+			
+			if (unpinnedItems.Contains(id))
+			{
+				unpinnedItems.Remove(id);
+				var unpinnedList = PinnedItems.instance.UnpinnedProfilerItems;
+				if (unpinnedList != null && unpinnedList.Contains(id))
+				{
+					unpinnedList.Remove(id); 
+					PinnedItems.instance.Save();
+				}
+			}
+			
+			if (save)
+			{
+				var pinnedList = PinnedItems.instance.PinnedProfilerItems;
+				if (pinnedList != null && !pinnedList.Contains(id))  
+					pinnedList.Add(id);
+				var unpinnedList = PinnedItems.instance.UnpinnedProfilerItems;
+				if (unpinnedList != null && unpinnedList.Contains(id))
+					unpinnedList.Remove(id);
+				
+				PinnedItems.instance.Save();
+			}
+		}
+
+		private static void InternalUnpin(int id, bool save, bool saveUnpinned, bool removeFromUnpinned)
+		{
+			if (pinnedItems.Contains(id))
+				pinnedItems.Remove(id);
+			
+			if(saveUnpinned && !unpinnedItems.Contains(id))
+				unpinnedItems.Add(id);
+			else if (removeFromUnpinned && unpinnedItems.Contains(id))
+				unpinnedItems.Remove(id);
+			
+			if (save)
+			{
+				var pinnedList = PinnedItems.instance.PinnedProfilerItems;
+				if (pinnedList != null && pinnedList.Contains(id))
+					pinnedList.Remove(id);
+				var unpinnedList = PinnedItems.instance.UnpinnedProfilerItems;
+				if (unpinnedList != null && !unpinnedList.Contains(id))
+					unpinnedList.Add(id);
+				PinnedItems.instance.Save();  
 			}
 		}
 
 		internal static bool IsChildOfAnyPinnedItem(TreeViewItem item, bool any = true, int level = 0)
 		{
 			if (item == null) return false;
-			if (pinnedItems.Contains(item.id))
+			var fd = GetFrameData(item);
+			var markerId = fd.GetItemMarkerID(item.id);
+			if (unpinnedItems.Contains(markerId)) return false;
+			if (pinnedItems.Contains(markerId))
 			{
 				if (any) return true;
 				if (level > 0) return true;
 			}
+
+
 			level += 1;
 			return IsChildOfAnyPinnedItem(item.parent, any, level);
 		}
-
+		
 		public static Color DimColor = new Color(.8f, .8f, .8f, 1);
+
+		private static bool IsInit;
+		
+		private static void EnsureInit(HierarchyFrameDataView hierarchy)
+		{
+			if (IsInit) return;
+			IsInit = true;
+			var settings = PinnedItems.instance;
+			if (settings.PinnedProfilerItems != null)
+			{
+				foreach (var id in settings.PinnedProfilerItems)
+				{
+					InternalPin(id, false);
+				}
+
+				foreach (var id in settings.UnpinnedProfilerItems)
+				{
+					InternalUnpin(id, false, true, false);
+				}
+			}
+		}
+		
+		
 
 		public class ProfilerPinning_Patch : EditorPatchProvider
 		{
@@ -76,7 +190,9 @@ namespace Needle.SelectiveProfiling
 					// previousColor = TreeView.DefaultStyles.label.normal.textColor;
 					// TreeView.DefaultStyles.label.normal.textColor = Color.gray;
 					previousColor = GUI.color;
-					if (HasPinnedItems() && !pinnedItems.Contains(item.id))
+					var fd = GetFrameData(item);
+					var markerId = fd.GetItemMarkerID(item.id);
+					if (HasPinnedItems() && !pinnedItems.Contains(markerId))
 						GUI.color = DimColor;
 				}
 
@@ -96,23 +212,26 @@ namespace Needle.SelectiveProfiling
 					return Task.CompletedTask;
 				}
 
-
 				private static void Postfix(object __instance,
 					ref IList<TreeViewItem> __result,
 					ref List<TreeViewItem> ___m_Rows,
 					ref List<TreeViewItem> ___m_RowsPool)
 				{
 					if (__result.Count <= 0) return;
+					
 					var items = __result;
 
 					var inserted = 0;
 					for (var i = 0; i < items.Count; i++)
 					{
 						var item = items[i];
+						var fdv = ProfilerFrameDataView_Patch.GetFrameDataView(item);
+						if(!IsInit) EnsureInit(fdv);
+						
 						if (IsChildOfAnyPinnedItem(item))
 						{
-							if (!pinnedItems.Contains(item.id))
-								pinnedItems.Add(item.id);
+							var markerId = fdv.GetItemMarkerID(item.id);
+							InternalPin(markerId, false); 
 							items.RemoveAt(i);
 							items.Insert(inserted, item);
 							++inserted;
