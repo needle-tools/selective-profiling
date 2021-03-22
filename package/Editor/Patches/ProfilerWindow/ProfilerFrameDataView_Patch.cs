@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -7,12 +6,8 @@ using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
-using UnityEditor.MPE;
 using UnityEditor.Profiling;
-using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.Profiling;
-using Debug = UnityEngine.Debug;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedType.Global
@@ -135,7 +130,7 @@ namespace Needle.SelectiveProfiling
 					{
 						var menu = new GenericMenu();
 
-						if (ProfilerPinning.AllowPinning(GetFrameDataView(item), item))
+						if (ProfilerPinning.AllowPinning(item))
 						{
 							if (!ProfilerPinning.IsPinned(item))
 							{

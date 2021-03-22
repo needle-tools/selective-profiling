@@ -14,7 +14,6 @@ namespace Needle.SelectiveProfiling
 	internal static class ProfilerPinning
 	{
 		private static readonly HashSet<int> pinnedItems = new HashSet<int>();
-		private static readonly HashSet<int> unpinnedItems = new HashSet<int>();
 		private static HierarchyFrameDataView GetFrameData(TreeViewItem item = null) => ProfilerFrameDataView_Patch.GetFrameDataView(item);
 
 		public static bool AllowPinning()
@@ -22,7 +21,7 @@ namespace Needle.SelectiveProfiling
 			return SelectiveProfilerSettings.instance.AllowPinning;
 		}
 		
-		public static bool AllowPinning(HierarchyFrameDataView view, TreeViewItem item, string name = null)
+		public static bool AllowPinning(TreeViewItem item, string name = null, HierarchyFrameDataView view = null)
 		{
 			if (!SelectiveProfilerSettings.instance.AllowPinning) return false;
 			return true;
@@ -37,34 +36,19 @@ namespace Needle.SelectiveProfiling
 			return pinnedItems.Contains(markerId);
 		}
 
+		public static bool HasPinnedParent(TreeViewItem item) => IsChildOfAnyPinnedItem(item);
+
 		public static void Pin(TreeViewItem item)
 		{
 			if (item != null)
 			{
 				var fd = GetFrameData(item);
 				var markerId = fd.GetItemMarkerID(item.id);
-				InternalPin(markerId, true);
-
-				void HandleChildren(TreeViewItem current)
-				{
-					if (current != null && current.hasChildren)
-					{
-						foreach (var ch in current.children)
-						{
-							if (ch == null) continue;
-							var childId = GetFrameData(ch)?.GetItemMarkerID(ch.id) ?? -1;
-							if (childId == -1) continue;
-							InternalPin(childId, false);
-							HandleChildren(ch);
-						}
-					}
-				}
-
-				HandleChildren(item);
+				InternalPin(markerId, true, item);
 			}
 		}
 
-		public static void Unpin(TreeViewItem item, int level = 0)
+		public static void Unpin(TreeViewItem item, int level = 0, bool completely = false)
 		{
 			if (item == null) return;
 			
@@ -72,46 +56,27 @@ namespace Needle.SelectiveProfiling
 			var markerId = fd.GetItemMarkerID(item.id);
 			InternalUnpin(markerId, level <= 0, level <= 0, false, item);
 			
-			if (item.hasChildren)
+			if (completely && item.hasChildren)
 			{
 				level += 1;
 				foreach (var ch in item.children)
-					Unpin(ch, level);
+					Unpin(ch, level, true);
 			}
 		}
 
-		private static void InternalPin(int id, bool save)
+		private static void InternalPin(int id, bool save, TreeViewItem item)
 		{
 			if (!pinnedItems.Contains(id)) 
 				pinnedItems.Add(id);
-
-
 			var frameData = GetFrameData();
 			var name = frameData.GetMarkerName(id);
-			
-			if (unpinnedItems.Contains(id))
-			{
-				unpinnedItems.Remove(id);
-				var unpinnedList = PinnedItems.UnpinnedProfilerItems;
-				if (unpinnedList != null && unpinnedList.Contains(name))
-				{
-					unpinnedList.Remove(name); 
-					PinnedItems.Save();
-				}
-			}
 			
 			if (save)
 			{
 				var pinnedList = PinnedItems.PinnedProfilerItems;
 				if (pinnedList != null && !pinnedList.Contains(name))  
 					pinnedList.Add(name);
-				var unpinnedList = PinnedItems.UnpinnedProfilerItems;
-				if (unpinnedList != null && unpinnedList.Contains(name))
-					unpinnedList.Remove(name);
 				PinnedItems.Save();
-				
-				// HACK - figure out where we miss syncing state
-				IsInit = false;
 			}
 		}
 
@@ -128,59 +93,19 @@ namespace Needle.SelectiveProfiling
 				var pinnedList = PinnedItems.PinnedProfilerItems;
 				if (pinnedList != null && pinnedList.Contains(name))
 					pinnedList.Remove(name);
-
-				if (IsChildOfAnyPinnedItem(item))
-				{
-					var unpinnedList = PinnedItems.UnpinnedProfilerItems;
-					if (unpinnedList != null && !unpinnedList.Contains(name))
-						unpinnedList.Add(name);
-				}
 				
 				PinnedItems.Save();
-				
-				// HACK - figure out where we miss syncing state
-				IsInit = false;
 			}
-			
-			if(saveUnpinned && !unpinnedItems.Contains(id))
-				unpinnedItems.Add(id);
-			else if (removeFromUnpinned && unpinnedItems.Contains(id))
-				unpinnedItems.Remove(id);
-
-			// var frame = GetFrameData(item);
-			// RemoveChildrenThatAreOnlyUnpinned(item.id, frame);
 		}
 
-		private static void RemoveChildrenThatAreOnlyUnpinned(int itemId, HierarchyFrameDataView frameData, int depth = 0)
+		private static bool IsChildOfAnyPinnedItem(TreeViewItem item, bool any = true, int level = 0)
 		{
-			var list = new List<int>();
-			frameData.GetItemChildren(itemId, list);
-			var requireSave = false;
-			var nextDepth = depth + 1;
-			foreach (var i in list)
+			if (item == null)
 			{
-				var id = frameData.GetItemMarkerID(i);
-				if (unpinnedItems.Contains(id))
-				{
-					var name = frameData.GetMarkerName(id);
-					if (PinnedItems.UnpinnedProfilerItems.Contains(name))
-					{
-						PinnedItems.UnpinnedProfilerItems.Remove(name);
-						requireSave = true;
-					}
-				}
-				RemoveChildrenThatAreOnlyUnpinned(i, frameData, nextDepth);
+				return false;
 			}
-			if(requireSave && depth <= 0)
-				PinnedItems.Save();
-		}
-
-		internal static bool IsChildOfAnyPinnedItem(TreeViewItem item, bool any = true, int level = 0)
-		{
-			if (item == null) return false;
 			var fd = GetFrameData(item);
 			var markerId = fd.GetItemMarkerID(item.id);
-			if (unpinnedItems.Contains(markerId)) return false;
 			if (pinnedItems.Contains(markerId))
 			{
 				if (any) return true;
@@ -204,26 +129,15 @@ namespace Needle.SelectiveProfiling
 			if (fd == null || !fd.valid) return;
 			IsInit = true;
 			
-			// pinnedItems.Clear();
-			// unpinnedItems.Clear();
-			
 			foreach (var name in PinnedItems.PinnedProfilerItems)
 			{
 				var id = fd.GetMarkerId(name);
-				InternalPin(id, false);
-			}
-
-			foreach (var name in PinnedItems.UnpinnedProfilerItems)
-			{
-				var id = fd.GetMarkerId(name);
-				InternalUnpin(id, false, true, false, item);
+				InternalPin(id, false, item);
 			}
 		}
 		
 		public class ProfilerPinning_Patch : EditorPatchProvider
 		{
-			private static Color previousColor;
-
 			protected override void OnGetPatches(List<EditorPatch> patches)
 			{
 				patches.Add(new Profiler_BuildRows());
@@ -241,22 +155,24 @@ namespace Needle.SelectiveProfiling
 					return Task.CompletedTask;
 				}
 
+				private static Color previousColor;
+				
 				private static void Prefix(TreeViewItem item)
 				{
 					if (!AllowPinning()) return;
-					// previousColor = TreeView.DefaultStyles.label.normal.textColor;
-					// TreeView.DefaultStyles.label.normal.textColor = Color.gray;
 					previousColor = GUI.color;
 					var fd = GetFrameData(item);
 					var markerId = fd.GetItemMarkerID(item.id);
-					if (HasPinnedItems() && !pinnedItems.Contains(markerId))
+					if (HasPinnedItems() && !pinnedItems.Contains(markerId) && !IsChildOfAnyPinnedItem(item))
 						GUI.color = DimColor;
 				}
 
-				private static void Postfix()
+				private static void Postfix(Rect cellRect, TreeViewItem item)
 				{
 					if (!AllowPinning()) return;
 					GUI.color = previousColor;
+					
+					
 				}
 			}
 
@@ -291,9 +207,10 @@ namespace Needle.SelectiveProfiling
 						
 						if (IsChildOfAnyPinnedItem(item))
 						{
-							var fdv = ProfilerFrameDataView_Patch.GetFrameDataView(item);
-							var markerId = fdv.GetItemMarkerID(item.id);
-							InternalPin(markerId, false); 
+							var frameData = GetFrameData(item);
+							var markerId = frameData.GetItemMarkerID(item.id);
+							Debug.Log(frameData.GetMarkerName(markerId));
+							// InternalPin(markerId, false, item); 
 							items.RemoveAt(i);
 							items.Insert(inserted, item);
 							// insertList.Add(item);

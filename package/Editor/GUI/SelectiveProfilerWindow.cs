@@ -87,6 +87,18 @@ namespace Needle.SelectiveProfiling
 					EditorGUILayout.Space(10);
 				});
 			}
+			
+			Draw.WithHeaderFoldout("Pinned", "Pinned", () =>
+			{
+				foreach (var item in settings.PinnedMethods)
+					EditorGUILayout.LabelField(item);
+			});
+			
+			// Draw.WithHeaderFoldout("Unpinned", "Unpinned", () =>
+			// {
+			// 	foreach (var item in settings.UnpinnedMethods)
+			// 		EditorGUILayout.LabelField(item);
+			// });
 
 			EditorGUILayout.Space(10);
 			EditorGUILayout.EndScrollView();

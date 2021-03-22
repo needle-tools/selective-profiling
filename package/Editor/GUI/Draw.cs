@@ -65,8 +65,6 @@ namespace Needle.SelectiveProfiling
 				settings.MaxDepth = EditorGUILayout.IntField(new GUIContent("Max Depth", "When deep profiling is enabled this controls how many levels deep we should follow nested method calls"), settings.MaxDepth);
 				settings.DeepProfileMaxLevel = (Level) EditorGUILayout.EnumFlagsField(new GUIContent("Allowed", ""), settings.DeepProfileMaxLevel);
 
-				
-
 				if (SelectiveProfiler.DevelopmentMode)
 				{
 					GUIState.PatchesFoldout = EditorGUILayout.Foldout(GUIState.PatchesFoldout, "Selected Methods [Active " + settings.MethodsList.Count + " of " + settings.MethodsCount + "]");

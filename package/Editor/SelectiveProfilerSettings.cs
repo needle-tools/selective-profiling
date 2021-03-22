@@ -21,12 +21,12 @@ namespace Needle.SelectiveProfiling
 	internal static class PinnedItems 
 	{
 		public static List<string> PinnedProfilerItems => SelectiveProfilerSettings.instance.PinnedMethods;
-		public static List<string> UnpinnedProfilerItems => SelectiveProfilerSettings.instance.UnpinnedMethods;
+		// public static List<string> UnpinnedProfilerItems => SelectiveProfilerSettings.instance.UnpinnedMethods;
 
 		public static void ClearPinnedItems()
 		{
 			PinnedProfilerItems.Clear();
-			UnpinnedProfilerItems.Clear();
+			// UnpinnedProfilerItems.Clear();
 		}
 
 		public static void Save() => SelectiveProfilerSettings.instance.Save();
@@ -98,7 +98,7 @@ namespace Needle.SelectiveProfiling
 		[SerializeField] private List<MethodInformation> Methods = new List<MethodInformation>();
 
 		[SerializeField] internal List<string> PinnedMethods = new List<string>();
-		[SerializeField] internal List<string> UnpinnedMethods = new List<string>();
+		// [SerializeField] internal List<string> UnpinnedMethods = new List<string>();
 
 
 		public int MethodsCount => Methods.Count;
