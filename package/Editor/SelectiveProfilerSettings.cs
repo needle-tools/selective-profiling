@@ -6,6 +6,7 @@ using System.Reflection;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 #if !UNITY_2020_1_OR_NEWER
@@ -17,22 +18,18 @@ using UnityEditorInternal;
 namespace Needle.SelectiveProfiling
 {
 
-	[FilePath("UserSettings/SelectiveProfilerPinned.asset", FilePathAttribute.Location.ProjectFolder)]
-	internal class PinnedItems : ScriptableSingleton<PinnedItems>
+	internal static class PinnedItems 
 	{
-		[SerializeField] internal List<int> PinnedProfilerItems = new List<int>();
-		[SerializeField] internal List<int> UnpinnedProfilerItems = new List<int>();
+		public static List<string> PinnedProfilerItems => SelectiveProfilerSettings.instance.PinnedMethods;
+		public static List<string> UnpinnedProfilerItems => SelectiveProfilerSettings.instance.UnpinnedMethods;
 
-		public void ClearPinnedItems()
+		public static void ClearPinnedItems()
 		{
 			PinnedProfilerItems.Clear();
 			UnpinnedProfilerItems.Clear();
 		}
 
-		internal void Save()
-		{
-			base.Save(true);
-		}
+		public static void Save() => SelectiveProfilerSettings.instance.Save();
 	}
 
 	[FilePath("ProjectSettings/SelectiveProfiler.asset", FilePathAttribute.Location.ProjectFolder)]
@@ -98,6 +95,9 @@ namespace Needle.SelectiveProfiling
 		public bool SkipProperties = true;
 
 		[SerializeField] private List<MethodInformation> Methods = new List<MethodInformation>();
+
+		[SerializeField] internal List<string> PinnedMethods = new List<string>();
+		[SerializeField] internal List<string> UnpinnedMethods = new List<string>();
 
 
 		public int MethodsCount => Methods.Count;

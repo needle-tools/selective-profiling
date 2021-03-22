@@ -60,7 +60,7 @@ namespace Needle.SelectiveProfiling
 		{
 			if (m_FrameDataViewField == null)
 				m_FrameDataViewField = item.GetType().GetField("m_FrameDataView", (BindingFlags) ~0);
-			if (m_frameDataView == null || !m_frameDataView.valid)
+			if (item != null && (m_frameDataView == null || !m_frameDataView.valid))
 				m_frameDataView = m_FrameDataViewField?.GetValue(item) as HierarchyFrameDataView;
 			return m_frameDataView;
 		}

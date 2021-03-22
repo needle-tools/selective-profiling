@@ -2,8 +2,7 @@
     "name": "Needle.SelectiveProfiling",
     "rootNamespace": "Needle.SelectiveProfiling",
     "references": [
-        "GUID:336404f647c61ce4db3b999a77d5db23",
-        "GUID:76988137b74588448b13c8b40b10b652"
+        "GUID:336404f647c61ce4db3b999a77d5db23"
     ],
     "includePlatforms": [
         "Editor"

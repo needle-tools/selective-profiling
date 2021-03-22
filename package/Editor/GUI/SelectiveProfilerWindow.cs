@@ -95,8 +95,8 @@ namespace Needle.SelectiveProfiling
 
 			if (GUILayout.Button("Clear Pinned Items"))
 			{
-				PinnedItems.instance.ClearPinnedItems();
-				PinnedItems.instance.Save();
+				PinnedItems.ClearPinnedItems();
+				PinnedItems.Save();
 			}
 		}
 

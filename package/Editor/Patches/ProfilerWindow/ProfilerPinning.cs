@@ -15,7 +15,7 @@ namespace Needle.SelectiveProfiling
 	{
 		private static readonly HashSet<int> pinnedItems = new HashSet<int>();
 		private static readonly HashSet<int> unpinnedItems = new HashSet<int>();
-		private static HierarchyFrameDataView GetFrameData(TreeViewItem item) => ProfilerFrameDataView_Patch.GetFrameDataView(item);
+		private static HierarchyFrameDataView GetFrameData(TreeViewItem item = null) => ProfilerFrameDataView_Patch.GetFrameDataView(item);
 
 		public static bool AllowPinning(HierarchyFrameDataView view, TreeViewItem item, string name = null)
 		{
@@ -64,7 +64,7 @@ namespace Needle.SelectiveProfiling
 			
 			var fd = GetFrameData(item);
 			var markerId = fd.GetItemMarkerID(item.id);
-			InternalUnpin(markerId, level <= 0, level <= 0, false);
+			InternalUnpin(markerId, level <= 0, level <= 0, false, item);
 			
 			if (item.hasChildren)
 			{
@@ -78,51 +78,95 @@ namespace Needle.SelectiveProfiling
 		{
 			if (!pinnedItems.Contains(id)) 
 				pinnedItems.Add(id);
+
+
+			var frameData = GetFrameData();
+			var name = frameData.GetMarkerName(id);
 			
 			if (unpinnedItems.Contains(id))
 			{
 				unpinnedItems.Remove(id);
-				var unpinnedList = PinnedItems.instance.UnpinnedProfilerItems;
-				if (unpinnedList != null && unpinnedList.Contains(id))
+				var unpinnedList = PinnedItems.UnpinnedProfilerItems;
+				if (unpinnedList != null && unpinnedList.Contains(name))
 				{
-					unpinnedList.Remove(id); 
-					PinnedItems.instance.Save();
+					unpinnedList.Remove(name); 
+					PinnedItems.Save();
 				}
 			}
 			
 			if (save)
 			{
-				var pinnedList = PinnedItems.instance.PinnedProfilerItems;
-				if (pinnedList != null && !pinnedList.Contains(id))  
-					pinnedList.Add(id);
-				var unpinnedList = PinnedItems.instance.UnpinnedProfilerItems;
-				if (unpinnedList != null && unpinnedList.Contains(id))
-					unpinnedList.Remove(id);
+				var pinnedList = PinnedItems.PinnedProfilerItems;
+				if (pinnedList != null && !pinnedList.Contains(name))  
+					pinnedList.Add(name);
+				var unpinnedList = PinnedItems.UnpinnedProfilerItems;
+				if (unpinnedList != null && unpinnedList.Contains(name))
+					unpinnedList.Remove(name);
+				PinnedItems.Save();
 				
-				PinnedItems.instance.Save();
+				// HACK - figure out where we miss syncing state
+				IsInit = false;
 			}
 		}
 
-		private static void InternalUnpin(int id, bool save, bool saveUnpinned, bool removeFromUnpinned)
+		private static void InternalUnpin(int id, bool save, bool saveUnpinned, bool removeFromUnpinned, TreeViewItem item)
 		{
 			if (pinnedItems.Contains(id))
 				pinnedItems.Remove(id);
+			
+			if (save)
+			{
+				var frameData = GetFrameData(); 
+				var name = frameData.GetMarkerName(id);
+				
+				var pinnedList = PinnedItems.PinnedProfilerItems;
+				if (pinnedList != null && pinnedList.Contains(name))
+					pinnedList.Remove(name);
+
+				if (IsChildOfAnyPinnedItem(item))
+				{
+					var unpinnedList = PinnedItems.UnpinnedProfilerItems;
+					if (unpinnedList != null && !unpinnedList.Contains(name))
+						unpinnedList.Add(name);
+				}
+				
+				PinnedItems.Save();
+				
+				// HACK - figure out where we miss syncing state
+				IsInit = false;
+			}
 			
 			if(saveUnpinned && !unpinnedItems.Contains(id))
 				unpinnedItems.Add(id);
 			else if (removeFromUnpinned && unpinnedItems.Contains(id))
 				unpinnedItems.Remove(id);
-			
-			if (save)
+
+			// var frame = GetFrameData(item);
+			// RemoveChildrenThatAreOnlyUnpinned(item.id, frame);
+		}
+
+		private static void RemoveChildrenThatAreOnlyUnpinned(int itemId, HierarchyFrameDataView frameData, int depth = 0)
+		{
+			var list = new List<int>();
+			frameData.GetItemChildren(itemId, list);
+			var requireSave = false;
+			var nextDepth = depth + 1;
+			foreach (var i in list)
 			{
-				var pinnedList = PinnedItems.instance.PinnedProfilerItems;
-				if (pinnedList != null && pinnedList.Contains(id))
-					pinnedList.Remove(id);
-				var unpinnedList = PinnedItems.instance.UnpinnedProfilerItems;
-				if (unpinnedList != null && !unpinnedList.Contains(id))
-					unpinnedList.Add(id);
-				PinnedItems.instance.Save();  
+				var id = frameData.GetItemMarkerID(i);
+				if (unpinnedItems.Contains(id))
+				{
+					var name = frameData.GetMarkerName(id);
+					if (PinnedItems.UnpinnedProfilerItems.Contains(name))
+					{
+						PinnedItems.UnpinnedProfilerItems.Remove(name);
+						requireSave = true;
+					}
+				}
+				RemoveChildrenThatAreOnlyUnpinned(i, frameData, nextDepth);
 			}
+			if(requireSave && depth <= 0)
+				PinnedItems.Save();
 		}
 
 		internal static bool IsChildOfAnyPinnedItem(TreeViewItem item, bool any = true, int level = 0)
@@ -147,22 +191,26 @@ namespace Needle.SelectiveProfiling
 
 		private static bool IsInit;
 		
-		private static void EnsureInit()
+		private static void EnsureInit(TreeViewItem item)
 		{
 			if (IsInit) return;
+			var fd = GetFrameData(item);
+			if (fd == null || !fd.valid) return;
 			IsInit = true;
-			var settings = PinnedItems.instance;
-			if (settings.PinnedProfilerItems != null)
+			
+			// pinnedItems.Clear();
+			// unpinnedItems.Clear();
+			
+			foreach (var name in PinnedItems.PinnedProfilerItems)
 			{
-				foreach (var id in settings.PinnedProfilerItems)
-				{
-					InternalPin(id, false);
-				}
+				var id = fd.GetMarkerId(name);
+				InternalPin(id, false);
+			}
 
-				foreach (var id in settings.UnpinnedProfilerItems)
-				{
-					InternalUnpin(id, false, true, false);
-				}
+			foreach (var name in PinnedItems.UnpinnedProfilerItems)
+			{
+				var id = fd.GetMarkerId(name);
+				InternalUnpin(id, false, true, false, item);
 			}
 		}
 		
@@ -222,10 +270,8 @@ namespace Needle.SelectiveProfiling
 
 				private static void Postfix(object __instance, ref IList<TreeViewItem> __result)
 				{
-					if (__result.Count <= 0) return;
-					
 					var items = __result;
-					EnsureInit();
+					EnsureInit(items.LastOrDefault(i => i.id >= 0));
 					
 
 					var inserted = 0;
@@ -267,6 +313,7 @@ namespace Needle.SelectiveProfiling
 						var markerId = frameData?.GetItemMarkerID(id);
 						if (markerId != null && pinnedItems.Contains(markerId.Value))
 						{
+							// TODO: save expanded state -> when scrubbing timeline and entry is not in list for one frame it defaults to unexpanded
 							// if(Application.isPlaying)
 								// tree.SetExpanded(id, true);
 							return true;
@@ -280,7 +327,10 @@ namespace Needle.SelectiveProfiling
 							foreach (var ch in children)
 							{
 								if (TraverseChildren(ch))
+								{
+									expand = true;
 									break;
+								}
 							}
 						}
 
