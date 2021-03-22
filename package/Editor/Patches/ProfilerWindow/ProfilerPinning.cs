@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEngine;
+// ReSharper disable UnusedMember.Local
 
 namespace Needle.SelectiveProfiling
 {
@@ -138,12 +141,13 @@ namespace Needle.SelectiveProfiling
 			level += 1;
 			return IsChildOfAnyPinnedItem(item.parent, any, level);
 		}
-		
-		public static Color DimColor = new Color(.8f, .8f, .8f, 1);
+
+		private const float defaultDimValue = .7f;
+		public static Color DimColor = new Color(defaultDimValue, defaultDimValue, defaultDimValue, 1);
 
 		private static bool IsInit;
 		
-		private static void EnsureInit(HierarchyFrameDataView hierarchy)
+		private static void EnsureInit()
 		{
 			if (IsInit) return;
 			IsInit = true;
@@ -162,8 +166,6 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 		
-		
-
 		public class ProfilerPinning_Patch : EditorPatchProvider
 		{
 			private static Color previousColor;
@@ -202,7 +204,7 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 
-			internal class Profiler_BuildRows : EditorPatch
+			private class Profiler_BuildRows : EditorPatch
 			{
 				protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 				{
@@ -212,31 +214,85 @@ namespace Needle.SelectiveProfiling
 					return Task.CompletedTask;
 				}
 
-				private static void Postfix(object __instance,
-					ref IList<TreeViewItem> __result,
-					ref List<TreeViewItem> ___m_Rows,
-					ref List<TreeViewItem> ___m_RowsPool)
+				private static void Prefix(object __instance, TreeViewItem root)
+				{
+					var tree = __instance as TreeView;
+					ExpandPinnedItems(tree, root);
+				}
+
+				private static void Postfix(object __instance, ref IList<TreeViewItem> __result)
 				{
 					if (__result.Count <= 0) return;
 					
 					var items = __result;
+					EnsureInit();
+					
 
 					var inserted = 0;
+					// var insertList = new List<TreeViewItem>();
 					for (var i = 0; i < items.Count; i++)
 					{
 						var item = items[i];
-						var fdv = ProfilerFrameDataView_Patch.GetFrameDataView(item);
-						if(!IsInit) EnsureInit(fdv);
 						
 						if (IsChildOfAnyPinnedItem(item))
 						{
+							var fdv = ProfilerFrameDataView_Patch.GetFrameDataView(item);
 							var markerId = fdv.GetItemMarkerID(item.id);
 							InternalPin(markerId, false); 
 							items.RemoveAt(i);
 							items.Insert(inserted, item);
+							// insertList.Add(item);
 							++inserted;
+
 						}
 					}
+
+					// for (var index = insertList.Count - 1; index >= 0; index--)
+					// {
+					// 	var it = insertList[index];
+					// 	items.Insert(0, it);
+					// }
+				}
+
+
+				private static void ExpandPinnedItems(TreeView tree, TreeViewItem root)
+				{
+					if (tree == null) return;
+					var frameData = GetFrameData(root);
+					if (frameData == null || !frameData.valid)
+						return;
+
+					bool TraverseChildren(int id)
+					{
+						var markerId = frameData?.GetItemMarkerID(id);
+						if (markerId != null && pinnedItems.Contains(markerId.Value))
+						{
+							// if(Application.isPlaying)
+								// tree.SetExpanded(id, true);
+							return true;
+						}
+
+						var children = new List<int>();
+						frameData?.GetItemChildren(id, children);
+						var expand = false;
+						if (children.Count >= 0)
+						{
+							foreach (var ch in children)
+							{
+								if (TraverseChildren(ch))
+									break;
+							}
+						}
+
+						if (expand)
+						{
+							tree.SetExpanded(id, true);
+						}
+
+						return expand; 
+					}
+					
+					TraverseChildren(root.id);
 				}
 			}
 		}
