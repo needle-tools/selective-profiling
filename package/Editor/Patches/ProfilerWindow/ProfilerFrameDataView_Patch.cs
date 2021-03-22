@@ -24,12 +24,24 @@ namespace Needle.SelectiveProfiling
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
 			if (!SelectiveProfiler.AllowToBeEnabled) return;
-			patches.Add(new Profiler_BuildRows());
 			patches.Add(new Profiler_SelectionChanged());
 			patches.Add(new Profiler_CellGUI());
 		}
-		
+
+		public override void OnEnabledPatch()
+		{
+			base.OnEnabledPatch();
+			PatchManager.EnablePatch(typeof(ProfilerPinning.ProfilerPinning_Patch));
+		}
+
+		public override void OnDisabledPatch()
+		{
+			base.OnDisabledPatch();
+			PatchManager.DisablePatch(typeof(ProfilerPinning.ProfilerPinning_Patch));
+		}
+
 		private static SelectiveProfilerSettings _settings;
+
 		private static SelectiveProfilerSettings Settings
 		{
 			get
@@ -39,11 +51,12 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		
+
 		private static int selectedId = -1;
 		private static FieldInfo m_FrameDataViewField;
 		private static HierarchyFrameDataView m_frameDataView;
-		private static HierarchyFrameDataView GetFrameDataView(TreeViewItem item)
+
+		internal static HierarchyFrameDataView GetFrameDataView(TreeViewItem item)
 		{
 			if (m_FrameDataViewField == null)
 				m_FrameDataViewField = item.GetType().GetField("m_FrameDataView", (BindingFlags) ~0);
@@ -52,57 +65,7 @@ namespace Needle.SelectiveProfiling
 			return m_frameDataView;
 		}
 
-		private static readonly HashSet<int> pinnedItems = new HashSet<int>();
 
-		private class Profiler_BuildRows : EditorPatch
-		{
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
-			{
-				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
-				var m = t.GetMethod("BuildRows", (BindingFlags) ~0);
-				// var m1 = t.BaseType?.GetMethod("RowGUI", (BindingFlags) ~0);
-				targetMethods.Add(m);
-				return Task.CompletedTask;
-			}
-
-
-			private static void Postfix(object __instance, ref IList<TreeViewItem> __result, 
-				ref List<TreeViewItem> ___m_Rows, ref List<TreeViewItem> ___m_RowsPool)
-			{
-				if (__result.Count <= 0) return;
-				var items = __result;
-				// pinnedItems.Clear();
-
-				bool IsChildOfAnyItemWeKeep(TreeViewItem item)
-				{
-					if (item == null) return false;
-					if (pinnedItems.Contains(item.id)) return true;
-					return IsChildOfAnyItemWeKeep(item.parent);
-				}
-
-				bool IsItemToInspect(TreeViewItem item)
-				{
-					var view = GetFrameDataView(item);
-					var name = view.GetItemName(item.id);
-					return name.EndsWith("ScriptRunBehaviourUpdate");
-				}
-
-				var inserted = 0;
-				for (var i = 0; i < items.Count; i++)
-				{
-					var item = items[i];
-					if (IsChildOfAnyItemWeKeep(item))
-					{
-						if(!pinnedItems.Contains(item.id))
-							pinnedItems.Add(item.id);
-						items.RemoveAt(i);
-						items.Insert(inserted, item);
-						++inserted;
-					}
-				}
-			}
-		}
-		
 		private class Profiler_SelectionChanged : EditorPatch
 		{
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
@@ -119,7 +82,7 @@ namespace Needle.SelectiveProfiling
 				else selectedId = selectedIds[0];
 			}
 		}
-		
+
 		private class Profiler_CellGUI : EditorPatch
 		{
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L647
@@ -133,23 +96,16 @@ namespace Needle.SelectiveProfiling
 
 			private static int lastPatchedInImmediateMode = -1;
 
-			private static Color previousColor;
-			private static void Prefix(TreeViewItem item)
-			{
-				// previousColor = TreeView.DefaultStyles.label.normal.textColor;
-				// TreeView.DefaultStyles.label.normal.textColor = Color.gray;
-				previousColor = GUI.color;
-				if(pinnedItems.Count > 0 && !pinnedItems.Contains(item.id))
-					GUI.color = Color.gray;
-			}
+			// private static void Prefix(TreeViewItem item)
+			// {
+			// 	// previousColor = TreeView.DefaultStyles.label.normal.textColor;
+			// 	// TreeView.DefaultStyles.label.normal.textColor = Color.gray;
+			// }
 
 			// method https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L676
 			// item: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
 			private static void Postfix(object __instance, Rect cellRect, TreeViewItem item)
 			{
-				// TreeView.DefaultStyles.label.normal.textColor = previousColor;
-				GUI.color = previousColor;
-				
 				if (Event.current.type == EventType.MouseDown) return;
 				var settings = SelectiveProfilerSettings.instance;
 				if (!settings.Enabled) return;
@@ -162,7 +118,7 @@ namespace Needle.SelectiveProfiling
 				{
 					lastPatchedInImmediateMode = selectedId;
 					var name = frameDataView?.GetItemName(item.id);
-					// TODO: add support for standalone profiler
+					// TODO: test with standalone profiler
 					if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
 						SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
 				}
@@ -178,30 +134,27 @@ namespace Needle.SelectiveProfiling
 					if (m_FrameDataViewField != null)
 					{
 						var menu = new GenericMenu();
-						
-						if(!pinnedItems.Contains(item.id))
+
+						if (!ProfilerPinning.IsPinned(item.id))
+						{
 							menu.AddItem(new GUIContent("Pin"), false, () =>
 							{
-								pinnedItems.Add(item.id);
-								if(__instance is TreeView tv) tv.Reload();
+								ProfilerPinning.Pin(item);
+								if (__instance is TreeView tv) tv.Reload();
 							});
-						else 
+						}
+						else if(!ProfilerPinning.IsChildOfAnyPinnedItem(item, false))
+						{
 							menu.AddItem(new GUIContent("Unpin"), true, () =>
 							{
-								void Remove(TreeViewItem _item)
-								{
-									if (_item == null || pinnedItems == null) return;
-									if (pinnedItems.Contains(_item.id))
-										pinnedItems.Remove(_item.id);
-									if(_item.hasChildren)
-										foreach (var ch in _item.children)
-											Remove(ch);
-								}
-
-								Remove(item);
-								if(__instance is TreeView tv) tv.Reload();
+								ProfilerPinning.Unpin(item);
+								if (__instance is TreeView tv) tv.Reload();
 							});
+						}
 						
+						if(menu.GetItemCount() > 0)
+							menu.AddSeparator(string.Empty);
+
 						if (!settings.Enabled) return;
 						var name = frameDataView?.GetItemName(item.id);
 						if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
@@ -246,7 +199,7 @@ namespace Needle.SelectiveProfiling
 			if (ret == "Void") ret = string.Empty;
 			else ret += " ";
 			var methodName = methodInfo.Name + "(" + string.Join(",", methodInfo.GetParameters()?.Select(p => p.ParameterType)) + ")";
-			
+
 			// need to split this into two menu items until we sync state of activated methods between standalone profiler and main process
 			// if (SelectiveProfiler.IsStandaloneProcess)
 			// {

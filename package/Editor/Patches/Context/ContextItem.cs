@@ -2,7 +2,7 @@
 
 namespace Needle.SelectiveProfiling
 {
-	internal class ContextItem
+	public class ContextItem
 	{
 		public string Path;
 		public Action Selected;

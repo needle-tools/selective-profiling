@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 namespace Needle.SelectiveProfiling
 {
 	// ReSharper disable once ClassNeverInstantiated.Global
-	internal sealed class ContextMenuPatches : EditorPatchProvider
+	public sealed class ContextMenuPatches : EditorPatchProvider
 	{
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
@@ -48,6 +48,7 @@ namespace Needle.SelectiveProfiling
 			private static readonly List<bool> enabled = new List<bool>();
 			private static readonly List<bool> separator = new List<bool>();
 
+			// ReSharper disable once UnusedMember.Local
 			private static bool Prefix(Rect position, Object[] context, int contextUserData)
 			{
 				titles.Clear();

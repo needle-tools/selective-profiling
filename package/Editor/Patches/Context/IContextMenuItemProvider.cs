@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
-	internal interface IContextMenuItemProvider
+	public interface IContextMenuItemProvider
 	{
 		void AddItems(Object[] context, int contextUserData, List<ContextItem> items);
 	}
