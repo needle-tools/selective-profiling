@@ -9,6 +9,10 @@ using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEngine;
 
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.MPE;
+#endif
+
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedType.Global
 

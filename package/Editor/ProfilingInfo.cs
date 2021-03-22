@@ -38,10 +38,12 @@ namespace Needle.SelectiveProfiling
 				enabled = true;
 				OnEnable();
 				
+#if UNITY_2020_2_OR_NEWER
 				if (!SelectiveProfiler.IsStandaloneProcess)
 				{
 					SelectiveProfiler.QueueCommand(new ProfiledMethodStateChanged(MethodInformation, true));
 				}
+#endif
 			}
 
 			return ts;
@@ -56,10 +58,12 @@ namespace Needle.SelectiveProfiling
 				enabled = false;
 				OnDisable();
 				
+#if UNITY_2020_2_OR_NEWER
 				if (!SelectiveProfiler.IsStandaloneProcess)
 				{
 					SelectiveProfiler.QueueCommand(new ProfiledMethodStateChanged(MethodInformation, false));
 				}
+#endif
 			}
 		}
 
