@@ -53,7 +53,7 @@ namespace Needle.SelectiveProfiling
 
 		internal static HierarchyFrameDataView GetFrameDataView(TreeViewItem item)
 		{
-			if (m_FrameDataViewField == null)
+			if (m_FrameDataViewField == null && item != null)
 				m_FrameDataViewField = item.GetType().GetField("m_FrameDataView", (BindingFlags) ~0);
 			if (item != null && (m_frameDataView == null || !m_frameDataView.valid))
 				m_frameDataView = m_FrameDataViewField?.GetValue(item) as HierarchyFrameDataView;

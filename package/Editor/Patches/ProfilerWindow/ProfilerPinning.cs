@@ -71,6 +71,7 @@ namespace Needle.SelectiveProfiling
 
 		private static void InternalPin(int id, bool save)
 		{
+			if (id < 0) return;
 			if (!pinnedItems.Contains(id))
 				pinnedItems.Add(id);
 			var frameData = GetFrameData();
@@ -150,6 +151,7 @@ namespace Needle.SelectiveProfiling
 			protected override void OnGetPatches(List<EditorPatch> patches)
 			{
 				patches.Add(new Profiler_BuildRows());
+				patches.Add(new Profiler_MigrateExpandedState());
 				patches.Add(new Profiler_CellGUI());
 				patches.Add(new Profiler_DoubleClick());
 			}
@@ -179,8 +181,6 @@ namespace Needle.SelectiveProfiling
 					EnsureInit(items.LastOrDefault(i => i.id >= 0));
 					var inserted = 0;
 
-					var tree = __instance as TreeView;
-
 					// var insertList = new List<TreeViewItem>();
 					for (var i = 0; i < items.Count; i++)
 					{
@@ -196,15 +196,26 @@ namespace Needle.SelectiveProfiling
 							// insertList.Add(item);
 							++inserted;
 						}
-
-						// if (tree?.IsExpanded(item.id) ?? false)
-						// {
-						// 	if (!expandedItems.Contains(item.id))
-						// 		expandedItems.Add(item.id);
-						// }
-						// else if (expandedItems.Contains(item.id))
-						// 	expandedItems.Remove(item.id);
 					}
+
+
+					if (items.Count > 0)
+					{
+						var tree = __instance as TreeView;
+						// ExpandPinnedItems(tree, root);
+						var sel = tree?.GetSelection().FirstOrDefault();
+						if (sel != null && items.Any(i => i.id == sel))
+						{
+							tree.FrameItem(sel.Value);
+						}
+					}
+					// if (sel >= 0)
+
+					// for (var i = items.Count - 1; i >= 0; i--)
+					// {
+					// 	if (!IsChildOfAnyPinnedItem(items[i]))
+					// 		items.RemoveAt(i);
+					// }
 
 					// for (var index = insertList.Count - 1; index >= 0; index--)
 					// {
@@ -233,6 +244,7 @@ namespace Needle.SelectiveProfiling
 								expandedItems.Add(id);
 								tree.SetExpanded(id, true);
 							}
+
 							return true;
 						}
 
@@ -254,14 +266,20 @@ namespace Needle.SelectiveProfiling
 						if (expand)
 						{
 							tree.SetExpanded(id, true);
-							// if(!expandedItems.Contains(id))
-							// 	expandedItems.Add(id);
+						}
+
+						if (tree.IsExpanded(id))
+						{
+							if (!expandedItems.Contains(id))
+								expandedItems.Add(id);
 						}
 
 						return expand;
 					}
 
 					TraverseChildren(root.id);
+
+					// tree.GetType().GetMethod("StoreExpandedState", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(tree, null);
 				}
 			}
 
@@ -292,6 +310,13 @@ namespace Needle.SelectiveProfiling
 				{
 					if (!AllowPinning()) return;
 					GUI.color = previousColor;
+
+					// if (column == 0)
+					// {
+					// 	var r = new Rect(cellRect);
+					// 	r.x += 250;
+					// 	EditorGUI.LabelField(r, item.id.ToString());
+					// }
 
 					if (column <= 0 && IsPinned(item))
 					{
@@ -326,8 +351,26 @@ namespace Needle.SelectiveProfiling
 					if (pinnedItems.Contains(markerId))
 						InternalUnpin(markerId, !Application.isPlaying);
 					else InternalPin(markerId, !Application.isPlaying);
-					
-					if(__instance is TreeView view) view.Reload();
+
+					if (__instance is TreeView view) view.Reload();
+				}
+			}
+
+
+			private class Profiler_MigrateExpandedState : EditorPatch
+			{
+				protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+				{
+					var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView").BaseType;
+					var m = t?.GetMethod("IsExpanded", (BindingFlags) ~0);
+					targetMethods.Add(m);
+					return Task.CompletedTask;
+				}
+
+				private static void Postfix(object __instance, int id, ref bool __result)
+				{
+					if (!__instance.GetType().Name.EndsWith("ProfilerFrameDataTreeView")) return;
+					if (!__result && expandedItems.Contains(id)) __result = true;
 				}
 			}
 		}
