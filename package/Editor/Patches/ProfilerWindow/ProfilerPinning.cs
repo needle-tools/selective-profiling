@@ -4,9 +4,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
+using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEngine;
+
 // ReSharper disable UnusedMember.Local
 
 namespace Needle.SelectiveProfiling
@@ -14,13 +16,15 @@ namespace Needle.SelectiveProfiling
 	internal static class ProfilerPinning
 	{
 		private static readonly HashSet<int> pinnedItems = new HashSet<int>();
+		private static readonly HashSet<int> expandedItems = new HashSet<int>();
+
 		private static HierarchyFrameDataView GetFrameData(TreeViewItem item = null) => ProfilerFrameDataView_Patch.GetFrameDataView(item);
 
 		public static bool AllowPinning()
 		{
 			return SelectiveProfilerSettings.instance.AllowPinning;
 		}
-		
+
 		public static bool AllowPinning(TreeViewItem item, string name = null, HierarchyFrameDataView view = null)
 		{
 			if (!SelectiveProfilerSettings.instance.AllowPinning) return false;
@@ -51,11 +55,11 @@ namespace Needle.SelectiveProfiling
 		public static void Unpin(TreeViewItem item, int level = 0, bool completely = false)
 		{
 			if (item == null) return;
-			
+
 			var fd = GetFrameData(item);
 			var markerId = fd.GetItemMarkerID(item.id);
 			InternalUnpin(markerId, level <= 0, level <= 0, false, item);
-			
+
 			if (completely && item.hasChildren)
 			{
 				level += 1;
@@ -66,15 +70,15 @@ namespace Needle.SelectiveProfiling
 
 		private static void InternalPin(int id, bool save, TreeViewItem item)
 		{
-			if (!pinnedItems.Contains(id)) 
+			if (!pinnedItems.Contains(id))
 				pinnedItems.Add(id);
 			var frameData = GetFrameData();
 			var name = frameData.GetMarkerName(id);
-			
+
 			if (save)
 			{
 				var pinnedList = PinnedItems.PinnedProfilerItems;
-				if (pinnedList != null && !pinnedList.Contains(name))  
+				if (pinnedList != null && !pinnedList.Contains(name))
 					pinnedList.Add(name);
 				PinnedItems.Save();
 			}
@@ -84,16 +88,16 @@ namespace Needle.SelectiveProfiling
 		{
 			if (pinnedItems.Contains(id))
 				pinnedItems.Remove(id);
-			
+
 			if (save)
 			{
-				var frameData = GetFrameData(); 
+				var frameData = GetFrameData();
 				var name = frameData.GetMarkerName(id);
-				
+
 				var pinnedList = PinnedItems.PinnedProfilerItems;
 				if (pinnedList != null && pinnedList.Contains(name))
 					pinnedList.Remove(name);
-				
+
 				PinnedItems.Save();
 			}
 		}
@@ -104,6 +108,7 @@ namespace Needle.SelectiveProfiling
 			{
 				return false;
 			}
+
 			var fd = GetFrameData(item);
 			var markerId = fd.GetItemMarkerID(item.id);
 			if (pinnedItems.Contains(markerId))
@@ -121,59 +126,30 @@ namespace Needle.SelectiveProfiling
 		public static Color DimColor = new Color(defaultDimValue, defaultDimValue, defaultDimValue, 1);
 
 		private static bool IsInit;
-		
+
 		private static void EnsureInit(TreeViewItem item)
 		{
 			if (IsInit) return;
 			var fd = GetFrameData(item);
 			if (fd == null || !fd.valid) return;
 			IsInit = true;
-			
+
 			foreach (var name in PinnedItems.PinnedProfilerItems)
 			{
 				var id = fd.GetMarkerId(name);
 				InternalPin(id, false, item);
 			}
 		}
-		
+
+
+		// patches:
+
 		public class ProfilerPinning_Patch : EditorPatchProvider
 		{
 			protected override void OnGetPatches(List<EditorPatch> patches)
 			{
 				patches.Add(new Profiler_BuildRows());
 				patches.Add(new Profiler_CellGUI());
-			}
-
-			private class Profiler_CellGUI : EditorPatch
-			{
-				// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L647
-				protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
-				{
-					var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
-					var m = t.GetMethod("CellGUI", (BindingFlags) ~0);
-					targetMethods.Add(m);
-					return Task.CompletedTask;
-				}
-
-				private static Color previousColor;
-				
-				private static void Prefix(TreeViewItem item)
-				{
-					if (!AllowPinning()) return;
-					previousColor = GUI.color;
-					var fd = GetFrameData(item);
-					var markerId = fd.GetItemMarkerID(item.id);
-					if (HasPinnedItems() && !pinnedItems.Contains(markerId) && !IsChildOfAnyPinnedItem(item))
-						GUI.color = DimColor;
-				}
-
-				private static void Postfix(Rect cellRect, TreeViewItem item)
-				{
-					if (!AllowPinning()) return;
-					GUI.color = previousColor;
-					
-					
-				}
 			}
 
 			private class Profiler_BuildRows : EditorPatch
@@ -186,37 +162,46 @@ namespace Needle.SelectiveProfiling
 					return Task.CompletedTask;
 				}
 
-				private static void Prefix(object __instance, TreeViewItem root)
+				private static bool Prefix(object __instance, TreeViewItem root)
 				{
-					if (!AllowPinning()) return;
+					if (!AllowPinning()) return true;
 					var tree = __instance as TreeView;
 					ExpandPinnedItems(tree, root);
+					return true;
 				}
 
-				private static void Postfix(ref IList<TreeViewItem> __result)
+				private static void Postfix(object __instance, ref IList<TreeViewItem> __result)
 				{
 					if (!AllowPinning()) return;
 					var items = __result;
 					EnsureInit(items.LastOrDefault(i => i.id >= 0));
-					
 					var inserted = 0;
+
+					var tree = __instance as TreeView;
+
 					// var insertList = new List<TreeViewItem>();
 					for (var i = 0; i < items.Count; i++)
 					{
 						var item = items[i];
-						
+
 						if (IsChildOfAnyPinnedItem(item))
 						{
-							var frameData = GetFrameData(item);
-							var markerId = frameData.GetItemMarkerID(item.id);
-							Debug.Log(frameData.GetMarkerName(markerId));
+							// var frameData = GetFrameData(item);
+							// var markerId = frameData.GetItemMarkerID(item.id);
 							// InternalPin(markerId, false, item); 
 							items.RemoveAt(i);
 							items.Insert(inserted, item);
 							// insertList.Add(item);
 							++inserted;
-
 						}
+
+						// if (tree?.IsExpanded(item.id) ?? false)
+						// {
+						// 	if (!expandedItems.Contains(item.id))
+						// 		expandedItems.Add(item.id);
+						// }
+						// else if (expandedItems.Contains(item.id))
+						// 	expandedItems.Remove(item.id);
 					}
 
 					// for (var index = insertList.Count - 1; index >= 0; index--)
@@ -241,7 +226,11 @@ namespace Needle.SelectiveProfiling
 						{
 							// TODO: save expanded state -> when scrubbing timeline and entry is not in list for one frame it defaults to unexpanded
 							// if(Application.isPlaying)
-								// tree.SetExpanded(id, true);
+							if (!expandedItems.Contains(id))
+							{
+								expandedItems.Add(id);
+								tree.SetExpanded(id, true);
+							}
 							return true;
 						}
 
@@ -255,7 +244,7 @@ namespace Needle.SelectiveProfiling
 								if (TraverseChildren(ch))
 								{
 									expand = true;
-									break;
+									// break;
 								}
 							}
 						}
@@ -263,12 +252,57 @@ namespace Needle.SelectiveProfiling
 						if (expand)
 						{
 							tree.SetExpanded(id, true);
+							// if(!expandedItems.Contains(id))
+							// 	expandedItems.Add(id);
 						}
 
-						return expand; 
+						return expand;
 					}
-					
+
 					TraverseChildren(root.id);
+				}
+			}
+
+			private class Profiler_CellGUI : EditorPatch
+			{
+				// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L647
+				protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+				{
+					var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
+					var m = t.GetMethod("CellGUI", (BindingFlags) ~0);
+					targetMethods.Add(m);
+					return Task.CompletedTask;
+				}
+
+				private static Color previousColor;
+
+				private static void Prefix(TreeViewItem item)
+				{
+					if (!AllowPinning()) return;
+					previousColor = GUI.color;
+					var fd = GetFrameData(item);
+					var markerId = fd.GetItemMarkerID(item.id);
+					if (HasPinnedItems() && !pinnedItems.Contains(markerId) && !IsChildOfAnyPinnedItem(item))
+						GUI.color = DimColor;
+				}
+
+				private static void Postfix(object __instance, Rect cellRect, TreeViewItem item, int column)
+				{
+					if (!AllowPinning()) return;
+					GUI.color = previousColor;
+
+					if (column <= 0 && IsPinned(item))
+					{
+						var size = cellRect.height * .6f;
+						var y = (cellRect.height - size) * .5f;
+						var rect = new Rect(cellRect.x + cellRect.width - size, cellRect.y + y, size, size);
+						EditorGUI.DrawTextureTransparent(rect, Textures.Pin);
+
+						// if (Event.current.type == EventType.MouseUp && rect.Contains(Event.current.mousePosition))
+						// {
+						// 	Unpin(item); 
+						// }
+					}
 				}
 			}
 		}
