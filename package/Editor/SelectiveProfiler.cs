@@ -8,10 +8,15 @@ using JetBrains.Annotations;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
-using UnityEditor.MPE;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Profiling;
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.MPE;
+#else
+using Unity.MPE;
+
+#endif
 
 namespace Needle.SelectiveProfiling
 {
@@ -52,8 +57,8 @@ namespace Needle.SelectiveProfiling
 				if (!patchesStateSyncedFromEditor.TryGetValue(new MethodInformation(method), out var state)) return false;
 				return state;
 			}
-			
-			
+
+
 			return Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
@@ -79,6 +84,7 @@ namespace Needle.SelectiveProfiling
 		/// by default only save when application is not playing
 		/// </summary>
 		internal static bool ShouldSave => !Application.isPlaying;
+
 		/// <summary>
 		/// check editor state (this does not settings enabled state)
 		/// </summary>
@@ -95,7 +101,7 @@ namespace Needle.SelectiveProfiling
 		)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
-			
+
 			if (IsStandaloneProcess)
 			{
 				var cmd = new EnableProfilingCommand(new MethodInformation(method))
@@ -104,10 +110,12 @@ namespace Needle.SelectiveProfiling
 					EnableIfMuted = enableIfMuted,
 					ForceLogs = forceLogs
 				};
+#if UNITY_2020_2_OR_NEWER
 				QueueCommand(cmd);
+#endif
 				return;
 			}
-			
+
 			var settings = SelectiveProfilerSettings.Instance;
 			if (!settings.Enabled) return;
 
@@ -122,7 +130,7 @@ namespace Needle.SelectiveProfiling
 			{
 				if (source == null) return;
 				var sourcePatch = patches.FirstOrDefault(p => p.Value.Method == source).Value;
-				if (sourcePatch != null) 
+				if (sourcePatch != null)
 				{
 					current.AddCaller(sourcePatch);
 				}
@@ -141,7 +149,7 @@ namespace Needle.SelectiveProfiling
 			var mi = new MethodInformation(method);
 			settings.GetInstance(ref mi);
 			if (enableIfMuted) mi.Enabled = true;
-			
+
 			if (patches.TryGetValue(mi, out var existingProfilingInfo))
 			{
 				existingProfilingInfo.MethodInformation = mi;
@@ -151,7 +159,7 @@ namespace Needle.SelectiveProfiling
 				{
 					settings.Add(mi);
 				}
-				
+
 				if (!existingProfilingInfo.IsActive)
 				{
 					await existingProfilingInfo.Enable();
@@ -190,13 +198,15 @@ namespace Needle.SelectiveProfiling
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
+#if UNITY_2020_2_OR_NEWER
 			if (IsStandaloneProcess)
 			{
 				var cmd = new DisableProfilingCommand(new MethodInformation(method));
 				QueueCommand(cmd);
 				return;
 			}
-			
+#endif
+
 			var mi = new MethodInformation(method);
 			if (patches.TryGetValue(mi, out var prof))
 			{
@@ -209,7 +219,7 @@ namespace Needle.SelectiveProfiling
 				SelectiveProfilerSettings.Instance.UpdateState(mi, false, true);
 			}
 		}
-		
+
 
 		internal static IEnumerable<string> ExpectedPatches()
 		{
@@ -223,12 +233,12 @@ namespace Needle.SelectiveProfiling
 		internal static IEnumerable<ProfilingInfo> Patches => patches.Values;
 		internal static int PatchesCount => patches.Count;
 		private static readonly Dictionary<MethodInformation, ProfilingInfo> patches = new Dictionary<MethodInformation, ProfilingInfo>();
-		
+
 		/// <summary>
 		/// should only be used in standalone profiler instance
 		/// </summary>
 		internal static Dictionary<MethodInformation, bool> patchesStateSyncedFromEditor;
-		
+
 
 		internal static bool TryGet([NotNull] MethodInformation info, out ProfilingInfo profile)
 		{
@@ -254,13 +264,14 @@ namespace Needle.SelectiveProfiling
 			foreach (var type in typesToProfile)
 			{
 				var methods = AccessUtils.GetMethods(type, AccessUtils.AllDeclared, typeof(MonoBehaviour));
-				foreach (var method in methods) 
+				foreach (var method in methods)
 					EnableProfiling(method, false, true, false);
 			}
+
 			var methodsToProfile = TypeCache.GetMethodsWithAttribute<AlwaysProfile>();
 			foreach (var method in methodsToProfile)
 			{
-				EnableProfiling(method, false, true, false); 
+				EnableProfiling(method, false, true, false);
 			}
 #endif
 			var settings = SelectiveProfilerSettings.Instance;
@@ -279,7 +290,7 @@ namespace Needle.SelectiveProfiling
 		private static void Init()
 		{
 			if (!AllowToBeEnabled) return;
-			
+
 			// EditorApplication.playModeStateChanged -= OnPlayModeChanged;
 			// EditorApplication.playModeStateChanged += OnPlayModeChanged;
 
@@ -290,23 +301,25 @@ namespace Needle.SelectiveProfiling
 			SelectiveProfilerSettings.Cleared += MethodsCleared;
 
 			EditorApplication.update -= OnEditorUpdate;
-			EditorApplication.update += OnEditorUpdate; 
+			EditorApplication.update += OnEditorUpdate;
 		}
 
 		private static readonly List<(MethodInformation method, bool state)> stateChangedList = new List<(MethodInformation, bool)>();
 
 		private static void OnEditorUpdate()
 		{
+#if UNITY_2020_2_OR_NEWER
 			if (queuedCommands.Count > 0)
 			{
 				var cmd = queuedCommands.Dequeue();
 				SendCommandNow(cmd);
 			}
-			
+#endif
+
 			if (stateChangedList.Count > 0)
 			{
 				if (!SelectiveProfilerSettings.Instance.Enabled) return;
-				
+
 				var handled = 0;
 				for (var index = stateChangedList.Count - 1; index >= 0; index--)
 				{
@@ -376,7 +389,7 @@ namespace Needle.SelectiveProfiling
 			if (!deepProfiling) return;
 			if (callsFound.Count <= 0) return;
 
-			var local = callsFound.ToArray(); 
+			var local = callsFound.ToArray();
 			callsFound.Clear();
 			var settings = SelectiveProfilerSettings.Instance;
 			foreach (var method in local)
@@ -385,7 +398,7 @@ namespace Needle.SelectiveProfiling
 				if (DeepProfileDebuggingMode)
 				{
 					if (stepDeepProfileList == null) stepDeepProfileList = new List<(MethodInfo, int, MethodInfo)>(100);
-					if(!stepDeepProfileList.Any(e => e.method == method))
+					if (!stepDeepProfileList.Any(e => e.method == method))
 						stepDeepProfileList.Add((method, depth, source));
 				}
 				// dont save nested calls
@@ -399,25 +412,29 @@ namespace Needle.SelectiveProfiling
 							continue;
 						}
 					}
-					
+
 					// Debug.Log(source + " calls " + method);
 					await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 				}
-			} 
+			}
 		}
 
-		
+
 		internal static bool DevelopmentMode
 		{
 			get => SessionState.GetBool("SelectiveProfilerDevelopment", false);
 			set => SessionState.SetBool("SelectiveProfilerDevelopment", value);
 		}
+
 		[MenuItem(MenuItems.ToolsMenu + "Dev/" + nameof(EnableDevelopmentMode), false, 50000)]
 		private static void EnableDevelopmentMode() => DevelopmentMode = true;
+
 		[MenuItem(MenuItems.ToolsMenu + "Dev/" + nameof(EnableDevelopmentMode), true, 50000)]
 		private static bool EnableDevelopmentMode_Validate() => !DevelopmentMode;
-		[MenuItem(MenuItems.ToolsMenu + "Dev/" + nameof(DisableDevelopmentMode), false,  50000)]
+
+		[MenuItem(MenuItems.ToolsMenu + "Dev/" + nameof(DisableDevelopmentMode), false, 50000)]
 		private static void DisableDevelopmentMode() => DevelopmentMode = false;
+
 		[MenuItem(MenuItems.ToolsMenu + "Dev/" + nameof(DisableDevelopmentMode), true, 50000)]
 		private static bool DisableDevelopmentMode_Validate() => DevelopmentMode;
 
@@ -427,8 +444,8 @@ namespace Needle.SelectiveProfiling
 		{
 			get => SessionState.GetInt("StepDeepProfileDebugIndex", -1);
 			set => SessionState.SetInt("StepDeepProfileDebugIndex", value);
-
 		}
+
 		private static List<(MethodInfo method, int depth, MethodInfo source)> stepDeepProfileList = null;
 		internal static int deepProfileStepIndex;
 
@@ -450,22 +467,23 @@ namespace Needle.SelectiveProfiling
 			Debug.Log("Step " + deepProfileStepIndex + " / " + stepDeepProfileList.Count + ", Depth: " + method.depth + ": " + method.method.FullDescription());
 			++deepProfileStepIndex;
 #pragma warning disable 4014
-			InternalEnableProfilingAsync(method.method, false, true,  false, method.source, method.depth);
+			InternalEnableProfilingAsync(method.method, false, true, false, method.source, method.depth);
 #pragma warning restore 4014
 			if (deepProfileStepIndex < stepDeepProfileToIndex)
 				stepDeepProfile = true;
 		}
+
 		
-		
-		
-		
-		
-		
+#if !UNITY_2020_2_OR_NEWER
+		public static bool IsStandaloneProcess => false;
+#endif
+
+#if UNITY_2020_2_OR_NEWER
 		public static bool IsStandaloneProcess { get; private set; }
 		private const string selectiveProfilerCommandEditorChannel = nameof(selectiveProfilerCommandEditorChannel);
 		private const string selectiveProfilerCommandStandaloneChannel = nameof(selectiveProfilerCommandStandaloneChannel);
 		private static Queue<NetworkCommand> queuedCommands = new Queue<NetworkCommand>();
-		
+
 		[RoleProvider(ProcessLevel.Master, ProcessEvent.AfterDomainReload)]
 		// ReSharper disable once UnusedMember.Local
 		private static void InitMain()
@@ -507,7 +525,7 @@ namespace Needle.SelectiveProfiling
 			var channel = IsStandaloneProcess ? selectiveProfilerCommandEditorChannel : selectiveProfilerCommandStandaloneChannel;
 			EventService.Emit(channel, cmd);
 		}
-
+#endif
 
 
 		// ReSharper disable once UnusedParameter.Global
@@ -519,7 +537,7 @@ namespace Needle.SelectiveProfiling
 		// public static HashSet<object> SpecialObjects = new HashSet<object>();
 
 		// private static readonly Stack<object> sampleStack = new Stack<object>();
-		
+
 		// a call to this method will be injected when/if returning true in InjectSampleWithCallback
 		internal static string OnSampleCallback(object caller, string methodName)
 		{

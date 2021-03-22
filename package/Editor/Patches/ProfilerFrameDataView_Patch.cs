@@ -7,12 +7,15 @@ using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
-using UnityEditor.MPE;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Profiling;
 using Debug = UnityEngine.Debug;
+
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.MPE;
+#endif
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedType.Global
