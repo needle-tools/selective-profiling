@@ -17,8 +17,14 @@ namespace Needle.SelectiveProfiling
 		private static readonly HashSet<int> unpinnedItems = new HashSet<int>();
 		private static HierarchyFrameDataView GetFrameData(TreeViewItem item = null) => ProfilerFrameDataView_Patch.GetFrameDataView(item);
 
+		public static bool AllowPinning()
+		{
+			return SelectiveProfilerSettings.instance.AllowPinning;
+		}
+		
 		public static bool AllowPinning(HierarchyFrameDataView view, TreeViewItem item, string name = null)
 		{
+			if (!SelectiveProfilerSettings.instance.AllowPinning) return false;
 			return true;
 		}
 
@@ -186,7 +192,7 @@ namespace Needle.SelectiveProfiling
 			return IsChildOfAnyPinnedItem(item.parent, any, level);
 		}
 
-		private const float defaultDimValue = .7f;
+		private const float defaultDimValue = .5f;
 		public static Color DimColor = new Color(defaultDimValue, defaultDimValue, defaultDimValue, 1);
 
 		private static bool IsInit;
@@ -237,6 +243,7 @@ namespace Needle.SelectiveProfiling
 
 				private static void Prefix(TreeViewItem item)
 				{
+					if (!AllowPinning()) return;
 					// previousColor = TreeView.DefaultStyles.label.normal.textColor;
 					// TreeView.DefaultStyles.label.normal.textColor = Color.gray;
 					previousColor = GUI.color;
@@ -248,6 +255,7 @@ namespace Needle.SelectiveProfiling
 
 				private static void Postfix()
 				{
+					if (!AllowPinning()) return;
 					GUI.color = previousColor;
 				}
 			}
@@ -264,16 +272,17 @@ namespace Needle.SelectiveProfiling
 
 				private static void Prefix(object __instance, TreeViewItem root)
 				{
+					if (!AllowPinning()) return;
 					var tree = __instance as TreeView;
 					ExpandPinnedItems(tree, root);
 				}
 
-				private static void Postfix(object __instance, ref IList<TreeViewItem> __result)
+				private static void Postfix(ref IList<TreeViewItem> __result)
 				{
+					if (!AllowPinning()) return;
 					var items = __result;
 					EnsureInit(items.LastOrDefault(i => i.id >= 0));
 					
-
 					var inserted = 0;
 					// var insertList = new List<TreeViewItem>();
 					for (var i = 0; i < items.Count; i++)

@@ -84,15 +84,16 @@ namespace Needle.SelectiveProfiling
 		[SerializeField] internal bool FirstInstall = true;
 
 		public bool Enabled = true;
+		public bool SkipProperties = true;
 		public bool ImmediateMode = false;
 
 		public bool DeepProfiling = false;
 		public int MaxDepth = 1;
 		public Level DeepProfileMaxLevel = (Level) ~0;
+		
+		public bool AllowPinning = true;
 
 		public bool DebugLog;
-
-		public bool SkipProperties = true;
 
 		[SerializeField] private List<MethodInformation> Methods = new List<MethodInformation>();
 
