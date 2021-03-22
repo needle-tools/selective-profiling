@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using HarmonyLib;
 using needle.EditorPatching;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -48,7 +49,7 @@ namespace Needle.SelectiveProfiling
 			{
 				var fd = GetFrameData(item);
 				var markerId = fd.GetItemMarkerID(item.id);
-				InternalPin(markerId, true, item);
+				InternalPin(markerId, true);
 			}
 		}
 
@@ -58,7 +59,7 @@ namespace Needle.SelectiveProfiling
 
 			var fd = GetFrameData(item);
 			var markerId = fd.GetItemMarkerID(item.id);
-			InternalUnpin(markerId, level <= 0, level <= 0, false, item);
+			InternalUnpin(markerId, level <= 0);
 
 			if (completely && item.hasChildren)
 			{
@@ -68,7 +69,7 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private static void InternalPin(int id, bool save, TreeViewItem item)
+		private static void InternalPin(int id, bool save)
 		{
 			if (!pinnedItems.Contains(id))
 				pinnedItems.Add(id);
@@ -84,7 +85,7 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private static void InternalUnpin(int id, bool save, bool saveUnpinned, bool removeFromUnpinned, TreeViewItem item)
+		private static void InternalUnpin(int id, bool save)
 		{
 			if (pinnedItems.Contains(id))
 				pinnedItems.Remove(id);
@@ -137,7 +138,7 @@ namespace Needle.SelectiveProfiling
 			foreach (var name in PinnedItems.PinnedProfilerItems)
 			{
 				var id = fd.GetMarkerId(name);
-				InternalPin(id, false, item);
+				InternalPin(id, false);
 			}
 		}
 
@@ -150,6 +151,7 @@ namespace Needle.SelectiveProfiling
 			{
 				patches.Add(new Profiler_BuildRows());
 				patches.Add(new Profiler_CellGUI());
+				patches.Add(new Profiler_DoubleClick());
 			}
 
 			private class Profiler_BuildRows : EditorPatch
@@ -303,6 +305,29 @@ namespace Needle.SelectiveProfiling
 						// 	Unpin(item); 
 						// }
 					}
+				}
+			}
+
+			private class Profiler_DoubleClick : EditorPatch
+			{
+				protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+				{
+					var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
+					var m = t.GetMethod("DoubleClickedItem", (BindingFlags) ~0);
+					targetMethods.Add(m);
+					return Task.CompletedTask;
+				}
+
+				private static void Postfix(int id, object __instance)
+				{
+					var frameData = GetFrameData();
+					if (frameData == null || !frameData.valid) return;
+					var markerId = frameData.GetItemMarkerID(id);
+					if (pinnedItems.Contains(markerId))
+						InternalUnpin(markerId, !Application.isPlaying);
+					else InternalPin(markerId, !Application.isPlaying);
+					
+					if(__instance is TreeView view) view.Reload();
 				}
 			}
 		}
