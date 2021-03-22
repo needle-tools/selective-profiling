@@ -323,7 +323,7 @@ namespace Needle.SelectiveProfiling
 						var size = cellRect.height * .6f;
 						var y = (cellRect.height - size) * .5f;
 						var rect = new Rect(cellRect.x + cellRect.width - size, cellRect.y + y, size, size);
-						EditorGUI.DrawTextureTransparent(rect, Textures.Pin);
+						GUI.DrawTexture(rect, Textures.Pin, ScaleMode.ScaleAndCrop, true);
 
 						// if (Event.current.type == EventType.MouseUp && rect.Contains(Event.current.mousePosition))
 						// {
