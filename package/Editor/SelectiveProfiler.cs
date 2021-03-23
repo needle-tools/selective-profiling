@@ -236,8 +236,9 @@ namespace Needle.SelectiveProfiling
 			{
 				prof.Disable();
 				profiled2.Remove(info);
-				if(info.TryResolveMethod(out var method))
-					profiled.Remove(method);
+
+				var match = profiled.FirstOrDefault(e => e.Value == prof).Key;
+				if (match != null) profiled.Remove(match);
 			}
 		}
 

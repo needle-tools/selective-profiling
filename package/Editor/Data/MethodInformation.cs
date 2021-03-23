@@ -43,6 +43,11 @@ namespace Needle.SelectiveProfiling
 			Method = other.Method;
 			Enabled = true;
 			CachedMethod = other.CachedMethod;
+			
+			if (string.IsNullOrEmpty(_methodIdentifier)) _methodIdentifier = other._methodIdentifier;
+			if (string.IsNullOrEmpty(_typeIdentifier)) _typeIdentifier = other._typeIdentifier;
+			if (string.IsNullOrEmpty(_asString)) _asString = other._asString;
+			if (string.IsNullOrEmpty(_classWithMethod)) _classWithMethod = other._classWithMethod;
 		}
 
 		internal MethodInformation Copy()
@@ -50,7 +55,7 @@ namespace Needle.SelectiveProfiling
 			return new MethodInformation(this);
 		}
 
-		private string _methodIdentifier, _typeIdentifier, _asString;
+		private string _methodIdentifier, _typeIdentifier, _asString, _classWithMethod;
 
 		public string TypeIdentifier()
 		{
@@ -75,12 +80,16 @@ namespace Needle.SelectiveProfiling
 				_asString =  IsValid() ? "<b>Assembly</b>: " + Assembly + ", <b>Type</b>: " + Type + ", <b>Method</b>: " + Method + "\n<b>Identifier</b>: " + MethodIdentifier() : "Invalid " +  base.ToString();
 			return _asString;
 		}
-		
+
 		public string ClassWithMethod()
 		{
-			var dotIndex = Type.LastIndexOf(".", StringComparison.Ordinal);
-			var className = dotIndex > 0 && dotIndex < Type.Length - 1 ? Type.Substring(dotIndex + 1) : Type;
-			return className + "." + Method;
+			if (string.IsNullOrWhiteSpace(_classWithMethod))
+			{
+				var dotIndex = Type.LastIndexOf(".", StringComparison.Ordinal);
+				var className = dotIndex > 0 && dotIndex < Type.Length - 1 ? Type.Substring(dotIndex + 1) : Type;
+				_classWithMethod = className + "." + Method;
+			}
+			return _classWithMethod;
 		}
 
 		public string ExtractAssemblyName()

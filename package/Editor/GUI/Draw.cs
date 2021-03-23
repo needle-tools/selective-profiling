@@ -230,26 +230,28 @@ namespace Needle.SelectiveProfiling
 				if (!Application.isPlaying)
 					headerLabel += " [" + meta.Enabled + "/" + meta.Total + "]";
 				else headerLabel += " [" + meta.Total + "]";
-				
-				EditorGUILayout.BeginHorizontal();
-				var show = EditorGUILayout.Foldout(GetFoldout(scope), headerLabel,true, 
-					meta.Enabled <= 0 ? GUIStyles.BoldFoldoutDisabled : GUIStyles.BoldFoldout
-				);
-				if (Enable != null && GUILayout.Button("All", GUILayout.Width(70)))
-					Enable(kvp.Value);
-				// SetStateInSettings(kvp.Value, true, scope);
-				if (Disable != null && GUILayout.Button("None", GUILayout.Width(70)))
-					Disable(kvp.Value);
-				// SetStateInSettings(kvp.Value, false, scope);
-				if (Remove != null && GUILayout.Button("x", GUILayout.Width(20)))
+
+				bool show = false;
+				using (new GUILayout.HorizontalScope())
 				{
-					Remove(kvp.Value);
-					// settings.RegisterUndo("Remove all in " + scope);
-					// foreach (var entry in kvp.Value)
-					// 	settings.Remove(entry, false);
+					show = EditorGUILayout.Foldout(GetFoldout(scope), headerLabel,true, 
+						meta.Enabled <= 0 ? GUIStyles.BoldFoldoutDisabled : GUIStyles.BoldFoldout
+					);
+					if (Enable != null && GUILayout.Button("All", GUILayout.Width(70)))
+						Enable(kvp.Value);
+					// SetStateInSettings(kvp.Value, true, scope);
+					if (Disable != null && GUILayout.Button("None", GUILayout.Width(70)))
+						Disable(kvp.Value);
+					// SetStateInSettings(kvp.Value, false, scope);
+					if (Remove != null && GUILayout.Button("x", GUILayout.Width(20)))
+					{
+						Remove(kvp.Value);
+						// settings.RegisterUndo("Remove all in " + scope);
+						// foreach (var entry in kvp.Value)
+						// 	settings.Remove(entry, false);
+					}
 				}
 
-				EditorGUILayout.EndHorizontal();
 				SetFoldout(scope, show);
 				if (show)
 				{
@@ -257,35 +259,35 @@ namespace Needle.SelectiveProfiling
 					var list = kvp.Value;
 					foreach (var entry in list)
 					{
-						EditorGUILayout.BeginHorizontal();
-						var label = new GUIContent(entry.ClassWithMethod(), entry.MethodIdentifier());
-						if (IsEnabled != null)
+						using (new GUILayout.HorizontalScope())
 						{
-							var state = IsEnabled.Invoke(entry);
-							var newState = EditorGUILayout.ToggleLeft(label, state, GUIStyles.Label(state), GUILayout.ExpandWidth(true));
-							if (newState != state)
+							var label = new GUIContent(entry.ClassWithMethod(), entry.MethodIdentifier());
+							if (IsEnabled != null)
 							{
-								if(newState)
-									Enable?.Invoke(new List<MethodInformation>(){entry});
-								else 
-									Disable?.Invoke(new List<MethodInformation>(){entry});
-								// settings.UpdateState(entry, state, true);
-								// settings.Save();
-							}
+								var state = IsEnabled.Invoke(entry);
+								var newState = EditorGUILayout.ToggleLeft(label, state, GUIStyles.Label(state), GUILayout.ExpandWidth(true));
+								if (newState != state)
+								{
+									if (newState)
+										Enable?.Invoke(new List<MethodInformation>() {entry});
+									else
+										Disable?.Invoke(new List<MethodInformation>() {entry});
+									// settings.UpdateState(entry, state, true);
+									// settings.Save();
+								}
 
-							if (GUILayout.Button("x", GUILayout.Width(20)))
+								if (GUILayout.Button("x", GUILayout.Width(20)))
+								{
+									Remove?.Invoke(new List<MethodInformation>() {entry});
+									// settings.Remove(entry);
+									// settings.Save();
+								}
+							}
+							else
 							{
-								Remove?.Invoke(new List<MethodInformation>(){entry});
-								// settings.Remove(entry);
-								// settings.Save();
+								EditorGUILayout.LabelField(label);
 							}
 						}
-						else
-						{
-							EditorGUILayout.LabelField(label);
-						}
-
-						EditorGUILayout.EndHorizontal();
 					}
 
 					EditorGUI.indentLevel--;
