@@ -33,10 +33,24 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			var IL_Before = string.Join("\n", instructions);
 			
 			var start = -1;
+			var isInExceptionBlock = false;
 			for (var index = 0; index < instructions.Count; index++)
 			{
 				var inst = instructions[index];
 				var prevStart = start;
+
+				
+				// TODO: dont inject samples in try{} block because we get errors when exception happens and we dont have an end sample
+				if (!isInExceptionBlock && inst.blocks.Any(b => b.blockType == ExceptionBlockType.BeginExceptionBlock)) 
+					isInExceptionBlock = true;
+				else if (isInExceptionBlock && inst.blocks.Any(b => b.blockType == ExceptionBlockType.EndExceptionBlock))
+					isInExceptionBlock = false;
+				// else if (isInTryBlock && inst.blocks.Any(b =>
+				// 	b.blockType == ExceptionBlockType.BeginFinallyBlock || 
+				// 	b.blockType == ExceptionBlockType.BeginCatchBlock))
+				// 	isInTryBlock = false;
+
+				if (isInExceptionBlock) continue;
 				
 				// if a method call loads variables make sure to insert code before variable loading
 				if (TranspilerUtils.LoadVarCodes.Contains(inst.opcode) || inst.opcode == OpCodes.Ldnull || inst.opcode == OpCodes.Ldstr || inst.opcode == OpCodes.Ldobj || inst.IsLdarg() || inst.IsLdarga())
@@ -65,14 +79,14 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				{
 					if (inst.operand is MethodInfo mi)
 					{
-						SelectiveProfiler.RegisterInternalCalledMethod(mi);
 						if (skipProfilerMethods && (mi.DeclaringType == typeof(Profiler) || mi.DeclaringType == typeof(ProfilerMarker)))
 						{
 							start = -1;
 							continue;
 						}
+						if(mi.GetCustomAttribute<DontFollow>() == null)
+							SelectiveProfiler.RegisterInternalCalledMethod(mi);
 					}
-
 					if (start > index && hasLabel) start = prevStart;
 
 					// we arrived at the actual method call
