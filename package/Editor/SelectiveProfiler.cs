@@ -517,9 +517,13 @@ namespace Needle.SelectiveProfiling
 		public static bool IsStandaloneProcess { get; private set; }
 		private const string selectiveProfilerCommandEditorChannel = nameof(selectiveProfilerCommandEditorChannel);
 		private const string selectiveProfilerCommandStandaloneChannel = nameof(selectiveProfilerCommandStandaloneChannel);
-		private static Queue<NetworkCommand> queuedCommands = new Queue<NetworkCommand>();
+		private static readonly Queue<NetworkCommand> queuedCommands = new Queue<NetworkCommand>();
 
+#if UNITY_2021_1_OR_NEWER
+		[RoleProvider(ProcessLevel.Main, ProcessEvent.AfterDomainReload)]
+#elif UNITY_2020_2_OR_NEWER
 		[RoleProvider(ProcessLevel.Master, ProcessEvent.AfterDomainReload)]
+#endif
 		// ReSharper disable once UnusedMember.Local
 		private static void InitMain()
 		{
@@ -527,9 +531,9 @@ namespace Needle.SelectiveProfiling
 			EventService.RegisterEventHandler(selectiveProfilerCommandEditorChannel, HandleReceivedEvent);
 		}
 
-#if UNITY_2020_3_OR_NEWER
+#if  UNITY_2021_1_OR_NEWER
 		[RoleProvider(ProcessLevel.Secondary, ProcessEvent.AfterDomainReload)]
-#elif  UNITY_2020_2_OR_NEWER
+#elif UNITY_2020_2_OR_NEWER
 		[RoleProvider(ProcessLevel.Slave, ProcessEvent.AfterDomainReload)]
 #endif
 		// ReSharper disable once UnusedMember.Local
