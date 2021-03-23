@@ -49,8 +49,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				// 	b.blockType == ExceptionBlockType.BeginFinallyBlock || 
 				// 	b.blockType == ExceptionBlockType.BeginCatchBlock))
 				// 	isInTryBlock = false;
-
-				if (isInExceptionBlock) continue;
+				
 				
 				// if a method call loads variables make sure to insert code before variable loading
 				if (TranspilerUtils.LoadVarCodes.Contains(inst.opcode) || inst.opcode == OpCodes.Ldnull || inst.opcode == OpCodes.Ldstr || inst.opcode == OpCodes.Ldobj || inst.IsLdarg() || inst.IsLdarga())
@@ -74,8 +73,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				{
 					start = index + 1;
 				}
-				
-				if (inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt || inst.opcode == OpCodes.Newobj || inst.opcode == OpCodes.Newarr)
+
+				var isMethodCall = inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt;
+				if (isMethodCall || inst.opcode == OpCodes.Newobj || inst.opcode == OpCodes.Newarr)
 				{
 					if (inst.operand is MethodInfo mi)
 					{
@@ -88,6 +88,12 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 							SelectiveProfiler.RegisterInternalCalledMethod(mi);
 					}
 					if (start > index && hasLabel) start = prevStart;
+
+					if (isMethodCall && isInExceptionBlock)
+					{
+						start = -1;
+						continue;
+					}
 
 					// we arrived at the actual method call
 					wrapper.Start = start == -1 ? index : start;
