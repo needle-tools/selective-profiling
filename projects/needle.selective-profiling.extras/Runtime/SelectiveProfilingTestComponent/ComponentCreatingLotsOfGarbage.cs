@@ -26,7 +26,6 @@ namespace Needle.SelectiveProfiling
 			var shorts = new short[100];
 			var classes = new MyClass[100];
 			var list = new List<string>();
-			var onlyAString = "some string";
 			var classWithParam = new MyClass(0);
 			var generic = new GClass<int>();
 			var nestedGeneric = new GClass<GClass<int>>();

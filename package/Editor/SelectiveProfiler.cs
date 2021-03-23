@@ -17,7 +17,7 @@ using UnityEditor.MPE;
 
 namespace Needle.SelectiveProfiling
 {
-	[AlwaysProfile]
+	// [AlwaysProfile]
 	public static class SelectiveProfiler
 	{
 		public static string SamplePostfix => DevelopmentMode || DebugLog ? "[debug]" : string.Empty;
@@ -202,24 +202,25 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		public static void DisableProfiling(MethodInfo method)
+		public static Task DisableProfiling(MethodInfo method)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
-			if (alwaysProfile.Contains(method)) return;
+			if (alwaysProfile.Contains(method)) return Task.CompletedTask;
 
 #if UNITY_2020_2_OR_NEWER
 			if (IsStandaloneProcess)
 			{
 				var cmd = new DisableProfilingCommand(new MethodInformation(method));
 				QueueCommand(cmd);
-				return;
+				return Task.CompletedTask;
 			}
 #endif
 
+			Task task = null;
 			if (profiled.TryGetValue(method, out var prof))
 			{
-				prof.Disable();
+				task = prof.Disable();
 			}
 
 			if (!Application.isPlaying)
@@ -228,6 +229,8 @@ namespace Needle.SelectiveProfiling
 				mi = SelectiveProfilerSettings.Instance.GetInstance(mi);
 				SelectiveProfilerSettings.Instance.UpdateState(mi, false, true);
 			}
+
+			return task ?? Task.CompletedTask;
 		}
 
 		internal static void DisableAndForget(MethodInformation info)

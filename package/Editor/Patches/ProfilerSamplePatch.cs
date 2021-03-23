@@ -77,6 +77,7 @@ namespace Needle.SelectiveProfiling
 				return Task.CompletedTask;
 			}
 
+			// ReSharper disable once UnusedMember.Local
 			private static IEnumerable<CodeInstruction> Transpiler(MethodBase method, IEnumerable<CodeInstruction> _inst)
 			{
 				if (_inst == null) return null;

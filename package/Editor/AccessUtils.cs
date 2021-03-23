@@ -13,6 +13,7 @@ using UnityEditor;
 using UnityEditor.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Scripting;
 using Object = UnityEngine.Object;
 
 namespace Needle.SelectiveProfiling.Utils
@@ -216,12 +217,13 @@ namespace Needle.SelectiveProfiling.Utils
 			if (method.DeclaringType == typeof(Profiler) || 
 			    method.DeclaringType == typeof(CustomSampler) || 
 			    method.DeclaringType == typeof(ProfilerMarker) ||
-			    method.DeclaringType == typeof(EditorApplication)
+			    method.DeclaringType == typeof(EditorApplication) ||
+			    method.DeclaringType == typeof(GarbageCollector)
 			    )
 			{
 				if (debugLog)
 					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
-						"Profiling types in Unity Profiler is not allowed: " + GetMethodLogName());
+						"Profiling is not allowed: " + GetMethodLogName());
 				return false;
 			}
 
@@ -281,11 +283,12 @@ namespace Needle.SelectiveProfiling.Utils
 			if (!string.IsNullOrEmpty(fullName))
 			{
 				if (fullName.StartsWith("UnityEditor.Profiling") ||
-					fullName.StartsWith("UnityEngine.UIElements.UIR") || 
-				    fullName.StartsWith("UnityEditor.StyleSheets") || 
-				    fullName.StartsWith("UnityEditor.HostView") || 
-				    fullName.StartsWith("UnityEngine.UIElements.IMGUIContainer") ||
-				    fullName.StartsWith("UnityEngine.SliderHandler")
+					// fullName.StartsWith("UnityEngine.UIElements.UIR") || 
+				 //    fullName.StartsWith("UnityEditor.StyleSheets") || 
+				 //    fullName.StartsWith("UnityEditor.HostView") || 
+				 //    fullName.StartsWith("UnityEngine.UIElements.IMGUIContainer") ||
+				 //    fullName.StartsWith("UnityEngine.SliderHandler") ||
+					fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem")
 				    )
 				{
 					return false;

@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
-	[AlwaysProfile]
+	// [AlwaysProfile]
 	internal class ProfilingInfo
 	{
 		public readonly EditorPatchProvider Patch;
@@ -50,10 +50,10 @@ namespace Needle.SelectiveProfiling
 			return ts;
 		}
 
-		public void Disable()
+		public Task Disable()
 		{
 			MethodInformation.Enabled = false;
-			Patch.Disable(false);
+			var t = Patch.Disable(false);
 			if (enabled)
 			{
 				enabled = false;
@@ -66,6 +66,7 @@ namespace Needle.SelectiveProfiling
 				}
 #endif
 			}
+			return t;
 		}
 
 		public void ToggleActive()

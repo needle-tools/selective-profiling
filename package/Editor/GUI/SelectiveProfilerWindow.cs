@@ -28,9 +28,9 @@ namespace Needle.SelectiveProfiling
 		{
 			titleContent = new GUIContent("Selective Profiling");
 			EditorApplication.update += OnUpdate;
-			TypesExplorer.AllTypesLoaded += Repaint;
+			TypesExplorer.AllTypesLoaded += OnTypesExplorerOnAllTypesLoaded; 
 		}
-		
+
 		private void OnDisable()
 		{
 			EditorApplication.update -= OnUpdate;
@@ -40,6 +40,12 @@ namespace Needle.SelectiveProfiling
 		{
 			if (!Draw.MethodsExplorerRequestRepaint) return;
 			Draw.MethodsExplorerRequestRepaint = false;
+			Repaint();
+		}
+
+		private void OnTypesExplorerOnAllTypesLoaded()
+		{
+			TypesExplorer.AllTypesLoaded -= OnTypesExplorerOnAllTypesLoaded;
 			Repaint();
 		}
 

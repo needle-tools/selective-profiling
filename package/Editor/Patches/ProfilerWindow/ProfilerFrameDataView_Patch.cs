@@ -170,16 +170,20 @@ namespace Needle.SelectiveProfiling
 							var availableMethods =
 								methodsFound.Where(e => AccessUtils.AllowPatching(e, false, false)).ToList();
 
-							menu.AddItem(new GUIContent("Enable profiling for all"), false, () => EnableProfilingFromProfilerWindow(availableMethods));
-							menu.AddItem(new GUIContent("Disable profiling for all"), false, () => DisableProfilingFromProfilerWindow(availableMethods));
-							menu.AddSeparator(string.Empty);
-
-							foreach (var m in availableMethods)
+							if (availableMethods.Count > 0)
 							{
-								AddMenuItem(menu, m);
+								menu.AddItem(new GUIContent("Enable profiling for all"), false, () => EnableProfilingFromProfilerWindow(availableMethods));
+								menu.AddItem(new GUIContent("Disable profiling for all"), false, () => DisableProfilingFromProfilerWindow(availableMethods));
+								menu.AddSeparator(string.Empty);
+
+								foreach (var m in availableMethods)
+								{
+									AddMenuItem(menu, m);
+								}
 							}
 						}
-						else
+						
+						if(menu.GetItemCount() <= 0)
 						{
 							menu.AddDisabledItem(new GUIContent("Nothing to profile in " + name));
 						}
