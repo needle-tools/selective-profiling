@@ -13,13 +13,11 @@ using UnityEngine;
 using UnityEngine.Profiling;
 #if UNITY_2020_2_OR_NEWER
 using UnityEditor.MPE;
-#else
-using Unity.MPE;
-
 #endif
 
 namespace Needle.SelectiveProfiling
 {
+	[AlwaysProfile]
 	public static class SelectiveProfiler
 	{
 		public static string SamplePostfix => DevelopmentMode || DebugLog ? "[debug]" : string.Empty;
@@ -59,7 +57,7 @@ namespace Needle.SelectiveProfiling
 			}
 
 
-			return Patches.Any(e => e.IsActive && e.Method == method);
+			return profiled.TryGetValue(method, out var pi ) && pi.IsActive;// && Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
 		public static async void EnableProfiling([NotNull] MethodInfo method,
@@ -88,7 +86,7 @@ namespace Needle.SelectiveProfiling
 		/// <summary>
 		/// check editor state (this does not settings enabled state)
 		/// </summary>
-		internal static bool AllowToBeEnabled => !ProfilerDriver.deepProfiling;
+		internal static bool AllowToBeEnabled => true;// !ProfilerDriver.deepProfiling;
 
 		private static async Task InternalEnableProfilingAsync(
 			MethodInfo method,
@@ -104,13 +102,13 @@ namespace Needle.SelectiveProfiling
 
 			if (IsStandaloneProcess)
 			{
+#if UNITY_2020_2_OR_NEWER
 				var cmd = new EnableProfilingCommand(new MethodInformation(method))
 				{
 					Enable = enablePatch,
 					EnableIfMuted = enableIfMuted,
 					ForceLogs = forceLogs
 				};
-#if UNITY_2020_2_OR_NEWER
 				QueueCommand(cmd);
 #endif
 				return;
@@ -129,7 +127,7 @@ namespace Needle.SelectiveProfiling
 			void HandleCallstackRegistration(ProfilingInfo current)
 			{
 				if (source == null) return;
-				var sourcePatch = patches.FirstOrDefault(p => p.Value.Method == source).Value;
+				var sourcePatch = profiled.FirstOrDefault(p => p.Value.Method == source).Value;
 				if (sourcePatch != null)
 				{
 					current.AddCaller(sourcePatch);
@@ -146,18 +144,17 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 
-			var mi = new MethodInformation(method);
-			settings.GetInstance(ref mi);
-			if (enableIfMuted) mi.Enabled = true;
+			var methodInfo = settings.GetInstance(new MethodInformation(method));
+			if (enableIfMuted) methodInfo.Enabled = true;
 
-			if (patches.TryGetValue(mi, out var existingProfilingInfo))
+			if (profiled.TryGetValue(method, out var existingProfilingInfo))
 			{
-				existingProfilingInfo.MethodInformation = mi;
+				existingProfilingInfo.MethodInformation = methodInfo;
 				HandleCallstackRegistration(existingProfilingInfo);
 
 				if (ShouldSave || save)
 				{
-					settings.Add(mi);
+					settings.Add(methodInfo);
 				}
 
 				if (!existingProfilingInfo.IsActive)
@@ -171,21 +168,23 @@ namespace Needle.SelectiveProfiling
 
 			if (save)
 			{
-				settings.Add(mi);
+				settings.Add(methodInfo);
 				settings.Save();
 			}
 
 
 			var patch = new ProfilerSamplePatch(method, null, " " + SamplePostfix);
-			var info = new ProfilingInfo(patch, method, mi);
-			patches.Add(mi, info);
+			var info = new ProfilingInfo(patch, method, methodInfo);
+			profiled.Add(method, info);
+			profiled2.Add(methodInfo, info);
+			
 			HandleCallstackRegistration(info);
 			PatchManager.RegisterPatch(patch);
 
 			if (enablePatch)
 			{
-				var muted = !mi.Enabled;
-				if (enableIfMuted && muted) settings.SetMuted(mi, false);
+				var muted = !methodInfo.Enabled;
+				if (enableIfMuted && muted) settings.SetMuted(methodInfo, false);
 				if (!muted)
 				{
 					await info.Enable();
@@ -194,9 +193,20 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
+		[MenuItem(MenuItems.ToolsMenu + nameof(DisableProfilingAll))]
+		public static void DisableProfilingAll()
+		{
+			foreach (var e in profiled)
+			{
+				DisableProfiling(e.Key);
+			}
+		}
+
 		public static void DisableProfiling(MethodInfo method)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
+
+			if (alwaysProfile.Contains(method)) return;
 
 #if UNITY_2020_2_OR_NEWER
 			if (IsStandaloneProcess)
@@ -207,19 +217,29 @@ namespace Needle.SelectiveProfiling
 			}
 #endif
 
-			var mi = new MethodInformation(method);
-			if (patches.TryGetValue(mi, out var prof))
+			if (profiled.TryGetValue(method, out var prof))
 			{
 				prof.Disable();
 			}
 
 			if (!Application.isPlaying)
 			{
-				SelectiveProfilerSettings.Instance.GetInstance(ref mi);
+				var mi = new MethodInformation(method);
+				mi = SelectiveProfilerSettings.Instance.GetInstance(mi);
 				SelectiveProfilerSettings.Instance.UpdateState(mi, false, true);
 			}
 		}
 
+		internal static void DisableAndForget(MethodInformation info)
+		{
+			if (profiled2.TryGetValue(info, out var prof))
+			{
+				prof.Disable();
+				profiled2.Remove(info);
+				if(info.TryResolveMethod(out var method))
+					profiled.Remove(method);
+			}
+		}
 
 		internal static IEnumerable<string> ExpectedPatches()
 		{
@@ -230,9 +250,18 @@ namespace Needle.SelectiveProfiling
 		internal static bool DebugLog => SelectiveProfilerSettings.Instance.DebugLog;
 		internal static bool TranspilerShouldSkipCallsInProfilerType => true;
 
-		internal static IEnumerable<ProfilingInfo> Patches => patches.Values;
-		internal static int PatchesCount => patches.Count;
-		private static readonly Dictionary<MethodInformation, ProfilingInfo> patches = new Dictionary<MethodInformation, ProfilingInfo>();
+		internal static IEnumerable<ProfilingInfo> Patches => profiled.Values;
+		internal static IEnumerable<MethodInfo> PatchedMethods => profiled.Keys;
+		internal static IEnumerable<MethodInformation> PatchedMethodsInfo => profiled2.Keys;
+		internal static int PatchesCount => profiled.Count;
+		
+		private static readonly Dictionary<MethodInfo, ProfilingInfo> profiled = new Dictionary<MethodInfo, ProfilingInfo>();
+		private static readonly Dictionary<MethodInformation, ProfilingInfo> profiled2 = new Dictionary<MethodInformation, ProfilingInfo>();
+		
+		/// <summary>
+		/// methods marked with AlwaysProfile attribute
+		/// </summary>
+		private static readonly HashSet<MethodInfo> alwaysProfile = new HashSet<MethodInfo>();
 
 		/// <summary>
 		/// should only be used in standalone profiler instance
@@ -243,13 +272,14 @@ namespace Needle.SelectiveProfiling
 		internal static bool TryGet([NotNull] MethodInformation info, out ProfilingInfo profile)
 		{
 			if (info == null) throw new ArgumentNullException(nameof(info));
-			return patches.TryGetValue(info, out profile);
+			profile = null;
+			return info.TryResolveMethod(out var method) && profiled.TryGetValue(method, out profile);
 		}
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
 		private static async void InitRuntime()
 		{
-			if (ProfilerDriver.deepProfiling) return;
+			if (!AllowToBeEnabled) return;
 			if (IsStandaloneProcess) return;
 			var settings = SelectiveProfilerSettings.Instance;
 			if (!settings.Enabled) return;
@@ -265,12 +295,16 @@ namespace Needle.SelectiveProfiling
 			{
 				var methods = AccessUtils.GetMethods(type, AccessUtils.AllDeclared, typeof(MonoBehaviour));
 				foreach (var method in methods)
+				{
+					alwaysProfile.Add(method);
 					EnableProfiling(method, false, true, false);
+				}
 			}
 
 			var methodsToProfile = TypeCache.GetMethodsWithAttribute<AlwaysProfile>();
 			foreach (var method in methodsToProfile)
 			{
+				alwaysProfile.Add(method);
 				EnableProfiling(method, false, true, false);
 			}
 #endif
@@ -278,7 +312,8 @@ namespace Needle.SelectiveProfiling
 			var ml = settings.MethodsList;
 			if (ml != null && ml.Count > 0)
 			{
-				foreach (var m in ml.ToArray())
+				var methodsList = Application.isPlaying ? ml.ToArray() : ml;
+				foreach (var m in methodsList)
 				{
 					if (m.TryResolveMethod(out var info))
 						await EnableProfilingAsync(info, false);
@@ -326,23 +361,22 @@ namespace Needle.SelectiveProfiling
 					var changed = stateChangedList[index];
 					stateChangedList.RemoveAt(index);
 					var shouldBeActive = changed.state;
-					if (patches.TryGetValue(changed.method, out var patch))
+					if (changed.method.TryResolveMethod(out var method))
 					{
-						if (patch.IsActive == shouldBeActive) continue;
+						if (profiled.TryGetValue(method, out var patch))
+						{
+							if (patch.IsActive == shouldBeActive) continue;
 
-						if (shouldBeActive)
-							EnableProfiling(patch.Method);
-						else patch.Disable();
-					}
-					else if (shouldBeActive)
-					{
-						if (changed.method.TryResolveMethod(out var method))
+							if (shouldBeActive)
+								EnableProfiling(patch.Method);
+							else patch.Disable();
+						}
+						else if (shouldBeActive)
 						{
 							EnableProfiling(method);
 						}
+						++handled;
 					}
-
-					++handled;
 					if (handled >= 2) break;
 				}
 			}
@@ -380,7 +414,6 @@ namespace Needle.SelectiveProfiling
 			if (!deepProfiling) return;
 			if (method == null) return;
 			if (callsFound.Contains(method)) return;
-			// Debug.Log("FOUND " + method);
 			callsFound.Add(method);
 		}
 
@@ -389,9 +422,15 @@ namespace Needle.SelectiveProfiling
 			if (!deepProfiling) return;
 			if (callsFound.Count <= 0) return;
 
-			var local = callsFound.ToArray();
-			callsFound.Clear();
 			var settings = SelectiveProfilerSettings.Instance;
+			var local = callsFound
+				.Where(c =>
+				{
+					if (!AccessUtils.AllowPatching(c, depth > 0, DebugLog)) return false;
+					return c.DeclaringType == null || AccessUtils.AllowedLevel(c, settings.DeepProfileMaxLevel);
+				})
+				;//.ToArray();
+			callsFound.Clear();
 			foreach (var method in local)
 			{
 				// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
@@ -404,15 +443,6 @@ namespace Needle.SelectiveProfiling
 				// dont save nested calls
 				else
 				{
-					var dt = method.DeclaringType;
-					if (dt != null)
-					{
-						if (!AccessUtils.AllowedLevel(method, settings.DeepProfileMaxLevel))
-						{
-							continue;
-						}
-					}
-
 					// Debug.Log(source + " calls " + method);
 					await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 				}

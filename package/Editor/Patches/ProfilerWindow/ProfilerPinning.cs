@@ -370,7 +370,7 @@ namespace Needle.SelectiveProfiling
 				private static void Postfix(object __instance, int id, ref bool __result)
 				{
 					if (!__instance.GetType().Name.EndsWith("ProfilerFrameDataTreeView")) return;
-					if (!__result && expandedItems.Contains(id)) __result = true;
+					if (Application.isPlaying && !__result && expandedItems.Contains(id)) __result = true;
 				}
 			}
 		}

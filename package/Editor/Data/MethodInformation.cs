@@ -11,12 +11,14 @@ namespace Needle.SelectiveProfiling
 	/// serializeable method information
 	/// </summary>
 	[Serializable]
-	internal class MethodInformation : IEquatable<MethodInformation>
+	internal class MethodInformation : IEquatable<MethodInformation>, IEquatable<MethodInfo>
 	{
 		public bool Enabled = true;
 		public string Assembly;
 		public string Type;
 		public string Method;
+
+		internal MethodInfo CachedMethod;
 
 		internal MethodInformation(MethodInfo method)
 		{
@@ -30,6 +32,7 @@ namespace Needle.SelectiveProfiling
 			var t = method.DeclaringType;
 			Type = t?.FullName;
 			Assembly = t?.Assembly.FullName;
+			CachedMethod = method;
 		}
 
 		private MethodInformation(MethodInformation other)
@@ -38,6 +41,7 @@ namespace Needle.SelectiveProfiling
 			Type = other.Type;
 			Method = other.Method;
 			Enabled = true;
+			CachedMethod = other.CachedMethod;
 		}
 
 		internal MethodInformation Copy()
@@ -76,6 +80,21 @@ namespace Needle.SelectiveProfiling
 		}
 
 		#region Equatable
+
+		public bool Equals(MethodInfo other)
+		{
+			if (other == null) return false;
+			if (CachedMethod != null) return CachedMethod.Equals(other);
+			var dt = other.DeclaringType;
+			if (dt != null && dt.FullName == Type)
+			{
+				if(dt.Assembly.FullName == Assembly)
+					return other.ToString() == Method;
+			}
+
+			return false;
+		}
+		
 		public bool Equals(MethodInformation other)
 		{
 			if (ReferenceEquals(null, other)) return false;
@@ -114,6 +133,12 @@ namespace Needle.SelectiveProfiling
 
 		public static bool TryResolveMethod(this MethodInformation pm, out MethodInfo method, bool allowFormerlySerialized = true)
 		{
+			if (pm.CachedMethod != null)
+			{
+				method = pm.CachedMethod;
+				return true;
+			}
+			
 			if (pm?.IsValid() ?? false)
 			{
 				// check if a method has already been resolved
@@ -194,21 +219,24 @@ namespace Needle.SelectiveProfiling
 							return true;
 						}
 					}
-					
-					foreach (var m in methods)
+
+					if (allowFormerlySerialized)
 					{
-						var fs = m.GetCustomAttribute<FormerlySerializedAsAttribute>();
-						if (fs != null && fs.oldName == pm.Method)
+						foreach (var m in methods)
 						{
-							// method name changed, update
-							var old = pm.MethodIdentifier();
-							pm.Method = m.ToString();
-							method = m;
-							if (requireUpdateIfSuccessfullyResolved) 
-								pm.UpdateFrom(method);
-							MethodsCache.Add(pm.MethodIdentifier(), m);
-							MethodIdentifierChanged?.Invoke((old, pm.MethodIdentifier()));
-							return true;
+							var fs = m.GetCustomAttribute<FormerlySerializedAsAttribute>();
+							if (fs != null && fs.oldName == pm.Method)
+							{
+								// method name changed, update
+								var old = pm.MethodIdentifier();
+								pm.Method = m.ToString();
+								method = m;
+								if (requireUpdateIfSuccessfullyResolved) 
+									pm.UpdateFrom(method);
+								MethodsCache.Add(pm.MethodIdentifier(), m);
+								MethodIdentifierChanged?.Invoke((old, pm.MethodIdentifier()));
+								return true;
+							}
 						}
 					}
 				}

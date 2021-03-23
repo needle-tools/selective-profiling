@@ -103,16 +103,15 @@ namespace Needle.SelectiveProfiling
 
 		public int MethodsCount => Methods.Count;
 
-		public void GetInstance(ref MethodInformation mi)
+		public MethodInformation GetInstance(MethodInformation mi)
 		{
 			foreach (var m in Methods)
 			{
 				if (m.Equals(mi))
-				{
-					mi = m;
-					break;
-				}
+					return m;
 			}
+
+			return mi;
 		}
 
 		internal void RegisterUndo(string actionName) => Undo.RegisterCompleteObjectUndo(this, actionName);

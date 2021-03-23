@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
+	[AlwaysProfile]
 	internal class ProfilingInfo
 	{
 		public readonly EditorPatchProvider Patch;
@@ -24,7 +25,7 @@ namespace Needle.SelectiveProfiling
 		{
 			this.Patch = patch;
 			this.Method = info;
-			this.MethodInformation = mi;
+			this.MethodInformation = mi.Copy();
 		}
 
 		public Task Enable(bool force = false)
