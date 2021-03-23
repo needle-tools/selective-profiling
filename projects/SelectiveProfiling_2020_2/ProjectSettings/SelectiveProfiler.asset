@@ -1,0 +1,3568 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 61
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f52273eee02c4063a24a332d916bdea0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FirstInstall: 0
+  Enabled: 1
+  SkipProperties: 1
+  UseAlwaysProfile: 1
+  ImmediateMode: 0
+  DeepProfiling: 1
+  MaxDepth: 5
+  DeepProfileMaxLevel: -1
+  AllowPinning: 0
+  DebugLog: 0
+  Methods:
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsNativeModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Utility
+    Method: Void RaiseEngineUpdate()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Void ProcessEvent(Int32, IntPtr, Boolean ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.StackTraceUtility
+    Method: System.String ExtractStackTrace()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Application
+    Method: Void CallLogCallback(System.String, System.String, UnityEngine.LogType,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Void MarkGUIChanged()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Void RemoveCapture()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: Void HandleControlID(Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Event
+    Method: Void Internal_MakeMasterEventCurrent(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProjectBrowser
+    Method: Int32[] GetTreeViewFolderSelection(Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Rendering.RenderPipelineManager
+    Method: Void CleanupRenderPipeline()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DragAndDrop
+    Method: Boolean HasGenericDragData()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsNativeModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsRuntimeUtilityNative
+    Method: Void RepaintOverlayPanels()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Rendering.SupportedRenderingFeatures
+    Method: Void IsUIOverlayRenderedBySRP(IntPtr)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Application
+    Method: Void InvokeOnBeforeRender()
+  - Enabled: 1
+    Assembly: UnityEngine.InputModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngineInternal.Input.NativeInputSystem
+    Method: Void NotifyUpdate(UnityEngineInternal.Input.NativeInputUpdateType, IntPtr)
+  - Enabled: 1
+    Assembly: UnityEngine.InputModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngineInternal.Input.NativeInputSystem
+    Method: Void NotifyBeforeUpdate(UnityEngineInternal.Input.NativeInputUpdateType)
+  - Enabled: 1
+    Assembly: UnityEngine.InputModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngineInternal.Input.NativeInputSystem
+    Method: Void ShouldRunUpdate(UnityEngineInternal.Input.NativeInputUpdateType,
+      Boolean ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsNativeModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Utility
+    Method: Void RaiseRegisterIntermediateRenderers(UnityEngine.Camera)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Camera
+    Method: Void FireOnPreRender(UnityEngine.Camera)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Camera
+    Method: Void FireOnPreCull(UnityEngine.Camera)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Camera
+    Method: Void FireOnPostRender(UnityEngine.Camera)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Rendering.SupportedRenderingFeatures
+    Method: Void IsLightmapBakeTypeSupportedByRef(UnityEngine.LightmapBakeType, IntPtr)
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.ComponentCreatingLotsOfGarbage
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: ComponentWithTryCatch
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: DefaultNamespace.ComponentCallingMethods
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.ComponentWithRaycasts
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: DefaultNamespace.ThisIsAlwaysProfiled
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.EventSystem
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Experimental.Rendering.ScriptableRuntimeReflectionSystemWrapper
+    Method: Void Internal_ScriptableRuntimeReflectionSystemWrapper_TickRealtimeProbes(Boolean
+      ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Rendering.OnDemandRendering
+    Method: Void GetRenderFrameInterval(Int32 ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Void SetSkin(Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Canvas
+    Method: Void SendWillRenderCanvases()
+  - Enabled: 1
+    Assembly: UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Canvas
+    Method: Void SendPreWillRenderCanvases()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UnitySynchronizationContext
+    Method: Void ExecuteTasks()
+  - Enabled: 1
+    Assembly: UnityEngine.AIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.AI.NavMesh
+    Method: Void Internal_CallOnNavMeshPreUpdate()
+  - Enabled: 1
+    Assembly: UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SendMouseEvents
+    Method: Void DoSendMouseEvents(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorApplication
+    Method: Void Internal_CallUpdateFunctions()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.AppStatusBar
+    Method: Void OnInspectorUpdate()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorApplication
+    Method: Void Internal_CallDelayFunctions()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HostView
+    Method: Void OnInspectorUpdate()
+  - Enabled: 1
+    Assembly: UnityEditor.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.RetainedMode
+    Method: Void RequestRepaintForPanels()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorApplication
+    Method: Void Internal_InvokeTickEvents()
+  - Enabled: 1
+    Assembly: UnityEditor.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.RetainedMode
+    Method: Void UpdateSchedulers()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerDriver
+    Method: Void InvokeNewProfilerFrameRecorded(Int32, Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UnitySynchronizationContext
+    Method: Void Exec()
+  - Enabled: 0
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.SelectiveProfiler
+    Method: Void ApplyProfiledMethods()
+  - Enabled: 0
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.SelectiveProfiler
+    Method: Void EnableProfiling(System.Reflection.MethodInfo, Boolean, Boolean,
+      Boolean, Boolean)
+  - Enabled: 0
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.SelectiveProfiler
+    Method: System.Threading.Tasks.Task EnableProfilingAsync(System.Reflection.MethodInfo,
+      Boolean, Boolean, Boolean, Boolean)
+  - Enabled: 0
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.SelectiveProfiler
+    Method: System.Threading.Tasks.Task InternalEnableProfilingAsync(System.Reflection.MethodInfo,
+      Boolean, Boolean, Boolean, System.Reflection.MethodInfo, Int32, Boolean)
+  - Enabled: 0
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.ProfilingInfo
+    Method: System.Threading.Tasks.Task Enable(Boolean)
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.EditorPatchProvider
+    Method: System.Threading.Tasks.Task Enable(Boolean)
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.PatchManager
+    Method: System.Threading.Tasks.Task EnablePatch(needle.EditorPatching.EditorPatchProvider,
+      Boolean)
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.PatchManager
+    Method: System.Threading.Tasks.Task ApplyPatch(HarmonyLib.Harmony, needle.EditorPatching.EditorPatchProviderInfo)
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.EditorPatchProvider
+    Method: Boolean AllPatchesAreReadyToLoad()
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.EditorPatch
+    Method: Boolean ReadyToLoad()
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.EditorPatchProvider
+    Method: System.Collections.Generic.IReadOnlyList`1[needle.EditorPatching.EditorPatch]
+      GetPatches()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Object
+    Method: Boolean op_Equality(UnityEngine.Object, UnityEngine.Object)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Object
+    Method: Boolean CompareBaseObjects(UnityEngine.Object, UnityEngine.Object)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Object
+    Method: Boolean IsNativeObjectAlive(UnityEngine.Object)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Object
+    Method: IntPtr GetCachedPtr()
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.EditorPatchProvider
+    Method: Boolean GetIsActive()
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.PatchManager
+    Method: Boolean PatchIsActive(needle.EditorPatching.EditorPatchProvider)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.ProfilerSamplePatch
+    Method: System.String ID()
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.EditorPatchProvider
+    Method: Void OnEnabledPatch()
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.EditorPatchProvider
+    Method: Boolean OnWillEnablePatch()
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.PatchManager
+    Method: Void SetHarmonyDebugState(Boolean)
+  - Enabled: 0
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.SelectiveProfiler
+    Method: Void QueueCommand(Needle.SelectiveProfiling.NetworkCommand)
+  - Enabled: 0
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.ProfilingInfo
+    Method: Void OnEnable()
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.PatchManager
+    Method: Void RegisterPatch(needle.EditorPatching.IManagedPatch)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.ProfilerSamplePatch
+    Method: Void OnGetPatches(System.Collections.Generic.List`1[needle.EditorPatching.EditorPatch])
+  - Enabled: 1
+    Assembly: 0Harmony, Version=2.0.4.0, Culture=neutral, PublicKeyToken=null
+    Type: HarmonyLib.CodeInstruction
+    Method: HarmonyLib.CodeInstruction Call(System.Type, System.String, System.Type[],
+      System.Type[])
+  - Enabled: 1
+    Assembly: 0Harmony, Version=2.0.4.0, Culture=neutral, PublicKeyToken=null
+    Type: HarmonyLib.AccessTools
+    Method: System.Reflection.MethodInfo Method(System.Type, System.String, System.Type[],
+      System.Type[])
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.EditorPatchProvider
+    Method: Void OnRegistered()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.MethodInformation
+    Method: Void UpdateFrom(System.Reflection.MethodInfo)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Utils.AccessUtils
+    Method: Boolean AllowPatching(System.Reflection.MethodInfo, Boolean, Boolean)
+  - Enabled: 1
+    Assembly: 0Harmony, Version=2.0.4.0, Culture=neutral, PublicKeyToken=null
+    Type: HarmonyLib.MethodBaseExtensions
+    Method: Boolean HasMethodBody(System.Reflection.MethodBase)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Utils.AccessUtils
+    Method: Needle.SelectiveProfiling.Utils.Level GetLevel(System.Type)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.MethodInformation
+    Method: Int32 GetHashCode()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.MethodInformation
+    Method: Needle.SelectiveProfiling.MethodInformation Copy()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.SelectiveProfilerSettings
+    Method: Needle.SelectiveProfiling.MethodInformation GetInstance(Needle.SelectiveProfiling.MethodInformation)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.MethodInformation
+    Method: Boolean Equals(System.Reflection.MethodInfo)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UnitySynchronizationContext
+    Method: Void OperationCompleted()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UnitySynchronizationContext
+    Method: Void OperationStarted()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.ProfiledMethodExtensions
+    Method: Boolean TryResolveMethod(Needle.SelectiveProfiling.MethodInformation,
+      System.Reflection.MethodInfo ByRef, Boolean)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.MethodInformation
+    Method: System.String TypeIdentifier()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.MethodInformation
+    Method: Boolean IsValid()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.MethodInformation
+    Method: System.String MethodIdentifier()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Utils.AccessUtils
+    Method: System.Collections.Generic.IEnumerable`1[System.Reflection.MethodInfo]
+      GetMethods(System.Object, System.Reflection.BindingFlags, System.Type)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Utils.AccessUtils
+    Method: System.Collections.Generic.IEnumerable`1[System.Reflection.MethodInfo]
+      InternalGetMethods(System.Type, System.Reflection.BindingFlags, System.Type)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.TypeCache
+    Method: TypeCollection GetTypesWithAttribute(System.Type)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.TypeCache
+    Method: MethodCollection GetMethodsWithAttribute(System.Type)
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: ComponentWithTryCatch
+    Method: Void OtherMethod(Boolean)
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: ComponentWithTryCatch
+    Method: Void <OtherMethod>g__Nested|1_0()
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: DefaultNamespace.ComponentCallingMethods
+    Method: Void MethodWithTupleShort(System.ValueTuple`2[System.String,System.Int32])
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: DefaultNamespace.ComponentCallingMethods
+    Method: Void MethodWithTuple(System.Tuple`2[System.String,System.Int32])
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: DefaultNamespace.ComponentCallingMethods
+    Method: Void MethodWithStringParameter(System.String)
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.ComponentWithRaycasts
+    Method: Boolean Compare()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector2
+    Method: Boolean Equals(System.Object)
+  - Enabled: 1
+    Assembly: UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Physics
+    Method: Int32 RaycastNonAlloc(UnityEngine.Ray, UnityEngine.RaycastHit[], Single,
+      Int32, UnityEngine.QueryTriggerInteraction)
+  - Enabled: 1
+    Assembly: UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.PhysicsScene
+    Method: Boolean Raycast(UnityEngine.Vector3, UnityEngine.Vector3, Single, Int32,
+      UnityEngine.QueryTriggerInteraction)
+  - Enabled: 1
+    Assembly: UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.PhysicsScene
+    Method: Int32 Internal_RaycastNonAlloc(UnityEngine.PhysicsScene, UnityEngine.Ray,
+      UnityEngine.RaycastHit[], Single, Int32, UnityEngine.QueryTriggerInteraction)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector3
+    Method: UnityEngine.Vector3 Normalize(UnityEngine.Vector3)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector3
+    Method: UnityEngine.Vector3 op_Division(UnityEngine.Vector3, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector3
+    Method: Single Magnitude(UnityEngine.Vector3)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.LayerMask
+    Method: Int32 GetMask(System.String[])
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: MyNamespace.RaycastExtensions
+    Method: UnityEngine.Ray InverseTransformDir(UnityEngine.Ray, UnityEngine.Transform)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Transform
+    Method: UnityEngine.Vector3 InverseTransformDirection(UnityEngine.Vector3)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Debug
+    Method: Void Assert(Boolean)
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: DefaultNamespace.ThisIsAlwaysProfiled
+    Method: Void AnotherMethod()
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: DefaultNamespace.ThisIsAlwaysProfiled
+    Method: Void SomeCall()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.StandaloneInputModule
+    Method: Void Process()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.StandaloneInputModule
+    Method: Boolean ShouldIgnoreEventsOnNoFocus()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.StandaloneInputModule
+    Method: Boolean ShouldActivateModule()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.BaseInput
+    Method: Boolean GetMouseButtonDown(Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.BaseInput
+    Method: Single GetAxisRaw(System.String)
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.BaseInput
+    Method: Boolean GetButtonDown(System.String)
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.BaseInputModule
+    Method: Boolean ShouldActivateModule()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Object
+    Method: Boolean op_Inequality(UnityEngine.Object, UnityEngine.Object)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector2
+    Method: UnityEngine.Vector2 op_Subtraction(UnityEngine.Vector2, UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Boolean Approximately(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Single Max(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Single Abs(Single)
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.StandaloneInputModule
+    Method: Boolean IsModuleSupported()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.EventSystem
+    Method: Void TickModules()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventSystems.StandaloneInputModule
+    Method: Void UpdateModule()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.BeforeRenderHelper
+    Method: Void Invoke()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Experimental.Rendering.BuiltinRuntimeReflectionSystem
+    Method: Boolean TickRealtimeProbes()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Void DoSetSkin(UnityEngine.GUISkin)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUISkin
+    Method: Void MakeCurrent()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: Void SkinChanged()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorStyles
+    Method: Void UpdateSkinCache()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: UnityEngine.GUISkin GetDefaultSkin(Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Object
+    Method: Boolean op_Implicit(UnityEngine.Object)
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UI.CanvasScaler
+    Method: Void Canvas_preWillRenderCanvases()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UI.CanvasScaler
+    Method: Void Handle()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UI.CanvasScaler
+    Method: Void HandleConstantPixelSize()
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UI.CanvasScaler
+    Method: Void SetReferencePixelsPerUnit(Single)
+  - Enabled: 1
+    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UI.CanvasScaler
+    Method: Void SetScaleFactor(Single)
+  - Enabled: 1
+    Assembly: UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SendMouseEvents
+    Method: Void SendEvents(Int32, HitInfo)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector3
+    Method: Boolean op_Inequality(UnityEngine.Vector3, UnityEngine.Vector3)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector3
+    Method: Boolean op_Equality(UnityEngine.Vector3, UnityEngine.Vector3)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Display
+    Method: UnityEngine.Vector3 RelativeMouseAt(UnityEngine.Vector3)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Camera
+    Method: Int32 GetAllCameras(UnityEngine.Camera[])
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Rect
+    Method: Boolean Contains(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChain
+    Method: Void OnRegisterIntermediateRenderers(UnityEngine.Camera)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.Panel
+    Method: UnityEngine.UIElements.IVisualTreeUpdater GetUpdater(UnityEngine.UIElements.VisualTreeUpdatePhase)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualTreeUpdater
+    Method: UnityEngine.UIElements.IVisualTreeUpdater GetUpdater(UnityEngine.UIElements.VisualTreeUpdatePhase)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsUtility
+    Method: Enumerator GetPanelsIterator()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Draw
+    Method: Void <DefaultSelectiveProfilerUI>g__SetState|1_7(System.Collections.Generic.IList`1[Needle.SelectiveProfiling.MethodInformation],
+      System.Action`1[Needle.SelectiveProfiling.ProfilingInfo])
+  - Enabled: 1
+    Assembly: 0Harmony, Version=2.0.4.0, Culture=neutral, PublicKeyToken=null
+    Type: HarmonyLib.MethodCopier
+    Method: System.Collections.Generic.List`1[HarmonyLib.CodeInstruction] Finalize(HarmonyLib.Emitter,
+      System.Collections.Generic.List`1[System.Reflection.Emit.Label], Boolean ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIEventRegistration
+    Method: Boolean ProcessEvent(Int32, IntPtr)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsUtility
+    Method: Boolean DoDispatch(UnityEngine.UIElements.BaseVisualElementPanel)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.Panel
+    Method: Void Repaint(UnityEngine.Event)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.Panel
+    Method: Void UpdateForRepaint()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualTreeUpdater
+    Method: Void UpdateVisualTreePhase(UnityEngine.UIElements.VisualTreeUpdatePhase)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIRRepaintUpdater
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChain
+    Method: Void Render()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.UIRenderDevice
+    Method: Void EvaluateChain(UnityEngine.UIElements.UIR.RenderChainCommand, UnityEngine.Material,
+      UnityEngine.Material, UnityEngine.Texture, UnityEngine.Texture, UnityEngine.Texture,
+      Single, Unity.Collections.NativeSlice`1[UnityEngine.UIElements.UIR.Transform3x4],
+      Unity.Collections.NativeSlice`1[UnityEngine.Vector4], UnityEngine.MaterialPropertyBlock,
+      Boolean, System.Exception ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChainCommand
+    Method: Void ExecuteNonDrawMesh(UnityEngine.UIElements.UIR.DrawParams, Single,
+      System.Exception ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void DoIMGUIRepaint()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean HandleIMGUIEvent(UnityEngine.Event, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void DoOnGUI(UnityEngine.Event, UnityEngine.Matrix4x4, UnityEngine.Rect,
+      Boolean, UnityEngine.Rect, System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void OldOnGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void DrawView(UnityEngine.Rect, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HostView
+    Method: Void InvokeOnGUI(UnityEngine.Rect, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void OnGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void DrawDetailsViewForModule(UnityEditorInternal.Profiling.ProfilerModuleBase)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUProfilerModule
+    Method: Void DrawDetailsView(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUorGPUProfilerModule
+    Method: Void DrawDetailsView(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void DoGUI(UnityEditor.Profiling.HierarchyFrameDataView, Boolean, Boolean
+      ByRef, UnityEditorInternal.ProfilerViewType)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void OnGUI(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Void OnGUI(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Void TreeViewWithMultiColumnHeader(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Void OnGUI(UnityEngine.Rect, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Void IterateVisibleItems(Int32, Int32, Single, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Void DoItemGUI(UnityEditor.IMGUI.Controls.TreeViewItem, Int32, Single,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Void OnRowGUI(UnityEngine.Rect, UnityEditor.IMGUI.Controls.TreeViewItem,
+      Int32, Boolean, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Void DoItemGUI(UnityEngine.Rect, Int32, UnityEditor.IMGUI.Controls.TreeViewItem,
+      Boolean, Boolean, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void RowGUI(RowGUIArgs)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
+    Method: UnityEditor.Profiling.HierarchyFrameDataView GetFrameDataView(UnityEditor.IMGUI.Controls.TreeViewItem)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.ProfilerPinning
+    Method: Boolean AllowPinning()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Void CenterRectUsingSingleLineHeight(UnityEngine.Rect ByRef)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Single GetContentIndent(UnityEditor.IMGUI.Controls.TreeViewItem)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Single GetContentIndent(UnityEditor.IMGUI.Controls.TreeViewItem)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Single GetFoldoutIndent(UnityEditor.IMGUI.Controls.TreeViewItem)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: Void Draw(UnityEngine.Rect, Boolean, Boolean, Boolean, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StylePainter
+    Method: Boolean DrawStyle(UnityEngine.GUIStyle, UnityEngine.Rect, UnityEngine.GUIContent,
+      UnityEngine.DrawStates)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StylePainter
+    Method: Void DrawBlock(UnityEngine.GUIStyle, UnityEditor.StyleSheets.StyleBlock,
+      UnityEngine.Rect, UnityEngine.GUIContent, UnityEngine.DrawStates)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector4
+    Method: Boolean op_Inequality(UnityEngine.Vector4, UnityEngine.Vector4)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector4
+    Method: Boolean op_Equality(UnityEngine.Vector4, UnityEngine.Vector4)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: Void Internal_DrawContent(UnityEngine.Rect, UnityEngine.GUIContent, Boolean,
+      Boolean, Boolean, Boolean, Boolean, Boolean, Int32, Int32, UnityEngine.Color,
+      UnityEngine.Color, UnityEngine.Color, Single, Single, Single, Single, Boolean,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleBlock
+    Method: Keyword GetKeyword(Int32, Keyword)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleBlock
+    Method: Int32 GetValueIndex(System.String, Type)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleBlock
+    Method: UnityEngine.Color GetColor(Int32, UnityEngine.Color)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Color
+    Method: UnityEngine.Color op_Multiply(UnityEngine.Color, UnityEngine.Color)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleBlock
+    Method: Boolean HasValue(Int32, Type)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleBlock
+    Method: UnityEditor.StyleSheets.StyleRect GetRect(Int32, UnityEditor.StyleSheets.StyleRect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleBlock
+    Method: Boolean IsValid()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StylePainter
+    Method: UnityEditor.StyleSheets.StyleBlock FindBlock(Int32, UnityEngine.DrawStates)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Experimental.EditorResources
+    Method: UnityEditor.StyleSheets.StyleBlock GetStyle(System.String, UnityEditor.StyleSheets.StyleState[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleCatalog
+    Method: UnityEditor.StyleSheets.StyleBlock GetStyle(Int32, UnityEditor.StyleSheets.StyleState[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleCatalog
+    Method: Int32 FindStyleIndex(Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Rect
+    Method: Boolean Overlaps(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Highlighter
+    Method: Boolean IsSearchingForIdentifier()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIContent
+    Method: UnityEngine.GUIContent Temp(System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Boolean IsRenaming(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.RenameOverlay
+    Method: Boolean IsRenaming()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: UnityEditor.RenameOverlay GetRenameOverlay()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Int32 GetItemControlID(UnityEditor.IMGUI.Controls.TreeViewItem)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Int32 GetControlID(Int32, UnityEngine.FocusType, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void PrepareCurrentPrefixLabel(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: UnityEngine.Rect DoFoldout(UnityEngine.Rect, UnityEditor.IMGUI.Controls.TreeViewItem,
+      Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Void FoldoutButton(UnityEngine.Rect, UnityEditor.IMGUI.Controls.TreeViewItem,
+      Int32, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Boolean DoFoldoutButton(UnityEngine.Rect, Boolean, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Boolean Toggle(UnityEngine.Rect, Boolean, System.String)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Boolean DoToggle(UnityEngine.Rect, Int32, Boolean, UnityEngine.GUIContent,
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Boolean DoControl(UnityEngine.Rect, Int32, Boolean, Boolean, UnityEngine.GUIContent,
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Boolean HasKeyFocus(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StylePainter
+    Method: Void DrawBackgroundImage(UnityEditor.StyleSheets.StyleBlock, UnityEngine.Rect,
+      UnityEngine.Color)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleRect
+    Method: UnityEditor.StyleSheets.StyleRect Size(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleValueGroup
+    Method: UnityEditor.StyleSheets.StyleValue GetValueAt(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleBlock
+    Method: UnityEngine.Texture2D GetTexture(Int32, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Int32 CeilToInt(Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleBlock
+    Method: System.String GetText(Int32, System.String)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Void DrawTexture(UnityEngine.Rect, UnityEngine.Texture)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector4
+    Method: UnityEngine.Vector4 op_Multiply(UnityEngine.Vector4, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Boolean CalculateScaledTextureRects(UnityEngine.Rect, UnityEngine.ScaleMode,
+      Single, UnityEngine.Rect ByRef, UnityEngine.Rect ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Void CheckOnGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewItemExpansionAnimator
+    Method: Boolean IsAnimating(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewDataSource
+    Method: Boolean IsExpanded(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean EndChangeCheck()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void BeginChangeCheck()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Single GetFoldoutYPosition(Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: UnityEngine.Rect GetCellRectForTreeFoldouts(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: UnityEngine.Rect GetCellRect(Int32, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: UnityEngine.Rect GetColumnRect(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: Int32 GetVisibleColumnIndex(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: Boolean IsColumnVisible(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Void OnAdditionalGUI(UnityEngine.Rect, Int32, UnityEditor.IMGUI.Controls.TreeViewItem,
+      Boolean, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewDragging
+    Method: Int32 GetRowMarkerControlID()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Boolean CanChangeExpandedState(UnityEditor.IMGUI.Controls.TreeViewItem)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewDragging
+    Method: Int32 GetDropTargetControlID()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: Void SetIconSize(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Void HandleUnusedMouseEventsForItem(UnityEngine.Rect, UnityEditor.IMGUI.Controls.TreeViewItem,
+      Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Boolean IsItemDragSelectedOrSelected(UnityEditor.IMGUI.Controls.TreeViewItem)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: UnityEngine.Rect GetRowRect(Int32, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Single GetTopPixelOfRow(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.LazyTreeViewDataSource
+    Method: System.Collections.Generic.IList`1[UnityEditor.IMGUI.Controls.TreeViewItem]
+      GetRows()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.LazyTreeViewDataSource
+    Method: Void InitIfNeeded()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewDataSource
+    Method: UnityEditor.IMGUI.Controls.TreeViewItem GetItem(Int32)
+  - Enabled: 1
+    Assembly: System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+    Type: System.Linq.Enumerable
+    Method: Int32 Sum(System.Collections.Generic.IEnumerable`1[System.Int32])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeaderState
+    Method: Single <get_widthOfAllVisibleColumns>b__24_0(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: UnityEngine.Vector2 GetTotalSize()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Single Floor(Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: UnityEngine.ScrollViewState GetTopScrollView()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Boolean HasFocus()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Void HandleTreeViewGotFocus(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Void HandleUnusedEvents()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Void KeyboardGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Void AfterRowsGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Void EndRowGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Void HandlePing()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.PingData
+    Method: Void HandlePing()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Void DoRenameOverlay()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Void GetFirstAndLastRowVisible(Int32 ByRef, Int32 ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Single Ceil(Single)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Single Min(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Void BeforeRowsGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Void BeginRowGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewGUI
+    Method: Void SyncFakeItem()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Void EndScrollView()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector2
+    Method: Boolean op_Inequality(UnityEngine.Vector2, UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector2
+    Method: Boolean op_Equality(UnityEngine.Vector2, UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: Void Pop()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: UnityEngine.Vector2 BeginScrollView(UnityEngine.Rect, UnityEngine.Vector2,
+      UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: System.Object GetStateObject(System.Type, Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStateObjects
+    Method: System.Object GetStateObject(System.Type, Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Single Round(Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: Void Push(UnityEngine.Rect, UnityEngine.Vector2, UnityEngine.Vector2,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: Void Internal_Push(UnityEngine.Rect, UnityEngine.Vector2, UnityEngine.Vector2,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: Void OnGUI(UnityEngine.Rect, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: Void ColumnHeaderGUI(Column, UnityEngine.Rect, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: UnityEngine.GUIStyle GetStyle(UnityEngine.TextAlignment)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: Void SortingButton(Column, UnityEngine.Rect, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: UnityEngine.Rect GetArrowRect(Column, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean Button(UnityEngine.Rect, UnityEngine.GUIContent)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Boolean Button(UnityEngine.Rect, System.String)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Boolean DoButton(UnityEngine.Rect, Int32, UnityEngine.GUIContent, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: Void Internal_Draw2(UnityEngine.Rect, UnityEngine.GUIContent, Int32,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Void Label(UnityEngine.Rect, System.String)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Void DoLabel(UnityEngine.Rect, UnityEngine.GUIContent, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: Void Internal_Draw(UnityEngine.Rect, UnityEngine.GUIContent, Boolean,
+      Boolean, Boolean, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: UnityEngine.Matrix4x4 GetMatrix()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: Void DrawDivider(UnityEngine.Rect, Column)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void DrawRect(UnityEngine.Rect, UnityEngine.Color)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Single WidthResizer(UnityEngine.Rect, Single, Single, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: Void AddCursorRect(UnityEngine.Rect, UnityEditor.MouseCursor)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: Void Internal_AddCursorRect(UnityEngine.Rect, UnityEditor.MouseCursor,
+      Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: UnityEngine.Vector2 Unclip(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: UnityEngine.Rect Unclip_Rect(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Rect
+    Method: UnityEngine.Rect MinMaxRect(Single, Single, Single, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: Void UpdateColumnHeaderRects(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsUtility
+    Method: UnityEngine.UIElements.IMGUIContainer GetCurrentIMGUIContainer()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: Void DetectSizeChanges(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Void CommandEventHandling()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Void OnEvent()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.RenameOverlay
+    Method: Boolean OnEvent()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Boolean ValidTreeView()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void DrawToolbar(UnityEditor.Profiling.HierarchyFrameDataView, Boolean,
+      Boolean ByRef, UnityEditorInternal.ProfilerViewType)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataViewBase
+    Method: Void DrawCPUGPUTime(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.SharedInternalsModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: UnityEngine.UnityString
+    Method: System.String Format(System.String, System.Object[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Void Label(UnityEngine.Texture, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Void DoLabel(UnityEngine.GUIContent, UnityEngine.GUIStyle, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: UnityEngine.Rect GetRect(UnityEngine.GUIContent, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: UnityEngine.Rect DoGetRect(UnityEngine.GUIContent, UnityEngine.GUIStyle,
+      UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutGroup
+    Method: Void Add(UnityEngine.GUILayoutEntry)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIDebugger
+    Method: Void LogLayoutEntry(UnityEngine.Rect, Int32, Int32, Int32, Int32, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutGroup
+    Method: UnityEngine.GUILayoutEntry GetNext()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: UnityEngine.Vector2 CalcSizeWithConstraints(UnityEngine.GUIContent, UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: UnityEngine.Vector2 Internal_CalcSizeWithConstraints(UnityEngine.GUIContent,
+      UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutEntry
+    Method: Void ApplyOptions(UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutEntry
+    Method: Void ApplyStyleSettings(UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void DrawThreadPopup(UnityEditor.Profiling.HierarchyFrameDataView)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Int32 AdvancedLazyPopup(System.String, Int32, System.Func`1[UnityEditor.Tuple`2[System.Int32,System.String[]]],
+      UnityEngine.GUIStyle, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Int32 AdvancedLazyPopup(UnityEngine.Rect, System.String, Int32, System.Func`1[UnityEditor.Tuple`2[System.Int32,System.String[]]],
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StatelessAdvancedDropdown
+    Method: Int32 DoLazySearchablePopup(UnityEngine.Rect, System.String, Int32, System.Func`1[UnityEditor.Tuple`2[System.Int32,System.String[]]],
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean DropdownButton(UnityEngine.Rect, UnityEngine.GUIContent, UnityEngine.FocusType)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GUIView
+    Method: Void MarkHotRegion(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Color
+    Method: Boolean op_Inequality(UnityEngine.Color, UnityEngine.Color)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Color
+    Method: Boolean op_Equality(UnityEngine.Color, UnityEngine.Color)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Color
+    Method: UnityEngine.Vector4 op_Implicit(UnityEngine.Color)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: UnityEngine.Vector2 UnclipToWindow(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: UnityEngine.Rect UnclipToWindow_Rect(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: UnityEngine.Rect GetControlRect(UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: UnityEngine.GUILayoutOption MinWidth(Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Void FlexibleSpace()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: UnityEngine.GUILayoutOption ExpandWidth(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Void Space()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataViewBase
+    Method: Void DrawViewTypePopup(UnityEditorInternal.ProfilerViewType)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Int32 IntPopup(Int32, System.String[], Int32[], UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Int32 IntPopup(UnityEngine.Rect, Int32, System.String[], Int32[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Int32 IntPopupInternal(UnityEngine.Rect, UnityEngine.GUIContent, Int32,
+      UnityEngine.GUIContent[], Int32[], UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Int32 PopupInternal(UnityEngine.Rect, UnityEngine.GUIContent, Int32,
+      UnityEngine.GUIContent[], UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: UnityEngine.Rect PrefixLabel(UnityEngine.Rect, UnityEngine.GUIContent)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean LabelHasContent(UnityEngine.GUIContent)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: UnityEngine.Rect IndentedRect(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Int32 DoPopup(UnityEngine.Rect, Int32, Int32, UnityEngine.GUIContent[],
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void EndHandleMixedValueContentColor()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void BeginHandleMixedValueContentColor()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: UnityEngine.GUILayoutOption Width(Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void DrawDetailedViewPopup()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: UnityEngine.Rect BeginHorizontal(UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: UnityEngine.GUILayoutGroup BeginLayoutGroup(UnityEngine.GUIStyle, UnityEngine.GUILayoutOption[],
+      System.Type)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: UnityEngine.GUILayoutGroup CreateGUILayoutGroupInstanceOfType(System.Type)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutGroup
+    Method: Void ApplyStyleSettings(UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIDebugger
+    Method: Void LogLayoutGroupEntry(UnityEngine.Rect, Int32, Int32, Int32, Int32,
+      UnityEngine.GUIStyle, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutGroup
+    Method: Void ResetCursor()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutGroup
+    Method: Void ApplyOptions(UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Void Box(UnityEngine.Rect, System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataViewBase
+    Method: Void DrawLiveUpdateToggle(Boolean ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Boolean Toggle(Boolean, UnityEngine.Texture, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Boolean DoToggle(Boolean, UnityEngine.GUIContent, UnityEngine.GUIStyle,
+      UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void EndDisabled()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void BeginDisabled(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUorGPUProfilerModule
+    Method: Void DrawOptionsMenuPopup()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StyleBlock
+    Method: Single GetFloat(Int32, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void DrawSearchBar()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.SearchField
+    Method: System.String OnToolbarGUI(UnityEngine.Rect, System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.SearchField
+    Method: System.String OnGUI(UnityEngine.Rect, System.String, UnityEngine.GUIStyle,
+      UnityEngine.GUIStyle, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: System.String TextFieldInternal(Int32, UnityEngine.Rect, System.String,
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: System.String DoTextField(RecycledTextEditor, Int32, UnityEngine.Rect,
+      System.String, UnityEngine.GUIStyle, System.String, Boolean ByRef, Boolean,
+      Boolean, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.TextEditor
+    Method: Void UpdateScrollOffsetIfNeeded(UnityEngine.Event)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: UnityEngine.EventType GetEventTypeForControlAllowDisabledContextMenuPaste(UnityEngine.Event,
+      Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean HasKeyboardFocus(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: UnityEngine.GUIContent TempContent(System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.SearchField
+    Method: Void FocusAndKeyHandling()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.SearchField
+    Method: Void CommandEventHandling()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Void EndHorizontal()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Void EndHorizontal()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: Void EndLayoutGroup()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Void BeginVertical(UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: UnityEngine.GUILayoutOption ExpandHeight(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void HandleKeyboardEvents()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Boolean HasFocus()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Void EndVertical()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void SetFrameDataView(UnityEditor.Profiling.HierarchyFrameDataView)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: Boolean IsSortedAscending(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.MultiColumnHeader
+    Method: Column GetColumn(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataMultiColumnHeader
+    Method: Int32 GetProfilerColumn(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void InitIfNeeded()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUorGPUProfilerModule
+    Method: UnityEditor.Profiling.HierarchyFrameDataView GetFrameDataView()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: UnityEditor.Profiling.HierarchyFrameDataView GetFrameDataView(System.String,
+      ViewModes, Int32, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataIterator
+    Method: Void Dispose()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataIterator
+    Method: Void FreeNativeResources()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Int32 GetActiveVisibleFrameIndex()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUProfilerModule
+    Method: ViewModes GetFilteringMode()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Boolean IsRecording()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Boolean IsSetToRecord()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUorGPUProfilerModule
+    Method: Void DrawToolbar(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: Single CalcHeight(UnityEngine.GUIContent, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Int32 DrawModuleChartViews(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerModuleBase
+    Method: Int32 DrawChartView(UnityEngine.Rect, Int32, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerChart
+    Method: Int32 DoChartGUI(UnityEngine.Rect, Int32, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Int32 DoGUI(UnityEngine.Rect, ChartType, Int32, UnityEditorInternal.ChartViewData,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DrawChartStacked(Int32, UnityEditorInternal.ChartViewData, UnityEngine.Rect,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void DropShadowLabel(UnityEngine.Rect, System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void DoDropShadowLabel(UnityEngine.Rect, UnityEngine.GUIContent, UnityEngine.GUIStyle,
+      Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void DrawLabelShadow(UnityEngine.Rect, UnityEngine.GUIContent, UnityEngine.GUIStyle,
+      Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void Draw4(UnityEngine.Rect, UnityEngine.GUIContent, Single, Single,
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DrawLabels(UnityEngine.Rect, UnityEditorInternal.ChartViewData,
+      Int32, ChartType)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ChartViewData
+    Method: UnityEngine.Vector2 GetDataDomain()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector2
+    Method: UnityEngine.Vector2 op_Multiply(UnityEngine.Vector2, UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DrawGridStacked(UnityEngine.Rect, UnityEditorInternal.ChartViewData)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DoLabel(Single, Single, System.String, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: UnityEngine.Vector2 CalcSize(UnityEngine.GUIContent)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: UnityEngine.Vector2 Internal_CalcSize(UnityEngine.GUIContent)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GL
+    Method: Void Color(UnityEngine.Color)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DrawSelectedFrame(Int32, UnityEditorInternal.ChartViewData, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DrawOverlayBoxes(UnityEditorInternal.ChartViewData, UnityEngine.Rect,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DrawOverlayBox(UnityEngine.Rect, Int32, Int32, Int32, Boolean, UnityEngine.GUIStyle,
+      Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Int32 RoundToInt(Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DrawChartItemStacked(UnityEngine.Rect, Int32, UnityEditorInternal.ChartViewData,
+      Single[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ChartViewData
+    Method: Int32 GetDataDomainLength()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DrawChartItemStackedOverlay(UnityEngine.Rect, Int32, UnityEditorInternal.ChartViewData,
+      Single[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HandleUtility
+    Method: Void ApplyWireMaterial(UnityEngine.Rendering.CompareFunction)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Material
+    Method: Void SetInt(System.String, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HandleUtility
+    Method: Void InitHandleMaterials()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerChart
+    Method: Void DoLegendGUI(UnityEngine.Rect, ChartType, UnityEditorInternal.ChartViewData,
+      UnityEngine.EventType, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DoLegendGUI(UnityEngine.Rect, ChartType, UnityEditorInternal.ChartViewData,
+      UnityEngine.EventType, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: UnityEngine.Rect DoSeriesList(UnityEngine.Rect, Int32, ChartType, UnityEditorInternal.ChartViewData)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Void DoSeriesToggle(UnityEngine.Rect, UnityEngine.GUIContent, Boolean
+      ByRef, UnityEngine.Color, UnityEditorInternal.ChartViewData)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUProfilerModule
+    Method: Void OnChartSeriesToggled(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Chart
+    Method: Int32 HandleFrameSelectionEvents(Int32, Int32, UnityEngine.Rect, UnityEditorInternal.ChartViewData)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ChartViewData
+    Method: Void AssignSelectedLabels(System.String[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerModuleBase
+    Method: Single GetMinimumChartHeight()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerChart
+    Method: Single GetMinimumHeight()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Single RoundToPixelGrid(Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void DrawMainToolbar()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void FrameNavigationControls()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Boolean Button(UnityEngine.Texture, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Boolean DoButton(UnityEngine.GUIContent, UnityEngine.GUIStyle, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: System.String PickFrameLabel()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: Void CalcMinMaxWidth(UnityEngine.GUIContent, Single ByRef, Single ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: UnityEngine.Vector2 Internal_CalcMinMaxWidth(UnityEngine.GUIContent)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Void BeginHorizontal(UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.StyleSheets.StylePainter
+    Method: Boolean IsMouseOverGUIView()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Networking.PlayerConnection.PlayerConnectionGUILayout
+    Method: Void ConnectionTargetSelectionDropdown(UnityEngine.Networking.PlayerConnection.IConnectionState,
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Networking.PlayerConnection.PlayerConnectionGUI
+    Method: Void ConnectionTargetSelectionDropdown(UnityEngine.Rect, UnityEngine.Networking.PlayerConnection.IConnectionState,
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Boolean IsEditorConnectionTargeted(UnityEditor.Networking.PlayerConnection.EditorConnectionTarget)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorWindow
+    Method: Void RemoveNotification()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void DrawModuleSelectionDropdownMenu()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: Void SetMouseTooltip(System.String, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: UnityEngine.GUILayoutOption MaxWidth(Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void AllocationCallstacksToolbarItem()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Boolean DropDownToggle(Boolean ByRef, UnityEngine.GUIContent, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void SetProfileDeepScripts(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void SetClearOnPlay(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Boolean GetClearOnPlay()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: UnityEngine.Vector2 BeginScrollView(UnityEngine.Vector2, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIInternal
+    Method: UnityEngine.Vector2 DoBeginScrollViewForward(UnityEngine.Rect, UnityEngine.Vector2,
+      UnityEngine.Rect, Boolean, Boolean, UnityEngine.GUIStyle, UnityEngine.GUIStyle,
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: UnityEngine.Vector2 DoBeginScrollView(UnityEngine.Rect, UnityEngine.Vector2,
+      UnityEngine.Rect, Boolean, Boolean, UnityEngine.GUIStyle, UnityEngine.GUIStyle,
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUISkin
+    Method: UnityEngine.GUIStyle FindStyle(System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SplitterGUILayout
+    Method: Void BeginVerticalSplit(UnityEditor.SplitterState, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SplitterGUILayout
+    Method: Void BeginSplit(UnityEditor.SplitterState, UnityEngine.GUIStyle, Boolean,
+      UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SplitterGUILayout
+    Method: Void EndVerticalSplit()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Void EndScrollView()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Void EndScrollView()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void CheckForPlatformModuleChange()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Profiling.EditorPerformanceTracker
+    Method: Void Dispose()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GUIView
+    Method: Void BeginOffsetArea(UnityEngine.Rect, UnityEngine.GUIContent, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayoutUtilityInternal
+    Method: UnityEngine.GUILayoutGroup BeginLayoutArea(UnityEngine.GUIStyle, System.Type)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: UnityEngine.GUILayoutGroup DoBeginLayoutArea(UnityEngine.GUIStyle, System.Type)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: UnityEngine.GUILayoutGroup BeginLayoutArea(UnityEngine.GUIStyle, System.Type)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Void BeginGroup(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void DoWindowDecorationEnd()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ContainerWindow
+    Method: Void HandleWindowDecorationEnd(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GUIView
+    Method: Void EndOffsetArea()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Void EndGroup()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HostView
+    Method: Void CheckNotificationStatus()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HostView
+    Method: System.String GetActualViewName()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void DoWindowDecorationStart()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ContainerWindow
+    Method: Void HandleWindowDecorationStart(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: Void ResetGUIState()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: Void UnlockContextWidth()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void ClearStacks()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.PrefColor
+    Method: UnityEngine.Color op_Implicit(UnityEditor.PrefColor)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.PrefColor
+    Method: Void Load()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: Void SetBoldDefaultFont(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Experimental.EditorResources
+    Method: UnityEngine.Font GetFont(Style)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Experimental.FontDef
+    Method: UnityEngine.Font GetFont(Style)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void RenderToHMDIfNecessary()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void DrawTabs(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Single DragTab(UnityEngine.Rect, Single, UnityEngine.GUIStyle, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Single DrawTab(UnityEngine.Rect, UnityEngine.GUIStyle, Int32, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: UnityEngine.GUIContent GetTruncatedTabContent(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Single GetTabWidth(UnityEngine.GUIStyle, UnityEditor.EditorWindow)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void SetSelectedPrivate(Int32, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HostView
+    Method: Void SetActualViewInternal(UnityEditor.EditorWindow, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Single Clamp(Single, Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Void EndClip()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Void BeginClip(UnityEngine.Rect, UnityEngine.Vector2, UnityEngine.Vector2,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void HandleSplitView()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.View
+    Method: Int32 IndexOfChild(UnityEditor.View)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SplitView
+    Method: Void SplitGUI(UnityEngine.Event)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector2
+    Method: UnityEngine.Vector2 op_Addition(UnityEngine.Vector2, UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Highlighter
+    Method: Void ControlHighlightGUI(UnityEditor.GUIView)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void ShowRepaints()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void DrawTabScrollers(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HostView
+    Method: Void ShowGenericMenu(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.RenderDoc
+    Method: Boolean ShowRenderDocButton(UnityEditor.EditorWindow, UnityEditor.WindowAction)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void HandleTabScrolling(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void DrawDockTitleBarBackground(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HostView
+    Method: Single GetExtraButtonsWidth()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HostView
+    Method: Single GetGenericMenuLeftOffset(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: UnityEngine.Rect UpdateViewRect(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: UnityEngine.Vector2 GUIToScreenPoint(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: UnityEngine.Vector2 InternalWindowToScreenPoint(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: UnityEngine.Vector2 UnclipToWindow_Vector2(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: UnityEngine.RectOffset GetBorderSize()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: UnityEngine.RectOffset GetBorderSizeInternal()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void DrawDockAreaBackground(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsUtility
+    Method: Void BeginContainerGUI(LayoutCache, UnityEngine.Event, UnityEngine.UIElements.IMGUIContainer)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: Void BeginContainer(LayoutCache)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Void ResetGlobalState()
+  - Enabled: 1
+    Assembly: UnityEditor.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.RetainedMode
+    Method: Void OnBeginContainer(UnityEngine.UIElements.IMGUIContainer)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HandleUtility
+    Method: Void BeginHandles()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Handles
+    Method: Void Init()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.LocalizedEditorFontManager
+    Method: Void LocalizeEditorFonts()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Event
+    Method: Void CopyFrom(UnityEngine.Event)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Object
+    Method: Int32 GetInstanceID()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Object
+    Method: Void EnsureRunningOnMainThread()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void RestoreGlobals()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: Void SetMatrix(UnityEngine.Matrix4x4)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsUtility
+    Method: Void EndContainerGUI(UnityEngine.Event, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Void EndContainer()
+  - Enabled: 1
+    Assembly: UnityEditor.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.RetainedMode
+    Method: Void OnEndContainer(UnityEngine.UIElements.IMGUIContainer)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.HandleUtility
+    Method: Void EndHandles()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIContent
+    Method: Void ClearStaticCache()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: LayoutCache SelectIDList(Int32, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: Void LayoutFromContainer(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: Void LayoutFreeGroup(UnityEngine.GUILayoutGroup)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutUtility
+    Method: Void LayoutSingleGroup(UnityEngine.GUILayoutGroup)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutGroup
+    Method: Void SetVertical(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIScrollGroup
+    Method: Void SetVertical(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Single Lerp(Single, Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Single Clamp01(Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutEntry
+    Method: Void SetVertical(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutGroup
+    Method: Void CalcHeight()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIScrollGroup
+    Method: Void CalcHeight()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutEntry
+    Method: Void CalcHeight()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutGroup
+    Method: Void SetHorizontal(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIScrollGroup
+    Method: Void SetHorizontal(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutEntry
+    Method: Void SetHorizontal(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutGroup
+    Method: Void CalcWidth()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIScrollGroup
+    Method: Void CalcWidth()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayoutEntry
+    Method: Void CalcWidth()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void SaveGlobals()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIClip
+    Method: Void Internal_PushParentClip(UnityEngine.Matrix4x4, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventInterests
+    Method: Boolean WantsLayoutPass(UnityEngine.EventType)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.EventInterests
+    Method: Boolean WantsEvent(UnityEngine.EventType)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Matrix4x4
+    Method: UnityEngine.Matrix4x4 op_Multiply(UnityEngine.Matrix4x4, UnityEngine.Matrix4x4)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualElement
+    Method: UnityEngine.Rect ComputeAAAlignedBound(UnityEngine.Rect, UnityEngine.Matrix4x4)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Matrix4x4
+    Method: UnityEngine.Vector3 MultiplyPoint3x4(UnityEngine.Vector3)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GL
+    Method: Void SetViewMatrix(UnityEngine.Matrix4x4)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GL
+    Method: Void LoadProjectionMatrix(UnityEngine.Matrix4x4)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsNativeModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Utility
+    Method: Void SetScissorRect(UnityEngine.RectInt)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChainCommand
+    Method: UnityEngine.RectInt RectPointsToPixelsAndFlipYAxis(UnityEngine.Rect,
+      Single)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsNativeModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Utility
+    Method: UnityEngine.RectInt GetActiveViewport()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChainCommand
+    Method: UnityEngine.Rect CombineScissorRects(UnityEngine.Rect, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsNativeModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Utility
+    Method: UnityEngine.Matrix4x4 GetUnityProjectionMatrix()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.UIRenderDevice
+    Method: Void UpdateFenceValue()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.UIRenderDevice
+    Method: Void KickRanges(UnityEngine.UIElements.UIR.DrawBufferRange*, Int32 ByRef,
+      Int32 ByRef, Int32, UnityEngine.UIElements.UIR.Page)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.DrawParams
+    Method: Void Reset()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIRUtility
+    Method: UnityEngine.Vector4 ToVector4(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.ProjectionUtils
+    Method: UnityEngine.Matrix4x4 Ortho(Single, Single, Single, Single, Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.BaseVisualElementPanel
+    Method: Void InvokeUpdateMaterial(UnityEngine.Material)
+  - Enabled: 1
+    Assembly: UnityEditor.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.UIElements.EditorPanel
+    Method: Void OnUpdateMaterial(UnityEngine.Material)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Material
+    Method: Void SetFloat(System.String, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChain
+    Method: UnityEngine.Material GetStandardMaterial()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GL
+    Method: Void Clear(Boolean, Boolean, UnityEngine.Color, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GL
+    Method: Void GLClear(Boolean, Boolean, UnityEngine.Color, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChain
+    Method: Void ProcessChanges()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.UIRenderDevice
+    Method: Void OnFrameRenderingBegin()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.UIRenderDevice
+    Method: Void AdvanceFrame()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.UIRenderDevice
+    Method: Void PruneUnusedPages()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.UIRVEShaderInfoAllocator
+    Method: Void IssuePendingAtlasBlits()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.VectorImageManager
+    Method: Void Commit()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.GradientSettingsAtlas
+    Method: Void Commit()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIRAtlasManager
+    Method: Void Commit()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.TextureBlitter
+    Method: Void Commit(UnityEngine.RenderTexture)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIRAtlasManager
+    Method: Void UpdateAtlasTexture()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIRAtlasManager
+    Method: UnityEngine.RenderTexture CreateAtlasTexture()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChain
+    Method: Void ProcessTextRegen(Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.VectorImageManager
+    Method: Boolean RequiresReset()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIRAtlasManager
+    Method: Boolean RequiresReset()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.UIElements.PackageEditorAtlasMonitor
+    Method: Void OnPreRender()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.UIElements.PackageEditorAtlasMonitor
+    Method: Boolean CheckForRenderTexturesTrashed()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.UIElements.PackageEditorAtlasMonitor
+    Method: Boolean CheckForImportedVectorImages()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.UIElements.PackageEditorAtlasMonitor
+    Method: Boolean CheckForImportedTextures()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.UIElements.PackageEditorAtlasMonitor
+    Method: Boolean CheckForColorSpaceChange()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualTreeTransformClipUpdater
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIRLayoutUpdater
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualTreeStyleUpdater
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualTreeViewDataUpdater
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEditor.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.UIElements.PanelDebug
+    Method: Void Refresh()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.BaseVisualElementPanel
+    Method: Void InvokeBeforeUpdate()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.SelectiveProfilerWindow
+    Method: Void OnGUI()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Draw
+    Method: Void DefaultSelectiveProfilerUI(Needle.SelectiveProfiling.SelectiveProfilerSettings,
+      Boolean)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Draw
+    Method: Boolean WithHeaderFoldout(System.String, System.String, System.Action,
+      Boolean, Int32)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Draw
+    Method: Void ScopesList(System.Collections.Generic.IEnumerable`1[Needle.SelectiveProfiling.MethodInformation],
+      System.Func`2[Needle.SelectiveProfiling.MethodInformation,System.Boolean],
+      System.Action`1[System.Collections.Generic.IList`1[Needle.SelectiveProfiling.MethodInformation]],
+      System.Action`1[System.Collections.Generic.IList`1[Needle.SelectiveProfiling.MethodInformation]],
+      System.Action`1[System.Collections.Generic.IList`1[Needle.SelectiveProfiling.MethodInformation]])
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Draw
+    Method: Void <ScopesList>g__AddToScope|7_0(Needle.SelectiveProfiling.MethodInformation)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Draw
+    Method: System.String GetScopeKey(Needle.SelectiveProfiling.MethodInformation)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Draw
+    Method: Void <ScopesList>g__SetFoldout|7_2(System.String, Boolean)
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Draw
+    Method: Boolean <ScopesList>g__GetFoldout|7_1(System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Boolean Foldout(Boolean, System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Boolean FoldoutInternal(Boolean, UnityEngine.GUIContent, Boolean, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean Foldout(UnityEngine.Rect, Boolean, System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean FoldoutInternal(UnityEngine.Rect, Boolean, UnityEngine.GUIContent,
+      Boolean, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.RectOffset
+    Method: UnityEngine.Rect Remove(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: System.Enum EnumPopup(System.Enum, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: System.Enum EnumPopup(UnityEngine.Rect, System.Enum)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: System.Enum EnumPopupInternal(UnityEngine.Rect, UnityEngine.GUIContent,
+      System.Enum, System.Func`2[System.Enum,System.Boolean], Boolean, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EnumDataUtility
+    Method: UnityEditor.EnumData GetCachedEnumData(System.Type, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void HandlePrefixLabel(UnityEngine.Rect, UnityEngine.Rect, UnityEngine.GUIContent,
+      Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void HandlePrefixLabelInternal(UnityEngine.Rect, UnityEngine.Rect, UnityEngine.GUIContent,
+      Int32, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIStyle
+    Method: Void DrawPrefixLabel(UnityEngine.Rect, UnityEngine.GUIContent, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean IsLabelHighlightEnabled()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Int32 IntField(Int32, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Int32 IntField(UnityEngine.Rect, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Int32 IntFieldInternal(UnityEngine.Rect, Int32, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Int32 DoIntField(RecycledTextEditor, UnityEngine.Rect, UnityEngine.Rect,
+      Int32, Int32, System.String, UnityEngine.GUIStyle, Boolean, Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void DoNumberField(RecycledTextEditor, UnityEngine.Rect, UnityEngine.Rect,
+      Int32, Boolean, Double ByRef, Int64 ByRef, System.String, UnityEngine.GUIStyle,
+      Boolean, Double)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void DragNumberValue(UnityEngine.Rect, Int32, Boolean, Double ByRef,
+      Int64 ByRef, Double)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.MathUtils
+    Method: Int32 ClampToInt(Int64)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.NumericFieldDraggerUtility
+    Method: Int64 CalculateIntDragSensitivity(Int64)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Boolean ToggleLeft(System.String, Boolean, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean ToggleLeft(UnityEngine.Rect, System.String, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean ToggleLeftInternal(UnityEngine.Rect, UnityEngine.GUIContent,
+      Boolean, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIInternal
+    Method: Boolean DoToggleForward(UnityEngine.Rect, Int32, Boolean, UnityEngine.GUIContent,
+      UnityEngine.GUIStyle, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Void Space(Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: UnityEngine.GUILayoutOption Height(Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Void LabelField(System.String, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void LabelField(UnityEngine.Rect, System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void LabelFieldInternal(UnityEngine.Rect, UnityEngine.GUIContent, UnityEngine.GUIContent,
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: System.Enum EnumFlagsField(System.Enum, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: System.Enum EnumFlagsField(UnityEngine.Rect, System.Enum)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EnumDataUtility
+    Method: Int32 EnumFlagsToInt(UnityEditor.EnumData, System.Enum)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.MaskFieldGUI
+    Method: Int32 DoMaskField(UnityEngine.Rect, Int32, Int32, System.String[], UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorExtensionMethods
+    Method: Boolean MainActionKeyForControl(UnityEngine.Event, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.MaskFieldGUI
+    Method: Void GetMenuOptions(Int32, System.String[], Int32[], System.String ByRef,
+      System.String[] ByRef, Int32[] ByRef, Int32[] ByRef)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Boolean BeginFoldoutHeaderGroup(Boolean, System.String, UnityEngine.GUIStyle,
+      System.Action`1[UnityEngine.Rect], UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Boolean BeginFoldoutHeaderGroup(UnityEngine.Rect, Boolean, System.String,
+      UnityEngine.GUIStyle, System.Action`1[UnityEngine.Rect], UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Void EndFoldoutHeaderGroup()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void EndFoldoutHeaderGroup()
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.PatchManager
+    Method: Boolean IsActive(System.String)
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.EditorPatchProvider
+    Method: System.String ID()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.Draw
+    Method: Void MethodsExplorer()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: System.String TextField(System.String, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: System.String TextField(UnityEngine.Rect, System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void UpdateWindowTitle(UnityEditor.EditorWindow)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.RenderEvents
+    Method: Void ProcessOnVisualsChanged(UnityEngine.UIElements.UIR.RenderChain,
+      UnityEngine.UIElements.VisualElement, UInt32, UnityEngine.UIElements.UIR.ChainBuilderStats
+      ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.RenderEvents
+    Method: Void DepthFirstOnVisualsChanged(UnityEngine.UIElements.UIR.RenderChain,
+      UnityEngine.UIElements.VisualElement, UInt32, Boolean, Boolean, UnityEngine.UIElements.UIR.ChainBuilderStats
+      ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.RenderEvents
+    Method: ClosingInfo PaintElement(UnityEngine.UIElements.UIR.RenderChain, UnityEngine.UIElements.VisualElement,
+      UnityEngine.UIElements.UIR.ChainBuilderStats ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualElement
+    Method: Void InvokeGenerateVisualContent(UnityEngine.UIElements.MeshGenerationContext)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void OnGenerateVisualContent(UnityEngine.UIElements.MeshGenerationContext)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.UIRStylePainter
+    Method: Void DrawImmediate(System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChain
+    Method: UnityEngine.UIElements.UIR.RenderChainCommand AllocCommand()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChainCommand
+    Method: Void Reset()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.RenderEvents
+    Method: Void InjectCommandInBetween(UnityEngine.UIElements.UIR.RenderChain, UnityEngine.UIElements.UIR.RenderChainCommand,
+      UnityEngine.UIElements.UIR.RenderChainCommand ByRef, UnityEngine.UIElements.UIR.RenderChainCommand
+      ByRef)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChain
+    Method: Void OnRenderCommandAdded(UnityEngine.UIElements.UIR.RenderChainCommand)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.UIRStylePainter
+    Method: Void Reset()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.UIRStylePainter
+    Method: Void ValidateMeshWriteData()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.UIRStylePainter
+    Method: Void ApplyVisualElementClipping()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.UIRStylePainter
+    Method: Void DrawVisualElementBorder()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.StyleColor
+    Method: Boolean op_Inequality(UnityEngine.UIElements.StyleColor, UnityEngine.UIElements.StyleColor)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.StyleColor
+    Method: Boolean op_Equality(UnityEngine.UIElements.StyleColor, UnityEngine.UIElements.StyleColor)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.UIRStylePainter
+    Method: Void DrawVisualElementBackground()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.UIRStylePainter
+    Method: Void Begin(UnityEngine.UIElements.VisualElement)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.RenderEvents
+    Method: Void ResetCommands(UnityEngine.UIElements.UIR.RenderChain, UnityEngine.UIElements.VisualElement)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChain
+    Method: Void FreeCommand(UnityEngine.UIElements.UIR.RenderChainCommand)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChain
+    Method: Void OnRenderCommandsRemoved(UnityEngine.UIElements.UIR.RenderChainCommand,
+      UnityEngine.UIElements.UIR.RenderChainCommand)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.RenderEvents
+    Method: Boolean IsElementSelfHidden(UnityEngine.UIElements.VisualElement)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.BMPAlloc
+    Method: Boolean Equals(UnityEngine.UIElements.UIR.BMPAlloc)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.RenderChainVEData
+    Method: Boolean AllocatesID(UnityEngine.UIElements.UIR.BMPAlloc)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.Implementation.RenderEvents
+    Method: Boolean IsElementHierarchyHidden(UnityEngine.UIElements.VisualElement)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIRLayoutUpdater
+    Method: Void UpdateSubTree(UnityEngine.UIElements.VisualElement, Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsNativeModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: UnityEngine.Yoga.YogaNode
+    Method: Void MarkLayoutSeen()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsNativeModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: UnityEngine.Yoga.YogaNode
+    Method: Void CalculateLayout(Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.EventDispatcherGate
+    Method: Void Dispose()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.EventDispatcher
+    Method: Void OpenGate()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.EventDispatcher
+    Method: Void ProcessEventQueue()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.EventDispatcher
+    Method: Void CloseGate()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameView
+    Method: Void OnGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameView
+    Method: Void DoToolbarGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameView
+    Method: Void DoZoomSlider()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Single HorizontalSlider(Single, Single, Single, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUILayout
+    Method: Single DoHorizontalSlider(Single, Single, Single, UnityEngine.GUIStyle,
+      UnityEngine.GUIStyle, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Single HorizontalSlider(UnityEngine.Rect, Single, Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUI
+    Method: Single Slider(UnityEngine.Rect, Single, Single, Single, Single, UnityEngine.GUIStyle,
+      UnityEngine.GUIStyle, Boolean, Int32, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: Single Handle()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: Single OnRepaint()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: UnityEngine.Rect ThumbRect()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: UnityEngine.Rect HorizontalThumbRect()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: Single ClampedCurrentValue()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: Single Clamp(Single)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: Single MaxValue()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: Single MinValue()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: Single ValuesPerPixel()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: Single ThumbSize()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: Boolean IsEmptySlider()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.GUIUtility
+    Method: Boolean HitTest(UnityEngine.Rect, UnityEngine.Vector2, Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: UnityEngine.Event CurrentEvent()
+  - Enabled: 1
+    Assembly: UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SliderHandler
+    Method: UnityEngine.EventType CurrentEventType()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameView
+    Method: Single ScaleThatFitsTargetInView(UnityEngine.Vector2, UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: UnityEngine.Rect PixelsToPoints(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizes
+    Method: UnityEngine.Vector2 GetRenderTargetSize(UnityEngine.Rect, UnityEditor.GameViewSizeGroupType,
+      Int32, Boolean ByRef)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizes
+    Method: Void RefreshDerivedGameViewSize(UnityEditor.GameViewSizeGroupType, Int32,
+      UnityEditor.GameViewSize)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizes
+    Method: Boolean IsRemoteScreenSize(UnityEditor.GameViewSizeGroupType, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizeGroup
+    Method: Int32 IndexOf(UnityEditor.GameViewSize)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizes
+    Method: UnityEditor.GameViewSizeGroup GetGroup(UnityEditor.GameViewSizeGroupType)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizes
+    Method: Void InitBuiltinGroups()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizeGroup
+    Method: Int32 GetBuiltinCount()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizeGroup
+    Method: UnityEditor.GameViewSize GetGameViewSize(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameView
+    Method: Void EnsureSelectedSizeAreValid()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizes
+    Method: Int32 GetChangeID()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Mathf
+    Method: Single Log10(Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Int32 Popup(Int32, System.String[], UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Int32 Popup(UnityEngine.Rect, UnityEngine.GUIContent, Int32, System.String[],
+      UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DisplayUtility
+    Method: UnityEngine.GUIContent[] GetDisplayNames()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Modules.ModuleManager
+    Method: UnityEngine.GUIContent[] GetDisplayNames(System.String)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Modules.ModuleManager
+    Method: Void InitializeModuleManager()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Modules.ModuleManager
+    Method: Void RegisterPackageManager()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Modules.ModuleManager
+    Method: Boolean ShouldShowMultiDisplayOption()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUILayout
+    Method: Void GameViewSizePopup(UnityEditor.GameViewSizeGroupType, Int32, UnityEditor.IGameViewSizeMenuUser,
+      UnityEngine.GUIStyle, UnityEngine.GUILayoutOption[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUI
+    Method: Void GameViewSizePopup(UnityEngine.Rect, UnityEditor.GameViewSizeGroupType,
+      Int32, UnityEditor.IGameViewSizeMenuUser, UnityEngine.GUIStyle)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizeGroup
+    Method: Int32 GetTotalCount()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameView
+    Method: Boolean ShouldShowMetalFrameCaptureGUI()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Apple.FrameCapture
+    Method: Boolean IsDestinationSupported(UnityEngine.Apple.FrameCaptureDestination)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.PlayModeView
+    Method: System.Collections.Generic.Dictionary`2[System.Type,System.String] GetAvailableWindowTypes()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameViewSizes
+    Method: Void RefreshStandaloneAndRemoteDefaultSizes()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.PlayModeView
+    Method: UnityEngine.RenderTexture RenderView(UnityEngine.Vector2, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SavedGUIState
+    Method: UnityEditor.SavedGUIState Create()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SavedGUIState
+    Method: Void ApplyAndForget()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SavedGUIState
+    Method: Void Internal_ApplySavedGUIState(IntPtr, UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: Void RenderPlayModeViewCamerasInternal(UnityEngine.RenderTexture, Int32,
+      UnityEngine.Vector2, Boolean, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.PlayModeView
+    Method: Void ConfigureTargetTexture(Int32, Int32, Boolean, System.String, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SystemInfo
+    Method: UnityEngine.Experimental.Rendering.GraphicsFormat GetGraphicsFormat(UnityEngine.Experimental.Rendering.DefaultFormat)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.SystemInfoShimBase
+    Method: UnityEngine.Experimental.Rendering.GraphicsFormat GetGraphicsFormat(UnityEngine.Experimental.Rendering.DefaultFormat)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorWindow
+    Method: Void SetPlayModeViewSize(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GUIView
+    Method: Void SetInternalGameViewDimensions(UnityEngine.Rect, UnityEngine.Rect,
+      UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Graphics
+    Method: Void DrawTexture(UnityEngine.Rect, UnityEngine.Texture, UnityEngine.Rect,
+      Int32, Int32, Int32, Int32, UnityEngine.Color, UnityEngine.Material, Int32)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Graphics
+    Method: Void DrawTextureImpl(UnityEngine.Rect, UnityEngine.Texture, UnityEngine.Rect,
+      Int32, Int32, Int32, Int32, UnityEngine.Color, UnityEngine.Material, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ZoomableArea
+    Method: UnityEngine.Vector2 DrawingToViewTransformVector(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ZoomableArea
+    Method: UnityEngine.Vector2 DrawingToViewTransformPoint(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorGUIUtility
+    Method: Void SetupWindowSpaceAndVSyncInternal(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameView
+    Method: Void EnforceZoomAreaConstraints()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ZoomableArea
+    Method: Void EnforceScaleAndRange()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Rect
+    Method: Boolean op_Equality(UnityEngine.Rect, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ZoomableArea
+    Method: Void EndViewGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ZoomableArea
+    Method: Void SliderGUI()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Vector2
+    Method: UnityEngine.Vector2 op_UnaryNegation(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorWindow
+    Method: Void SetParentGameViewDimensions(UnityEngine.Rect, UnityEngine.Rect,
+      UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorWindow
+    Method: Void SetMainPlayModeViewSize(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GUIView
+    Method: Void SetMainPlayModeViewSize(UnityEngine.Vector2)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.PlayModeView
+    Method: UnityEditor.PlayModeView GetMainPlayModeView()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ZoomableArea
+    Method: Void BeginViewGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.GameView
+    Method: Void ConfigureZoomArea()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.Rect
+    Method: Boolean op_Inequality(UnityEngine.Rect, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void RepaintAllProfilerWindows()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorWindow
+    Method: Void RepaintImmediately()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUorGPUProfilerModule
+    Method: System.String GetItemName(UnityEditor.Profiling.HierarchyFrameDataView,
+      Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeView
+    Method: Void Reload()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Void ReloadData()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewDataSource
+    Method: Void ReloadData()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void AddAllChildren(FrameDataTreeViewItem, ExpandedMarkerIdHierarchy,
+      System.Collections.Generic.IList`1[UnityEditor.IMGUI.Controls.TreeViewItem],
+      System.Collections.Generic.List`1[System.Int32])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: FrameDataTreeViewItem AcquireFrameDataTreeViewItem(UnityEditor.Profiling.HierarchyFrameDataView,
+      Int32, Int32, UnityEditor.IMGUI.Controls.TreeViewItem)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: System.Collections.Generic.LinkedListNode`1[UnityEditorInternal.ProfilerFrameDataTreeView+TreeTraversalState]
+      AcquireTreeTraversalStateNode(FrameDataTreeViewItem, ExpandedMarkerIdHierarchy)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void MigrateSelectedState(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void MigrateExpandedState(System.Collections.Generic.List`1[System.Int32])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: UnityEditor.IMGUI.Controls.TreeViewItem BuildRoot()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.IMGUI.Controls.TreeViewController
+    Method: Void Repaint()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void StoreSelectedState()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void StoreExpandedState()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Profiling.HierarchyFrameDataView
+    Method: Boolean Equals(System.Object)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void DisposeFrameDataView()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Profiling.FrameDataView
+    Method: Void Dispose()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Profiling.FrameDataView
+    Method: Void DisposeInternal()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void OnFrameDataViewAboutToBeDisposed()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void OnFrameDataViewAboutToBeDisposed()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void UpdateModules()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerModuleBase
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerModuleBase
+    Method: Void UpdateChart()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUProfilerModule
+    Method: Void UpdateChartOverlay(Int32, Int32, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerChart
+    Method: Void UpdateOverlayData(Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerModuleBase
+    Method: Void UpdateChartOverlay(Int32, Int32, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerChart
+    Method: Void UpdateScaleValuesIfNecessary(Int32, Int32, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerChart
+    Method: Void ComputeChartScaleValue(Int32, Int32, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ChartViewData
+    Method: Void UpdateChartGrid(Single)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ChartViewData
+    Method: Void SetGrid(Single[], System.String[])
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerChart
+    Method: Void UpdateData(Int32, Int32, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ChartViewData
+    Method: Void Assign(UnityEditorInternal.ChartSeriesViewData[], Int32, Int32)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SceneManagement.StageNavigationManager
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SceneManagement.StageNavigationManager
+    Method: Void ValidateAndTickStages(Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SceneManagement.Stage
+    Method: Void Tick()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SceneManagement.StageNavigationHistory
+    Method: System.Collections.ObjectModel.ReadOnlyCollection`1[UnityEditor.SceneManagement.Stage]
+      GetHistory()
+  - Enabled: 1
+    Assembly: JetBrains.Rider.Unity.Editor.Plugin.Net46.Repacked, Version=2021.1.0.9998,
+      Culture=neutral, PublicKeyToken=null
+    Type: JetBrains.Rider.Unity.Editor.UnityEventLogSender
+    Method: Void ProcessQueue()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.MeshManager
+    Method: Void OnUpdate()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.MeshManager
+    Method: Void OnHandleChanges()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.MeshManager
+    Method: Void OnInternalRemove()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.MeshManager
+    Method: Void OnInternalUpdate()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.MeshManager
+    Method: Void OnInternalAdd()
+  - Enabled: 1
+    Assembly: UnityEditor.PackageManagerUIModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: UnityEditor.PackageManager.UI.ApplicationProxy
+    Method: Void CheckInternetReachability()
+  - Enabled: 1
+    Assembly: Needle.SelectiveProfiling, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.SelectiveProfilerWindow
+    Method: Void OnUpdate()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.ARSimulationProjectInfo
+    Method: Void OnEditorUpdate()
+  - Enabled: 1
+    Assembly: Needle.XR.ARSimulation, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: Needle.XR.ARSimulation.ARSimulationProjectInfo
+    Method: Needle.XR.ARSimulation.CurrentRenderPipelineType GetCurrentPipeline()
+  - Enabled: 1
+    Assembly: needle.EditorPatching, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: needle.EditorPatching.PatchManager
+    Method: Void OnEditorUpdate()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Scripting.ScriptCompilation.RoslynAnalysisRunner
+    Method: Void Poll()
+  - Enabled: 1
+    Assembly: JetBrains.Rider.Unity.Editor.Plugin.Net46.Repacked, Version=2021.1.0.9998,
+      Culture=neutral, PublicKeyToken=null
+    Type: JetBrains.Rider.Unity.Editor.MainThreadDispatcher
+    Method: Void DispatchTasks()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.AppStatusBar
+    Method: System.Nullable`1[System.Boolean] GetBakeMode()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Lightmapping
+    Method: UnityEngine.LightingSettings GetLightingSettingsOrDefaultsFallback()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.SearchableEditorWindow
+    Method: Void OnInspectorUpdate()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProjectBrowser
+    Method: Void OnInspectorUpdate()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ObjectListArea
+    Method: Void OnInspectorUpdate()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface
+    Method: Boolean IsCompiling()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Scripting.ScriptCompilation.EditorCompilation
+    Method: Boolean IsCompiling()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Scripting.ScriptCompilation.EditorCompilation
+    Method: Boolean IsAnyAssemblyBuilderCompiling()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Scripting.ScriptCompilation.EditorCompilation
+    Method: Boolean IsCompilationPending()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Scripting.ScriptCompilation.EditorCompilation
+    Method: Boolean ArePrecompiledAssembliesDirty()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Scripting.ScriptCompilation.EditorCompilation
+    Method: Boolean DoesProjectFolderHaveAnyDirtyScripts()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Scripting.ScriptCompilation.CompilationSetupErrorsTracker
+    Method: Boolean HaveCompilationSetupErrors()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.Scripting.ScriptCompilation.EditorCompilation
+    Method: Boolean IsCompilationTaskCompiling()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIEventRegistration
+    Method: Void RequestRepaintForPanels(System.Action`1[UnityEngine.ScriptableObject])
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.UIRenderDevice
+    Method: Void OnEngineUpdateGlobal()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIR.UIRenderDevice
+    Method: Void ProcessDeviceFreeQueue()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIEventRegistration
+    Method: Void UpdateSchedulers()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.Panel
+    Method: Void UpdateBindings()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualTreeBindingsUpdater
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualTreeBindingsUpdater
+    Method: Void PerformTrackingOperations()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.BaseVisualTreeHierarchyTrackerUpdater
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.Panel
+    Method: Void UpdateAnimations()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualElementAnimationSystem
+    Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.Panel
+    Method: Int64 TimeSinceStartupMs()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsUtility
+    Method: Void GetAllPanels(System.Collections.Generic.List`1[UnityEngine.UIElements.Panel],
+      UnityEngine.UIElements.ContextType)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.TimerEventScheduler
+    Method: Void UpdateScheduledEvents()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DataWatchService
+    Method: Void PollNativeData()
+  PinnedMethods: []

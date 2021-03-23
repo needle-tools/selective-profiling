@@ -527,7 +527,11 @@ namespace Needle.SelectiveProfiling
 			EventService.RegisterEventHandler(selectiveProfilerCommandEditorChannel, HandleReceivedEvent);
 		}
 
+#if UNITY_2020_3_OR_NEWER
+		[RoleProvider(ProcessLevel.Secondary, ProcessEvent.AfterDomainReload)]
+#elif  UNITY_2020_2_OR_NEWER
 		[RoleProvider(ProcessLevel.Slave, ProcessEvent.AfterDomainReload)]
+#endif
 		// ReSharper disable once UnusedMember.Local
 		private static void InitSlave()
 		{
