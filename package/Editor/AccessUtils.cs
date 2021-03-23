@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Text;
 using HarmonyLib;
 using JetBrains.Annotations;
+using Unity.Profiling;
+using UnityEditor;
 using UnityEditor.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -202,7 +204,15 @@ namespace Needle.SelectiveProfiling.Utils
 				return false;
 			}
 
-			if (method.DeclaringType == typeof(Profiler))
+			// if (method.DeclaringType == typeof(EditorApplication))
+			// {
+			// 	if (debugLog)
+			// 		Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
+			// 			"Patching calls EditorApplication is not allowed " + GetMethodLogName());
+			// 	return false;
+			// }
+
+			if (method.DeclaringType == typeof(Profiler) || method.DeclaringType == typeof(CustomSampler) || method.DeclaringType == typeof(ProfilerMarker))
 			{
 				if (debugLog)
 					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,

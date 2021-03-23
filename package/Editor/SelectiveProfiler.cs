@@ -273,7 +273,7 @@ namespace Needle.SelectiveProfiling
 		{
 			if (info == null) throw new ArgumentNullException(nameof(info));
 			profile = null;
-			return info.TryResolveMethod(out var method) && profiled.TryGetValue(method, out profile);
+			return profiled2.TryGetValue(info, out profile);
 		}
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
@@ -430,10 +430,10 @@ namespace Needle.SelectiveProfiling
 			var local = callsFound
 				.Where(c =>
 				{
+					if (c.DeclaringType != null && !AccessUtils.AllowedLevel(c, settings.DeepProfileMaxLevel)) return false;
 					if (!AccessUtils.AllowPatching(c, depth > 0, DebugLog)) return false;
-					return c.DeclaringType == null || AccessUtils.AllowedLevel(c, settings.DeepProfileMaxLevel);
-				})
-				;//.ToArray();
+					return true;
+				});
 			callsFound.Clear();
 			foreach (var method in local)
 			{

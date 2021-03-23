@@ -26,10 +26,13 @@ namespace Needle.SelectiveProfiling
 			this.method = method;
 			this.prefix = prefix;
 			this.postfix = postfix;
+			this._id = method != null ? method.DeclaringType?.FullName + "." + method.Name : base.ID();
 		}
 
+		private readonly string _id;
+
 		public override string DisplayName => ID();
-		public override string ID() => method != null ? method.DeclaringType?.FullName + "." + method.Name : base.ID();
+		public override string ID() => _id;
 		public override bool Persistent() => false;
 
 		private readonly string prefix;

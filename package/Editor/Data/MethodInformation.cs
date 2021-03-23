@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Needle.SelectiveProfiling.Utils;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -49,13 +50,30 @@ namespace Needle.SelectiveProfiling
 			return new MethodInformation(this);
 		}
 
-		public string TypeIdentifier() => IsValid() ? Assembly + "." + Type : null;
-		public string MethodIdentifier() => IsValid() ? Assembly + "." + Type + "." + Method : null;
+		private string _methodIdentifier, _typeIdentifier, _asString;
+
+		public string TypeIdentifier()
+		{
+			if(string.IsNullOrWhiteSpace(_typeIdentifier))
+				_typeIdentifier = IsValid() ? Assembly + "." + Type : null;
+			return _typeIdentifier;
+		}
+
+		public string MethodIdentifier()
+		{
+			if(string.IsNullOrWhiteSpace(_methodIdentifier))
+				_methodIdentifier = IsValid() ? Assembly + "." + Type + "." + Method : null;
+			return _methodIdentifier;
+		}
+
 		public bool IsValid() => !string.IsNullOrEmpty(Assembly) && !string.IsNullOrEmpty(Type) && !string.IsNullOrEmpty(Method);
+
 
 		public override string ToString()
 		{
-			return IsValid() ? "<b>Assembly</b>: " + Assembly + ", <b>Type</b>: " + Type + ", <b>Method</b>: " + Method + "\n<b>Identifier</b>: " + MethodIdentifier() : "Invalid " +  base.ToString();
+			if(_asString == null)
+				_asString =  IsValid() ? "<b>Assembly</b>: " + Assembly + ", <b>Type</b>: " + Type + ", <b>Method</b>: " + Method + "\n<b>Identifier</b>: " + MethodIdentifier() : "Invalid " +  base.ToString();
+			return _asString;
 		}
 		
 		public string ClassWithMethod()
@@ -205,14 +223,14 @@ namespace Needle.SelectiveProfiling
 				}
 
 				
-				var methods = type?.GetMethods((BindingFlags) ~0);
+				var methods = type?.GetMethods(AccessUtils.AllDeclared);
 				if (methods != null)
 				{
 					foreach (var m in methods)
 					{
 						if (m.ToString() == pm.Method)
 						{
-							MethodsCache.Add(pm.MethodIdentifier(), m);
+							MethodsCache.Add(methodIdentifier, m);
 							method = m;
 							if (requireUpdateIfSuccessfullyResolved) 
 								pm.UpdateFrom(method);
@@ -228,20 +246,20 @@ namespace Needle.SelectiveProfiling
 							if (fs != null && fs.oldName == pm.Method)
 							{
 								// method name changed, update
-								var old = pm.MethodIdentifier();
+								var old = methodIdentifier;
 								pm.Method = m.ToString();
 								method = m;
 								if (requireUpdateIfSuccessfullyResolved) 
 									pm.UpdateFrom(method);
-								MethodsCache.Add(pm.MethodIdentifier(), m);
-								MethodIdentifierChanged?.Invoke((old, pm.MethodIdentifier()));
+								MethodsCache.Add(methodIdentifier, m);
+								MethodIdentifierChanged?.Invoke((old, methodIdentifier));
 								return true;
 							}
 						}
 					}
 				}
 				
-				Debug.LogWarning("Could not resolve method " + pm.MethodIdentifier());
+				Debug.LogWarning("Could not resolve method " + methodIdentifier + "\n" + assembly + "\n" + type);
 			}
 			
 			method = null;
