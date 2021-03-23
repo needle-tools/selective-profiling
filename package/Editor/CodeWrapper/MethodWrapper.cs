@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using JetBrains.Annotations;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -65,7 +66,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					if (inst.operand is MethodInfo mi)
 					{
 						SelectiveProfiler.RegisterInternalCalledMethod(mi);
-						if (skipProfilerMethods && mi.DeclaringType == typeof(Profiler))
+						if (skipProfilerMethods && (mi.DeclaringType == typeof(Profiler) || mi.DeclaringType == typeof(ProfilerMarker)))
 						{
 							start = -1;
 							continue;

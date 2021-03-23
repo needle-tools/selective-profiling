@@ -60,6 +60,9 @@ namespace Needle.SelectiveProfiling
 				settings.SkipProperties = EditorGUILayout.ToggleLeft(
 					new GUIContent("Skip Properties", "Patching property getters does fail in some cases and should generally not be necessary"),
 					settings.SkipProperties);
+				settings.UseAlwaysProfile = EditorGUILayout.ToggleLeft(
+					new GUIContent("Use [AlwaysProfile]", ""),
+					settings.UseAlwaysProfile); 
 
 				settings.AllowPinning = EditorGUILayout.ToggleLeft(new GUIContent("Allow Pinning", "When enabled methods can be pinned in Profiler window"),
 					settings.AllowPinning);
@@ -149,13 +152,11 @@ namespace Needle.SelectiveProfiling
 		private class ScopeMeta
 		{
 			public int Enabled;
-			public int Disabled;
 			public int Total;
 
 			internal void Add(MethodInformation mi)
 			{
 				if (mi.Enabled) Enabled += 1;
-				else Disabled += 1;
 				Total += 1;
 			}
 		}
@@ -225,10 +226,13 @@ namespace Needle.SelectiveProfiling
 			{
 				var scope = kvp.Key;
 				var meta = scopesMeta[scope];
+				var headerLabel = scope;
+				if (!Application.isPlaying)
+					headerLabel += " [" + meta.Enabled + "/" + meta.Total + "]";
+				else headerLabel += " [" + meta.Total + "]";
+				
 				EditorGUILayout.BeginHorizontal();
-				var show = EditorGUILayout.Foldout(GetFoldout(scope),
-					scope + " [" + meta.Enabled + "/" + meta.Total + "]",
-					true,
+				var show = EditorGUILayout.Foldout(GetFoldout(scope), headerLabel,true, 
 					meta.Enabled <= 0 ? GUIStyles.BoldFoldoutDisabled : GUIStyles.BoldFoldout
 				);
 				if (Enable != null && GUILayout.Button("All", GUILayout.Width(70)))

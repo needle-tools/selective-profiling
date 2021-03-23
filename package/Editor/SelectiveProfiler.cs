@@ -289,26 +289,30 @@ namespace Needle.SelectiveProfiling
 
 		private static async void ApplyProfiledMethods()
 		{
-#if UNITY_2020_1_OR_NEWER
-			var typesToProfile = TypeCache.GetTypesWithAttribute<AlwaysProfile>();
-			foreach (var type in typesToProfile)
+			var settings = SelectiveProfilerSettings.Instance;
+			if (settings.UseAlwaysProfile)
 			{
-				var methods = AccessUtils.GetMethods(type, AccessUtils.AllDeclared, typeof(MonoBehaviour));
-				foreach (var method in methods)
+#if UNITY_2020_1_OR_NEWER
+				var typesToProfile = TypeCache.GetTypesWithAttribute<AlwaysProfile>();
+				foreach (var type in typesToProfile)
+				{
+					var methods = AccessUtils.GetMethods(type, AccessUtils.AllDeclared, typeof(MonoBehaviour));
+					foreach (var method in methods)
+					{
+						alwaysProfile.Add(method);
+						EnableProfiling(method, false, true, false);
+					}
+				}
+
+				var methodsToProfile = TypeCache.GetMethodsWithAttribute<AlwaysProfile>();
+				foreach (var method in methodsToProfile)
 				{
 					alwaysProfile.Add(method);
 					EnableProfiling(method, false, true, false);
 				}
-			}
-
-			var methodsToProfile = TypeCache.GetMethodsWithAttribute<AlwaysProfile>();
-			foreach (var method in methodsToProfile)
-			{
-				alwaysProfile.Add(method);
-				EnableProfiling(method, false, true, false);
-			}
 #endif
-			var settings = SelectiveProfilerSettings.Instance;
+			}
+			
 			var ml = settings.MethodsList;
 			if (ml != null && ml.Count > 0)
 			{
