@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using HarmonyLib;
 using JetBrains.Annotations;
+using Unity.Collections;
 using Unity.Profiling;
 using UnityEditor;
 using UnityEditor.Profiling;
@@ -212,7 +213,11 @@ namespace Needle.SelectiveProfiling.Utils
 			// 	return false;
 			// }
 
-			if (method.DeclaringType == typeof(Profiler) || method.DeclaringType == typeof(CustomSampler) || method.DeclaringType == typeof(ProfilerMarker))
+			if (method.DeclaringType == typeof(Profiler) || 
+			    method.DeclaringType == typeof(CustomSampler) || 
+			    method.DeclaringType == typeof(ProfilerMarker) ||
+			    method.DeclaringType == typeof(EditorApplication)
+			    )
 			{
 				if (debugLog)
 					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
@@ -255,6 +260,38 @@ namespace Needle.SelectiveProfiling.Utils
 				return false;
 			}
 
+			var assemblyName = ExtractAssemblyNameWithoutVersion(method.DeclaringType?.Assembly);
+			if (!string.IsNullOrEmpty(assemblyName))
+			{
+				switch (assemblyName)
+				{
+					case "UnityEngine.UIElementsNativeModule":
+					case "UnityEngine.IMGUIModule":
+					case "UnityEngine.CoreModule":
+					case "UnityEditor.CoreModule":
+					// case "UnityEditor.UIElementsModule":
+					// case "UnityEngine.UIElementsModule":
+					// case "UnityEngine.SharedInternalsModule":
+					// case "UnityEditor.PackageManagerUIModule":
+						return false;
+				}
+			}
+
+			var fullName = method.DeclaringType?.FullName;
+			if (!string.IsNullOrEmpty(fullName))
+			{
+				if (fullName.StartsWith("UnityEditor.Profiling") ||
+					fullName.StartsWith("UnityEngine.UIElements.UIR") || 
+				    fullName.StartsWith("UnityEditor.StyleSheets") || 
+				    fullName.StartsWith("UnityEditor.HostView") || 
+				    fullName.StartsWith("UnityEngine.UIElements.IMGUIContainer") ||
+				    fullName.StartsWith("UnityEngine.SliderHandler")
+				    )
+				{
+					return false;
+				}
+			}
+
 			// if (method.DeclaringType != null)
 			// {
 			// 	if (typeof(MonoBehaviour).IsAssignableFrom(method.DeclaringType) && method.Name == "OnValidate" && method.GetParameters().Length <= 0)
@@ -264,6 +301,16 @@ namespace Needle.SelectiveProfiling.Utils
 			// }
 
 			return true;
+		}
+		
+		
+		private static string ExtractAssemblyNameWithoutVersion(Assembly assembly)
+		{
+			if (assembly == null) return null;
+			var name = assembly.FullName;
+			var index = name.IndexOf(",", StringComparison.InvariantCultureIgnoreCase);
+			if (index > 0) return name.Substring(0, index);
+			return name;
 		}
 	}
 }
