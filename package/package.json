@@ -1,7 +1,7 @@
 {
 	"displayName": "Selective Profiling",
 	"name": "com.needle.selective-profiling",
-	"version": "1.0.0",
+	"version": "0.0.1-pre",
 	"unity": "2020.2",
 	"description": "Deep profile single methods",
 	"author": {
@@ -11,6 +11,6 @@
 	  },
 	"category": "Libraries",
 	"dependencies": {
-		"com.needle.editorpatching" : "1.1.0-pre.1"
+		"com.needle.editorpatching" : "1.1.0-pre.2"
 	}
 }
