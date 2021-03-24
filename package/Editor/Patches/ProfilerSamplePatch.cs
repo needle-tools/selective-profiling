@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -44,7 +45,9 @@ namespace Needle.SelectiveProfiling
 			if (method != null)
 				patches.Add(new TranspilerPatch(method, prefix, postfix));
 		}
-
+		
+		internal static Action<MethodBase, string> OnSampleInjected;
+		
 		private class TranspilerPatch : EditorPatch
 		{
 			private static readonly Dictionary<MethodBase, ICodeWrapper> wrappers = new Dictionary<MethodBase, ICodeWrapper>();
@@ -99,6 +102,7 @@ namespace Needle.SelectiveProfiling
 			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index)
 			{
 				var methodName = TranspilerUtils.TryGetMethodName(instruction.opcode, instruction.operand, false);
+				OnSampleInjected?.Invoke(currentMethod, prefix + methodName + postfix);
 				
 				if (SelectiveProfiler.InjectSampleWithCallback(currentMethod))
 				{
