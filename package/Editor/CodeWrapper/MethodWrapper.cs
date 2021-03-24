@@ -46,7 +46,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				exceptionBlockStack -= inst.blocks.Count(b => b.blockType == ExceptionBlockType.EndExceptionBlock);
 				
 				if(exceptionBlockStack < 0)
-					Debug.LogError("Found more end exception blocks than begin exception blocks in " + method.FullDescription() + ", please report this as a bug including this message\n\n" + IL_Before + "\n\n");
+					Debug.LogError(
+						$"Found more end exception blocks than begin exception blocks in {method.FullDescription()}, " +
+						$"please report this as a bug at {Constants.GithubIssuesUrl} including this message\n\n{IL_Before}\n\n");
 				// else if (isInTryBlock && inst.blocks.Any(b =>
 				// 	b.blockType == ExceptionBlockType.BeginFinallyBlock || 
 				// 	b.blockType == ExceptionBlockType.BeginCatchBlock))
