@@ -11,6 +11,6 @@
 	  },
 	"category": "Libraries",
 	"dependencies": {
-		"com.needle.editorpatching" : "1.1.0-pre.2"
+		"com.needle.editorpatching" : "1.1.0-pre.4"
 	}
 }

@@ -36,7 +36,7 @@ namespace Needle.SelectiveProfiling
 		public override void OnDisabledPatch()
 		{
 			base.OnDisabledPatch();
-			PatchManager.DisablePatch(typeof(ProfilerPinning.ProfilerPinning_Patch));
+			PatchManager.DisablePatch(typeof(ProfilerPinning.ProfilerPinning_Patch), false);
 		}
 
 		private static SelectiveProfilerSettings _settings;

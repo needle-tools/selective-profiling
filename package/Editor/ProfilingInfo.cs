@@ -53,7 +53,7 @@ namespace Needle.SelectiveProfiling
 		public Task Disable()
 		{
 			MethodInformation.Enabled = false;
-			var t = Patch.Disable(false);
+			var t = Patch.Disable(true, false);
 			if (enabled)
 			{
 				enabled = false;

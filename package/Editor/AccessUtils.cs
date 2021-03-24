@@ -194,8 +194,21 @@ namespace Needle.SelectiveProfiling.Utils
 
 			string GetMethodLogName()
 			{
-				if (method.DeclaringType != null) return method.DeclaringType.FullName + " -> " + method;
-				return method.ToString();
+				if (method?.DeclaringType != null) return method.DeclaringType.FullName + " -> " + method;
+				return method?.ToString() ?? "null";
+			}
+
+			// see Harmony PatchProcessor.cs:136
+			if (method.IsDeclaredMember() is false)
+			{
+				method = method.GetDeclaredMember();
+				if (method == null || !method.IsDeclaredMember())
+				{
+					if (debugLog)
+						Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
+							"Method is not declared or null: " + GetMethodLogName());
+				}
+				return false;
 			}
 
 			if (!method.HasMethodBody())
