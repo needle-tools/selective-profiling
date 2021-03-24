@@ -33,7 +33,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			var IL_Before = string.Join("\n", instructions);
 			
 			var start = -1;
-			var isInExceptionBlock = false;
+			var exceptionBlockStack = 0;
 			for (var index = 0; index < instructions.Count; index++)
 			{
 				var inst = instructions[index];
@@ -41,10 +41,12 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 				
 				// TODO: dont inject samples in try{} block because we get errors when exception happens and we dont have an end sample
-				if (!isInExceptionBlock && inst.blocks.Any(b => b.blockType == ExceptionBlockType.BeginExceptionBlock)) 
-					isInExceptionBlock = true;
-				else if (isInExceptionBlock && inst.blocks.Any(b => b.blockType == ExceptionBlockType.EndExceptionBlock))
-					isInExceptionBlock = false;
+				
+				exceptionBlockStack += inst.blocks.Count(b => b.blockType == ExceptionBlockType.BeginExceptionBlock);
+				exceptionBlockStack -= inst.blocks.Count(b => b.blockType == ExceptionBlockType.EndExceptionBlock);
+				
+				if(exceptionBlockStack < 0)
+					Debug.LogError("Found more end exception blocks than begin exception blocks in " + method.FullDescription() + ", please report this as a bug including this message\n\n" + IL_Before + "\n\n");
 				// else if (isInTryBlock && inst.blocks.Any(b =>
 				// 	b.blockType == ExceptionBlockType.BeginFinallyBlock || 
 				// 	b.blockType == ExceptionBlockType.BeginCatchBlock))
@@ -89,7 +91,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					}
 					if (start > index && hasLabel) start = prevStart;
 
-					if (isMethodCall && isInExceptionBlock)
+					if (isMethodCall && exceptionBlockStack > 0)
 					{
 						start = -1;
 						continue;
