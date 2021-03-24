@@ -92,7 +92,7 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 
-			void DrawProfiledMethods()
+			void DrawProfiledMethods(bool alwaysSaved)
 			{
 				if (!inFoldouts)
 				{
@@ -100,7 +100,7 @@ namespace Needle.SelectiveProfiling
 					EditorGUILayout.LabelField("Profiling State", EditorStyles.boldLabel);
 				}
 
-				if (!Application.isPlaying)
+				if (!Application.isPlaying || alwaysSaved)
 				{
 					ScopesList(settings.MethodsList,
 						m => m.Enabled,
@@ -140,10 +140,11 @@ namespace Needle.SelectiveProfiling
 			else
 				DrawSettings();
 
+			var header = Application.isPlaying ? "Profiled Methods" : "Saved Methods";
 			if (inFoldouts)
-				WithHeaderFoldout("ProfiledMethods", "Saved Methods", DrawProfiledMethods, true);
+				WithHeaderFoldout("ProfiledMethods", header, () => DrawProfiledMethods(false), true);
 			else
-				DrawProfiledMethods();
+				DrawProfiledMethods(true);
 		}
 
 		private static readonly Dictionary<string, List<MethodInformation>> scopes = new Dictionary<string, List<MethodInformation>>();
@@ -235,20 +236,15 @@ namespace Needle.SelectiveProfiling
 				using (new GUILayout.HorizontalScope())
 				{
 					show = EditorGUILayout.Foldout(GetFoldout(scope), headerLabel,true, 
-						meta.Enabled <= 0 ? GUIStyles.BoldFoldoutDisabled : GUIStyles.BoldFoldout
+						meta.Enabled <= 0 ? GUIStyles.BoldFoldoutDisabled : GUIStyles.Foldout
 					);
 					if (Enable != null && GUILayout.Button("All", GUILayout.Width(70)))
 						Enable(kvp.Value);
-					// SetStateInSettings(kvp.Value, true, scope);
 					if (Disable != null && GUILayout.Button("None", GUILayout.Width(70)))
 						Disable(kvp.Value);
-					// SetStateInSettings(kvp.Value, false, scope);
 					if (Remove != null && GUILayout.Button("x", GUILayout.Width(20)))
 					{
 						Remove(kvp.Value);
-						// settings.RegisterUndo("Remove all in " + scope);
-						// foreach (var entry in kvp.Value)
-						// 	settings.Remove(entry, false);
 					}
 				}
 
@@ -272,15 +268,11 @@ namespace Needle.SelectiveProfiling
 										Enable?.Invoke(new List<MethodInformation>() {entry});
 									else
 										Disable?.Invoke(new List<MethodInformation>() {entry});
-									// settings.UpdateState(entry, state, true);
-									// settings.Save();
 								}
 
 								if (GUILayout.Button("x", GUILayout.Width(20)))
 								{
 									Remove?.Invoke(new List<MethodInformation>() {entry});
-									// settings.Remove(entry);
-									// settings.Save();
 								}
 							}
 							else

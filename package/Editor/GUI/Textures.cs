@@ -6,7 +6,6 @@ namespace Needle.SelectiveProfiling
 	internal static class Textures
 	{
 		private static Texture2D _pin;
-
 		public static Texture2D Pin
 		{
 			get
@@ -16,5 +15,17 @@ namespace Needle.SelectiveProfiling
 				return _pin;
 			}
 		}
+		
+		private static Texture2D _profiled;
+		public static Texture2D Profiled
+		{
+			get
+			{
+				if (!_profiled)
+					_profiled = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.needle.selective-profiling/Editor/GUI/Textures/profiled1.png");
+				return _profiled;
+			}
+		}
+
 	}
 }

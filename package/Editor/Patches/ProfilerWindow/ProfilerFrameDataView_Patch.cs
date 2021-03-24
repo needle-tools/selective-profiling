@@ -101,18 +101,36 @@ namespace Needle.SelectiveProfiling
 			// 	// TreeView.DefaultStyles.label.normal.textColor = Color.gray;
 			// }
 
+			private static void Prefix(Rect cellRect, int column)
+			{
+				
+			}
+
 			// method https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L676
 			// item: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
-			private static void Postfix(object __instance, Rect cellRect, TreeViewItem item)
+			private static void Postfix(object __instance, Rect cellRect, TreeViewItem item, int column)
 			{
+				HierarchyFrameDataView frameDataView;
+				if (column <= 0)
+				{
+					frameDataView = GetFrameDataView(item);
+					if (ProfilerHelper.IsProfiled(item, frameDataView))
+					{
+						var size = cellRect.height * .5f;
+						var xOff = -size * .5f;
+						var yOff = (cellRect.height - size) * .5f;
+						var rect = new Rect(cellRect.x + cellRect.width - size + xOff, cellRect.y + yOff, size, size);
+						GUI.DrawTexture(rect, Textures.Profiled, ScaleMode.ScaleAndCrop, true, 1, Color.gray, 0, 0);
+					}
+				}
+				
 				if (Event.current.type == EventType.MouseDown) return;
 				var settings = SelectiveProfilerSettings.instance;
 				if (!settings.Enabled) return;
 
 				var button = Event.current.button;
-
-				var frameDataView = GetFrameDataView(item);
-
+				frameDataView = GetFrameDataView(item);
+				
 				if (button == 0 && item.id == selectedId && Settings.ImmediateMode && selectedId != lastPatchedInImmediateMode)
 				{
 					lastPatchedInImmediateMode = selectedId;

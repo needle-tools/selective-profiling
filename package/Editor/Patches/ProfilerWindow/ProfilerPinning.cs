@@ -310,25 +310,13 @@ namespace Needle.SelectiveProfiling
 				{
 					if (!AllowPinning()) return;
 					GUI.color = previousColor;
-
-					// if (column == 0)
-					// {
-					// 	var r = new Rect(cellRect);
-					// 	r.x += 250;
-					// 	EditorGUI.LabelField(r, item.id.ToString());
-					// }
-
+					
 					if (column <= 0 && IsPinned(item))
 					{
 						var size = cellRect.height * .6f;
 						var y = (cellRect.height - size) * .5f;
 						var rect = new Rect(cellRect.x + cellRect.width - size, cellRect.y + y, size, size);
 						GUI.DrawTexture(rect, Textures.Pin, ScaleMode.ScaleAndCrop, true);
-
-						// if (Event.current.type == EventType.MouseUp && rect.Contains(Event.current.mousePosition))
-						// {
-						// 	Unpin(item); 
-						// }
 					}
 				}
 			}

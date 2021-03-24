@@ -20,7 +20,7 @@ namespace Needle.SelectiveProfiling
 	// [AlwaysProfile]
 	public static class SelectiveProfiler
 	{
-		public static string SamplePostfix => DevelopmentMode || DebugLog ? "[debug]" : string.Empty;
+		public static string SamplePostfix => DevelopmentMode || DebugLog ? "[debug]" : "[n]";
 
 		// private static MethodInfo previouslySelectedImmediateProfilingMethod;
 
@@ -43,6 +43,8 @@ namespace Needle.SelectiveProfiling
 
 		public static bool IsProfiling(MethodInfo method, bool onlySaved = false)
 		{
+			if (method == null) return false;
+			
 			if (onlySaved)
 			{
 				var info = new MethodInformation(method);
@@ -268,7 +270,7 @@ namespace Needle.SelectiveProfiling
 		private static readonly HashSet<MethodInfo> alwaysProfile = new HashSet<MethodInfo>();
 
 		/// <summary>
-		/// should only be used in standalone profiler instance
+		/// should only be used in standalone profiler instance, profiled method enabled state synced from editor to standalone profiler
 		/// </summary>
 		internal static Dictionary<MethodInformation, bool> patchesStateSyncedFromEditor;
 
@@ -333,9 +335,6 @@ namespace Needle.SelectiveProfiling
 		private static void Init()
 		{
 			if (!AllowToBeEnabled) return;
-
-			// EditorApplication.playModeStateChanged -= OnPlayModeChanged;
-			// EditorApplication.playModeStateChanged += OnPlayModeChanged;
 
 			SelectiveProfilerSettings.MethodStateChanged -= OnMethodChanged;
 			SelectiveProfilerSettings.MethodStateChanged += OnMethodChanged;
@@ -404,15 +403,6 @@ namespace Needle.SelectiveProfiling
 			stateChangedList.RemoveAll(e => e.method.Equals(method));
 			stateChangedList.Add((method, enabled));
 		}
-
-		// private static void OnPlayModeChanged(PlayModeStateChange obj)
-		// {
-		// 	// if (obj == PlayModeStateChange.ExitingPlayMode)
-		// 	// {
-		// 	// 	foreach (var patch in patches)
-		// 	// 		PatchManager.UnregisterAndDisablePatch(patch.Value.Patch); 
-		// 	// }
-		// }
 
 		private static readonly bool deepProfiling = SelectiveProfilerSettings.Instance.DeepProfiling;
 		private static readonly HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();

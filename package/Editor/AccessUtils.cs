@@ -39,7 +39,7 @@ namespace Needle.SelectiveProfiling.Utils
 			return assembly?.GetName().Name + ".dll" + ", " + declaring?.Namespace + "::" + declaring?.Name + info.Name + "(TODO:Params)";
 		}
 
-		
+		// TODO: replace with resolve method info from profiler api?
 		public static bool TryGetMethodFromName(string name, out MethodInfo method)
 		{
 			if (!string.IsNullOrEmpty(name))

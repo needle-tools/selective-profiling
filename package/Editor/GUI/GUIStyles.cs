@@ -21,7 +21,8 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 		public static GUIStyle Label(bool state) => state ? EditorStyles.label : DisabledLabel;
-		
+
+		public static GUIStyle Foldout => EditorStyles.foldout;
 		
 		private static GUIStyle _boldFoldout;
 		public static GUIStyle BoldFoldout
