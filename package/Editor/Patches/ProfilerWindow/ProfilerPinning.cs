@@ -21,9 +21,9 @@ namespace Needle.SelectiveProfiling
 
 		private static HierarchyFrameDataView GetFrameData(TreeViewItem item = null) => ProfilerFrameDataView_Patch.GetFrameDataView(item);
 
-		public static bool AllowPinning()
+		private static bool AllowPinning()
 		{
-			return SelectiveProfilerSettings.instance.AllowPinning;
+			return SelectiveProfilerSettings.instance.AllowPinning && SelectiveProfiler.DevelopmentMode;
 		}
 
 		public static bool AllowPinning(TreeViewItem item, string name = null, HierarchyFrameDataView view = null)

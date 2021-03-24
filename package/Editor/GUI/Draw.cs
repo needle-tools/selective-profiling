@@ -64,8 +64,9 @@ namespace Needle.SelectiveProfiling
 					new GUIContent("Use [AlwaysProfile]", ""),
 					settings.UseAlwaysProfile); 
 
-				settings.AllowPinning = EditorGUILayout.ToggleLeft(new GUIContent("Allow Pinning", "When enabled methods can be pinned in Profiler window"),
-					settings.AllowPinning);
+				if(SelectiveProfiler.DevelopmentMode)
+					settings.AllowPinning = EditorGUILayout.ToggleLeft(new GUIContent("Allow Pinning", "When enabled methods can be pinned in Profiler window"),
+						settings.AllowPinning);
 
 				GUILayout.Space(5);
 				EditorGUILayout.LabelField("Deep Profiling", EditorStyles.boldLabel);
