@@ -12,6 +12,7 @@ using Unity.Profiling;
 using UnityEditor;
 using UnityEditor.Profiling;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Scripting;
 using Object = UnityEngine.Object;
@@ -130,20 +131,20 @@ namespace Needle.SelectiveProfiling.Utils
 		public static BindingFlags AllDeclared => AccessTools.allDeclared;
 
 
-		public static IEnumerable<MethodInfo> GetMethods(object obj, BindingFlags flags, Type maxType)
+		public static IEnumerable<MethodInfo> GetMethods(object obj, Type maxType)
 		{
 			if (obj == null) yield break;
 			if (obj is Object o && !o) yield break;
-			foreach (var m in GetMethods(obj.GetType(), flags, maxType))
+			foreach (var m in GetMethods(obj.GetType(), maxType))
 				yield return m;
 		}
 
-		public static IEnumerable<MethodInfo> GetMethods(Type type, BindingFlags flags, Type maxType)
+		public static IEnumerable<MethodInfo> GetMethods(Type type, Type maxType)
 		{
-			return InternalGetMethods(type, flags, maxType);
+			return InternalGetMethods(type, maxType);
 		}
 
-		private static IEnumerable<MethodInfo> InternalGetMethods(Type type, BindingFlags flags, Type maxType = null)
+		private static IEnumerable<MethodInfo> InternalGetMethods(Type type, Type maxType = null)
 		{
 			IEnumerable<MethodInfo> RecursiveGetTypes(Type t)
 			{
@@ -152,11 +153,10 @@ namespace Needle.SelectiveProfiling.Utils
 					if (maxType != null && t == maxType) yield break;
 					// var level = GetCurrentLevel(t);
 					// if (level == maxLevel) yield break;
-					// Debug.Log(t + " - " + GetCurrentLevel(t));
-					var methods = t.GetMethods(flags);
+					var methods = t.GetMethods(AllDeclared);
 					foreach (var method in methods)
 					{
-						if (maxType != null && method.DeclaringType == maxType) yield break;
+						if (maxType != null && method.DeclaringType == maxType) continue;
 						yield return method;
 					}
 
@@ -202,13 +202,14 @@ namespace Needle.SelectiveProfiling.Utils
 			if (method.IsDeclaredMember() is false)
 			{
 				method = method.GetDeclaredMember();
+				// test if resolving worked
 				if (method == null || !method.IsDeclaredMember())
 				{
 					if (debugLog)
 						Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
 							"Method is not declared or null: " + GetMethodLogName());
+					return false;
 				}
-				return false;
 			}
 
 			if (!method.HasMethodBody())

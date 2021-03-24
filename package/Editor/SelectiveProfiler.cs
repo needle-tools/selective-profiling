@@ -326,7 +326,7 @@ namespace Needle.SelectiveProfiling
 				var typesToProfile = TypeCache.GetTypesWithAttribute<AlwaysProfile>();
 				foreach (var type in typesToProfile)
 				{
-					var methods = AccessUtils.GetMethods(type, AccessUtils.AllDeclared, typeof(MonoBehaviour));
+					var methods = AccessUtils.GetMethods(type, typeof(MonoBehaviour));
 					foreach (var method in methods)
 					{
 						alwaysProfile.Add(method);

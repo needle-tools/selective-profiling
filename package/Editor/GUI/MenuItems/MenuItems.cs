@@ -20,7 +20,7 @@ namespace Needle.SelectiveProfiling
 		[MenuItem(Component + "Enable: Profile All User Methods", false, Priority)]
 		private static void ProfileAllMethods(MenuCommand cmd)
 		{
-			foreach (var m in AccessUtils.GetMethods(cmd.context, AccessUtils.All, typeof(MonoBehaviour)))
+			foreach (var m in AccessUtils.GetMethods(cmd.context, typeof(MonoBehaviour)))
 				SelectiveProfiler.EnableProfiling(m, SelectiveProfiler.ShouldSave);
 		}
 
@@ -30,7 +30,7 @@ namespace Needle.SelectiveProfiling
 		[MenuItem(Component + "Disable: Profile All User Methods", false, Priority)]
 		private static void DisableDeepProfileAllMethods(MenuCommand cmd)
 		{
-			foreach (var m in AccessUtils.GetMethods(cmd.context, AccessUtils.All, typeof(MonoBehaviour)))
+			foreach (var m in AccessUtils.GetMethods(cmd.context, typeof(MonoBehaviour)))
 				SelectiveProfiler.DisableProfiling(m);
 		}
 
@@ -43,7 +43,7 @@ namespace Needle.SelectiveProfiling
 			foreach (var comp in obj.GetComponentsInChildren<Component>())
 			{
 				if (AccessUtils.GetLevel(comp.GetType()) != Level.User) continue;
-				foreach (var m in AccessUtils.GetMethods(comp, AccessUtils.All, typeof(MonoBehaviour)))
+				foreach (var m in AccessUtils.GetMethods(comp, typeof(MonoBehaviour)))
 					SelectiveProfiler.EnableProfiling(m, SelectiveProfiler.ShouldSave);
 			}
 		}
@@ -56,7 +56,7 @@ namespace Needle.SelectiveProfiling
 			foreach (var comp in obj.GetComponentsInChildren<Component>())
 			{
 				if (AccessUtils.GetLevel(comp.GetType()) != Level.User) continue;
-				foreach (var m in AccessUtils.GetMethods(comp, AccessUtils.All, typeof(MonoBehaviour)))
+				foreach (var m in AccessUtils.GetMethods(comp, typeof(MonoBehaviour)))
 					SelectiveProfiler.DisableProfiling(m);
 			}
 		}
