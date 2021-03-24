@@ -88,7 +88,7 @@ namespace Needle.SelectiveProfiling
 		/// <summary>
 		/// check editor state (this does not settings enabled state)
 		/// </summary>
-		internal static bool AllowToBeEnabled => true;// !ProfilerDriver.deepProfiling;
+		internal static bool AllowToBeEnabled => !ProfilerDriver.deepProfiling;
 
 		private static async Task InternalEnableProfilingAsync(
 			MethodInfo method,
