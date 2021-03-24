@@ -126,24 +126,34 @@ namespace Needle.SelectiveProfiling
 			MethodStateChanged?.Invoke(info, true);
 		}
 
+		public void Remove(MethodInfo info, bool withUndo = true)
+		{
+			InternalRemove(info.Name, entry => entry.Equals(info), withUndo);
+		}
+
 		public void Remove(MethodInformation info, bool withUndo = true)
 		{
-			var removed = false;
-			if (withUndo)
-				Undo.RegisterCompleteObjectUndo(this, "Removed " + info + "/" + this);
+			InternalRemove(info.Method, entry => entry.Equals(info), withUndo);
+		}
 
+		private void InternalRemove(string id, Predicate<MethodInformation> pred, bool withUndo)
+		{
+			if (withUndo)
+				Undo.RegisterCompleteObjectUndo(this, "Removed " + id + "/" + this);
+
+			MethodInformation removed = null;
 			for (var index = Methods.Count - 1; index >= 0; index--)
 			{
 				var method = Methods[index];
-				if (!method.Equals(info)) continue;
+				if (!pred(method)) continue;
 				Methods.RemoveAt(index);
-				removed = true;
+				removed = method;
 				break;
 			}
 
-			if (removed)
+			if (removed != null)
 			{
-				NotifyStateChanged(info, false);
+				NotifyStateChanged(removed, false);
 			}
 		}
 
@@ -171,6 +181,11 @@ namespace Needle.SelectiveProfiling
 			Undo.RegisterCompleteObjectUndo(this, "Clear Selective Profiler Data");
 			Methods.Clear();
 			Cleared?.Invoke();
+		}
+
+		public bool Contains(MethodInfo info)
+		{
+			return Methods.Any(m => m.Equals(info));
 		}
 
 		public IReadOnlyList<MethodInformation> MethodsList => Methods;

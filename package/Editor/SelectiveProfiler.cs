@@ -204,10 +204,9 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		public static Task DisableProfiling(MethodInfo method)
+		public static Task DisableProfiling(MethodInfo method, bool allowSave = true)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
-
 			if (alwaysProfile.Contains(method)) return Task.CompletedTask;
 
 #if UNITY_2020_2_OR_NEWER
@@ -219,13 +218,15 @@ namespace Needle.SelectiveProfiling
 			}
 #endif
 
+			allowSave &= ShouldSave;
+
 			Task task = null;
 			if (profiled.TryGetValue(method, out var prof))
 			{
 				task = prof.Disable();
 			}
 
-			if (!Application.isPlaying)
+			if (allowSave)
 			{
 				var mi = new MethodInformation(method);
 				mi = SelectiveProfilerSettings.Instance.GetInstance(mi);
@@ -235,16 +236,32 @@ namespace Needle.SelectiveProfiling
 			return task ?? Task.CompletedTask;
 		}
 
+		internal static void DisableAndForget(MethodInfo info)
+		{
+			if (profiled.TryGetValue(info, out var prof))
+			{
+				// dont need to save state change because we remove it here anyways
+				DisableProfiling(info, false);
+				profiled.Remove(info);
+				var match = profiled2.FirstOrDefault(e => e.Value == prof).Key;
+				if (match != null) profiled2.Remove(match);
+			}
+			if(ShouldSave)
+				SelectiveProfilerSettings.Instance.Remove(info);
+		}
+
 		internal static void DisableAndForget(MethodInformation info)
 		{
 			if (profiled2.TryGetValue(info, out var prof))
 			{
-				prof.Disable();
+				// dont need to save state change because we remove it here anyways
+				DisableProfiling(prof.Method, false);
 				profiled2.Remove(info);
-
 				var match = profiled.FirstOrDefault(e => e.Value == prof).Key;
 				if (match != null) profiled.Remove(match);
 			}
+			if(ShouldSave)
+				SelectiveProfilerSettings.Instance.Remove(info);
 		}
 
 		internal static IEnumerable<string> ExpectedPatches()
@@ -275,6 +292,13 @@ namespace Needle.SelectiveProfiling
 		internal static Dictionary<MethodInformation, bool> patchesStateSyncedFromEditor;
 
 
+		internal static bool TryGet([NotNull] MethodInfo info, out ProfilingInfo profile)
+		{
+			if (info == null) throw new ArgumentNullException(nameof(info));
+			profile = null;
+			return profiled.TryGetValue(info, out profile);
+		}
+		
 		internal static bool TryGet([NotNull] MethodInformation info, out ProfilingInfo profile)
 		{
 			if (info == null) throw new ArgumentNullException(nameof(info));

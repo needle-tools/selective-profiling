@@ -446,11 +446,20 @@ namespace Needle.SelectiveProfiling
 					var match = matches[index];
 					EditorGUILayout.BeginHorizontal();
 					EditorGUILayout.LabelField(new GUIContent(match.Key, match.Method.FullDescription()), GUILayout.ExpandWidth(true));
-					if (GUILayout.Button("Add", GUILayout.Width(50)))
+
+					if (SelectiveProfiler.TryGet(match.Method, out _) || SelectiveProfilerSettings.instance.Contains(match.Method))
 					{
-						// if(!Application.isPlaying)
-						// 	SelectiveProfilerSettings.instance.Add(new MethodInformation(match.Method));
-						SelectiveProfiler.EnableProfiling(match.Method, SelectiveProfiler.ShouldSave, true, true);
+						if (GUILayout.Button("Remove", GUILayout.Width(70)))
+						{
+							SelectiveProfiler.DisableAndForget(match.Method);
+						}
+					}
+					else
+					{
+						if (GUILayout.Button("Add", GUILayout.Width(70)))
+						{
+							SelectiveProfiler.EnableProfiling(match.Method, SelectiveProfiler.ShouldSave, true, true);
+						}
 					}
 
 					EditorGUILayout.EndHorizontal();
