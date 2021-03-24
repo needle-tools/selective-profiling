@@ -151,6 +151,7 @@ namespace Needle.SelectiveProfiling
 					if (m_FrameDataViewField != null)
 					{
 						var menu = new GenericMenu();
+						var tree = __instance as TreeView;
 
 						if (ProfilerPinning.AllowPinning(item))
 						{
@@ -159,7 +160,7 @@ namespace Needle.SelectiveProfiling
 								menu.AddItem(new GUIContent("Pin"), false, () =>
 								{
 									ProfilerPinning.Pin(item);
-									if (__instance is TreeView tv) tv.Reload(); 
+									tree?.Reload();
 								});
 							}
 							else //if(!ProfilerPinning.IsChildOfAnyPinnedItem(item, false))
@@ -167,7 +168,7 @@ namespace Needle.SelectiveProfiling
 								menu.AddItem(new GUIContent("Pin"), true, () =>
 								{
 									ProfilerPinning.Unpin(item);
-									if (__instance is TreeView tv) tv.Reload();
+									tree?.Reload();
 								});
 							}
 						}
@@ -180,7 +181,7 @@ namespace Needle.SelectiveProfiling
 						var name = frameDataView?.GetItemName(item.id);
 						if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
 						{
-							AddMenuItem(menu, methodInfo);
+							AddMenuItem(tree, menu, methodInfo);
 							menu.ShowAsContext();
 						}
 						else if (ProfilerHelper.TryGetMethodsInChildren(item.id, frameDataView, out var methodsFound))
@@ -190,13 +191,13 @@ namespace Needle.SelectiveProfiling
 
 							if (availableMethods.Count > 0)
 							{
-								menu.AddItem(new GUIContent("Enable profiling for all"), false, () => EnableProfilingFromProfilerWindow(availableMethods));
-								menu.AddItem(new GUIContent("Disable profiling for all"), false, () => DisableProfilingFromProfilerWindow(availableMethods));
+								menu.AddItem(new GUIContent("Enable profiling for all"), false, () => EnableProfilingFromProfilerWindow(availableMethods, tree));
+								menu.AddItem(new GUIContent("Disable profiling for all"), false, () => DisableProfilingFromProfilerWindow(availableMethods, tree));
 								menu.AddSeparator(string.Empty);
 
 								foreach (var m in availableMethods)
 								{
-									AddMenuItem(menu, m);
+									AddMenuItem(tree, menu, m);
 								}
 							}
 						}
@@ -216,7 +217,7 @@ namespace Needle.SelectiveProfiling
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerModules/CPUorGPUProfilerModule.cs#L194
 		}
 
-		private static void AddMenuItem(GenericMenu menu, MethodInfo methodInfo)
+		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo)
 		{
 			var active = SelectiveProfiler.IsProfiling(methodInfo);
 			var ret = methodInfo.ReturnType.Name;
@@ -238,34 +239,48 @@ namespace Needle.SelectiveProfiling
 				menu.AddItem(new GUIContent($"Profile | {ret}{methodInfo.DeclaringType?.Name}.{methodName}"),
 					active, () =>
 					{
-						if (!active) EnableProfilingFromProfilerWindow(methodInfo);
-						else DisableProfilingFromProfilerWindow(methodInfo);
+						if (!active) EnableProfilingFromProfilerWindow(methodInfo, tree);
+						else DisableProfilingFromProfilerWindow(methodInfo, tree);
 					});
 			}
 		}
 
 
-		private static void EnableProfilingFromProfilerWindow(IEnumerable<MethodInfo> methods)
+		private static void EnableProfilingFromProfilerWindow(IEnumerable<MethodInfo> methods, TreeView tree = null)
 		{
-			foreach (var m in methods)
-				EnableProfilingFromProfilerWindow(m);
+			foreach (var method in methods)
+				SelectiveProfiler.EnableProfiling(method, SelectiveProfiler.ShouldSave, true, true, true);
+			if(tree != null)
+				ReloadDelayed(tree);
 		}
 
-		private static void EnableProfilingFromProfilerWindow(MethodInfo method)
+		private static void EnableProfilingFromProfilerWindow(MethodInfo method, TreeView tree = null)
 		{
 			// Standalone process always return "false" for playing
 			SelectiveProfiler.EnableProfiling(method, SelectiveProfiler.ShouldSave, true, true, true);
+			if(tree != null)
+				ReloadDelayed(tree);
 		}
 
-		private static void DisableProfilingFromProfilerWindow(IEnumerable<MethodInfo> methods)
+		private static void DisableProfilingFromProfilerWindow(IEnumerable<MethodInfo> methods, TreeView tree = null)
 		{
 			foreach (var m in methods)
 				SelectiveProfiler.DisableProfiling(m);
+			if(tree != null)
+				ReloadDelayed(tree);
 		}
 
-		private static void DisableProfilingFromProfilerWindow(MethodInfo method)
+		private static void DisableProfilingFromProfilerWindow(MethodInfo method, TreeView tree = null)
 		{
 			SelectiveProfiler.DisableProfiling(method);
+			if(tree != null)
+				ReloadDelayed(tree);
+		}
+
+		private static async void ReloadDelayed(TreeView tree)
+		{
+			await Task.Delay(100);
+			tree?.Reload();
 		}
 	}
 }
