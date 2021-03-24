@@ -31,9 +31,9 @@ namespace Needle.SelectiveProfiling
 			{
 				var children = new List<int>();
 				frameData.GetItemChildren(id, children);
-				foreach (var ch in children)
+				foreach (var child in children)
 				{
-					InternalFindMethods(ch, frameData, ref methods);
+					InternalFindMethods(child, frameData, ref methods);
 				}
 			}
 		}
@@ -46,13 +46,16 @@ namespace Needle.SelectiveProfiling
 		internal static bool IsProfiled(int id, HierarchyFrameDataView view)
 		{
 			if (view == null || !view.valid) return false;
+			
+			// TODO: should this id be the marker id
+			var markerId = view.GetItemMarkerID(id);
 
-			if (!idToMethod.ContainsKey(id))
+			if (!idToMethod.ContainsKey(markerId))
 			{
 				var name = view.GetItemName(id);
 				if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
 				{
-					idToMethod.Add(id, methodInfo);
+					idToMethod.Add(markerId, methodInfo);
 				}
 				// else if (!profiledChildren.ContainsKey(id))
 				// {
@@ -71,16 +74,16 @@ namespace Needle.SelectiveProfiling
 				// }
 			}
 
-			idToMethod.TryGetValue(id, out var method);
+			idToMethod.TryGetValue(markerId, out var method);
 
-			if (method == null && (!Application.isPlaying || (id + editorUpdateCounter) % 30 == 0))
+			if (method == null && (!Application.isPlaying || (markerId + editorUpdateCounter) % 30 == 0))
 			{
-				idToMethod.Remove(id);
+				idToMethod.Remove(markerId);
 				// if(profiledChildren.ContainsKey(id))
 				// 	profiledChildren.Remove(id);
 			}
 			
-			return IsEnabled(method) || HasProfiledChild(id, view);
+			return IsEnabled(method) || HasProfiledChild(markerId, view);
 		}
 
 		private static readonly Dictionary<int, MethodInfo> idToMethod = new Dictionary<int, MethodInfo>();
@@ -91,11 +94,11 @@ namespace Needle.SelectiveProfiling
 			return info != null && SelectiveProfiler.IsProfiling(info);
 		}
 
-		private static bool HasProfiledChild(int id, HierarchyFrameDataView view)
+		private static bool HasProfiledChild(int markerId, HierarchyFrameDataView view)
 		{
-			if (profiledChildren.ContainsKey(id))
+			if (profiledChildren.ContainsKey(markerId))
 			{
-				var list = profiledChildren[id];
+				var list = profiledChildren[markerId];
 				if (list != null)
 				{
 					foreach (var i in list)
