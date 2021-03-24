@@ -448,8 +448,9 @@ namespace Needle.SelectiveProfiling
 					EditorGUILayout.LabelField(new GUIContent(match.Key, match.Method.FullDescription()), GUILayout.ExpandWidth(true));
 					if (GUILayout.Button("Add", GUILayout.Width(50)))
 					{
-						SelectiveProfilerSettings.instance.Add(new MethodInformation(match.Method));
-						// SelectiveProfiler.EnableProfiling(match.Method);
+						// if(!Application.isPlaying)
+						// 	SelectiveProfilerSettings.instance.Add(new MethodInformation(match.Method));
+						SelectiveProfiler.EnableProfiling(match.Method, SelectiveProfiler.ShouldSave, true, true);
 					}
 
 					EditorGUILayout.EndHorizontal();
