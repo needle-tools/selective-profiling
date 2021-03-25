@@ -55,7 +55,7 @@ public class TestsUsingPerformanceAPI
         return type.GetMethods((BindingFlags)(-1)).FirstOrDefault(x => x.Name.Equals(method, StringComparison.Ordinal));
     }
 
-    class PatchMethod : CustomYieldInstruction
+    internal class PatchMethod : CustomYieldInstruction
     {
         private readonly bool shouldCollectNames = false;
         private readonly Task patchingTask;
@@ -68,7 +68,11 @@ public class TestsUsingPerformanceAPI
             shouldCollectNames = collectInjectedSampleNames;
             
             if(collectInjectedSampleNames)
-                ProfilerSamplePatch.OnSampleInjected += (methodBase, sampleName) => injectedSamples.Add(sampleName);
+                ProfilerSamplePatch.OnSampleInjected += (methodBase, sampleName) =>
+                {
+                    if(!injectedSamples.Contains(sampleName))
+                        injectedSamples.Add(sampleName);
+                };
             
             patchingTask = SelectiveProfiler.EnableProfilingAsync(methodInfo, false, true, true, false);
         }
@@ -273,7 +277,7 @@ public class TestsUsingPerformanceAPI
         MustNotBePatched(methodInfo);
     }
 
-    void MustNotBePatched(MethodInfo methodInfo)
+    internal static void MustNotBePatched(MethodInfo methodInfo)
     {
         Assert.IsFalse(SelectiveProfiler.TryGet(methodInfo, out var info), "Method is patched: " + methodInfo);
     }
@@ -332,6 +336,7 @@ public class TestsUsingPerformanceAPI
     }
 
     [Performance, UnityTest]
+    [Ignore("Example")]
     public IEnumerator Example_CubeInstantiationPerformance()
     {
         string[] markers =
@@ -356,6 +361,23 @@ public class TestsUsingPerformanceAPI
             }
         }
     }
+
+    // [Test]
+    // public async void PatchMethodWithoutSampleRequestShouldThrow()
+    // {
+    //     var methodInfo = typeof(BasicBehaviour).GetMethod(nameof(BasicBehaviour.MyCall), (BindingFlags) (-1));
+    //     MustNotBePatched(methodInfo);
+    //
+    //     Assert.Catch<System.InvalidOperationException>(async () =>
+    //     {
+    //         var patching = new PatchMethod(methodInfo, true);
+    //         while (patching.MoveNext())
+    //         {
+    //         }
+    //
+    //         injectedSamples = patching.InjectedSampleNames;
+    //     });
+    // }
     
     [Performance, Test]
     public void PatchingPerformance()
