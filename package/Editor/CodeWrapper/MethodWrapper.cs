@@ -245,7 +245,18 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			{
 				var prefix = method != null ? "<b>Transpiled</b> " + method.DeclaringType?.Name + "." + method.Name + "\n" : string.Empty;
 				var IL_After = string.Join("\n", instructions);
-				Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, prefix + IL_Before + "\n\n----\n\n" + IL_After + "\n\n");
+				if (IL_Before?.Length + IL_After.Length > 12000)
+				{
+					var msg = "Before " + prefix + IL_Before;
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
+					msg = "After " + prefix + IL_After;
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
+				}
+				else
+				{
+					var msg = prefix + IL_Before + "\n\n----\n\n" + IL_After;
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
+				}
 
 				try
 				{
