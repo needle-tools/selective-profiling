@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 [ExecuteAlways]
 public class BasicBehaviour : MonoBehaviour
@@ -15,7 +16,17 @@ public class BasicBehaviour : MonoBehaviour
     }
 
     private string thing;
-    
+
+    public static int MyStaticCall()
+    {
+        return MyInternalStaticCall();
+    }
+
+    static int MyInternalStaticCall()
+    {
+        return Random.Range(0, 10);
+    }
+
     // Update is called once per frame
     public int MyCall(int lines)
     {

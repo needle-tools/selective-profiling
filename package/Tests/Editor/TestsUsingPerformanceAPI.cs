@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Needle.SelectiveProfiling;
 using NUnit.Framework;
 using Unity.PerformanceTesting;
@@ -13,66 +16,188 @@ using UnityEngine.TestTools;
 public class TestsUsingPerformanceAPI
 {
     volatile List<string> injectedSamples = new List<string>();
-    
-    [Performance, UnityTest]
-    public IEnumerator CheckIfSampleExists()
+
+    class Sampler
+    {
+        public string Name { get; }
+
+        public bool HasCollectedDataAfterStopping
+        {
+            get
+            {
+                recorder.enabled = false;
+                return recorder.elapsedNanoseconds > 0;
+            }
+        }
+        
+        private Recorder recorder;
+
+        public Sampler(string name)
+        {
+            recorder = Recorder.Get(name);
+            recorder.enabled = true;
+            Name = name;
+        }
+
+        public override string ToString() => $"{Name} - ns: {recorder.elapsedNanoseconds}";
+    }
+
+    T CreateObjectWithComponent<T>() where T:Component
     {
         var go = new GameObject("Test");
-        var behaviour = go.AddComponent<BasicBehaviour>();
+        var behaviour = go.AddComponent<T>();
+        return behaviour;
+    }
+
+    MethodInfo GetMethodInfo(Type type, string method)
+    {
+        return type.GetMethod(method, (BindingFlags) (-1));
+    }
+
+    class PatchMethod : CustomYieldInstruction
+    {
+        private readonly bool shouldCollectNames = false;
+        private readonly Task patchingTask;
         
-        // patch
-        var methodInfo = typeof(BasicBehaviour).GetMethod(nameof(BasicBehaviour.MyCall), (BindingFlags) (-1));
+        public List<string> InjectedSampleNames => shouldCollectNames ? injectedSamples : throw new System.InvalidOperationException("PatchMethod has been called without sample request, this is not allowed");
+        private volatile List<string> injectedSamples = new List<string>();
         
-        ProfilerSamplePatch.OnSampleInjected += (methodBase, sampleName) =>
+        public PatchMethod(MethodInfo methodInfo, bool collectInjectedSampleNames = false)
         {
-            injectedSamples.Add(sampleName);
-        };
+            shouldCollectNames = collectInjectedSampleNames;
+            
+            if(collectInjectedSampleNames)
+                ProfilerSamplePatch.OnSampleInjected += (methodBase, sampleName) => injectedSamples.Add(sampleName);
+            
+            patchingTask = SelectiveProfiler.EnableProfilingAsync(methodInfo, false, true, true, false);
+        }
+
+        public override bool keepWaiting
+        {
+            get
+            {
+                if (patchingTask.IsCompleted) {
+                    if (shouldCollectNames)
+                        ProfilerSamplePatch.OnSampleInjected = null;
+                    return false;
+                }
+
+                return true;
+            }
+        }
+    }
+
+    bool MethodIsPatched(Action callMethod, List<string> injectedSampleNames)
+    {
+        var recorders = injectedSampleNames.Select(x => new Sampler(x)).ToList();
+        callMethod();
+        return recorders.Any(x => x.HasCollectedDataAfterStopping);
+    }
+
+    [UnityTest]
+    public IEnumerator MinimalExample()
+    {
+        void Action() => BasicBehaviour.MyStaticCall();
+        var methodInfo = GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyStaticCall));
         
-        var task = SelectiveProfiler.EnableProfilingAsync(methodInfo, false, true, true, false);
-        while (!task.IsCompleted)
-            yield return null;
+        var patchMethod = new PatchMethod(methodInfo, true);
+        yield return patchMethod;
+        
+        Assert.IsTrue(MethodIsPatched(Action, patchMethod.InjectedSampleNames), 
+            $"MethodIsPatched(Action, patchMethod.InjectedSampleNames)\n" +
+            $"[Expected Sample Names: {patchMethod.InjectedSampleNames.Count}]\n{string.Join("\n", patchMethod.InjectedSampleNames)}");
+        
+        SelectiveProfiler.DisableAndForget(methodInfo);
+        // TODO actually wait until its unpatched
+        yield return null;
+        yield return null;
+        
+        Assert.IsFalse(MethodIsPatched(Action, patchMethod.InjectedSampleNames), 
+            $"MethodIsPatched(Action, patchMethod.InjectedSampleNames)\n" +
+            $"[Must not have Samples: {patchMethod.InjectedSampleNames.Count}]\n{string.Join("\n", patchMethod.InjectedSampleNames)}");
+    }
 
-        Debug.Log("Injected samples:\n" + string.Join("\n", injectedSamples));
+    [UnityTest]
+    public IEnumerator PatchingAndUnpatching_MethodIsGone()
+    {
+        var methodInfo = GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
+        yield return new PatchMethod(methodInfo);
+        
+        if (SelectiveProfiler.TryGet(methodInfo, out var profilingInfo))
+        {
+            Assert.NotNull(profilingInfo.Patch, "profilingInfo.Patch != null");
+            Assert.IsTrue(profilingInfo.IsActive, "profilingInfo.IsActive");
+        }
+        else
+        {
+            Assert.Fail("Method is not patched");
+        }
 
-        ProfilerSamplePatch.OnSampleInjected = null;
+        // TODO this pretends to be sync but is async, how can we actually check the method isn't patched anymore?
+        SelectiveProfiler.DisableAndForget(methodInfo);
 
-        injectedSamples.Add("Test");
+        if (SelectiveProfiler.TryGet(methodInfo, out var profilingInfoAfterDisable))
+        {
+            Assert.Fail("Method is still patched, disable didn't work");
+        }
+    }
+
+    void MustNotBePatched(MethodInfo methodInfo)
+    {
+        Assert.IsFalse(SelectiveProfiler.TryGet(methodInfo, out var info), "Method is patched: " + methodInfo);
+    }
+    
+    [UnityTest]
+    public IEnumerator CheckIfSampleExists()
+    {
+        var behaviour = CreateObjectWithComponent<BasicBehaviour>();
+        var methodInfo = GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
+        MustNotBePatched(methodInfo);
+        
+        var patching = new PatchMethod(methodInfo, true);
+        yield return patching;
+        injectedSamples = patching.InjectedSampleNames;
+        
+        // Debug.Log("Injected samples:\n" + string.Join("\n", injectedSamples));
+
+        injectedSamples.Add("MyTest");
         string[] markers = injectedSamples.ToArray();
-
-        yield return null;
-        yield return null;
-        yield return null;
-        yield return null;
-        yield return null;
 
         int k = 0;
         
         // Profiler markers created using Profiler.BeginSample() are not supported, switch to ProfilerMarker if possible.
-
-        var marker_Test = new ProfilerMarker("Test");
+        var recorders = injectedSamples.Select(x => new Sampler(x)).ToList();
         
-        using (Measure.ProfilerMarkers(markers))
-        {
-            for (var i = 0; i < 50; i++)
-            {
-                behaviour.MyCall(10000);
-                
-                marker_Test.Begin();
-                for (int j = 0; j < 1000; j++)
-                {
-                    k += j;
-                }
-                marker_Test.End();
-            }
-        }
+        // for testing whether we can collect stuff here
+        var marker_Test = new ProfilerMarker("MyTest");
 
-        Debug.Log(k);
+        // TODO remove unnecessary loops here, we only want to know if we can collect samples
+        for (var i = 0; i < 50; i++)
+        {
+            behaviour.MyCall(10000);
+            
+            marker_Test.Begin();
+            for (int j = 0; j < 1000; j++)
+            {
+                k += j;
+            }
+            marker_Test.End();
+        }
+        
+        var recordersWithData = recorders.Where(x => x.HasCollectedDataAfterStopping).ToList();
+
+        // prevent compiler stripping - this should always be false
+        if(k < 0) Debug.Log(k);
         
         SelectiveProfiler.DisableAndForget(methodInfo);
+        
+        CollectionAssert.AreEqual(recorders, recordersWithData, 
+            $"\n[Expected: {recorders.Count} samples]\n{string.Join("\n", recorders)}\n\n" + 
+            $"[Actual: {recordersWithData.Count} samples]\n{string.Join("\n", recordersWithData)}\n");
     }
 
     [Performance, UnityTest]
-    public IEnumerator PerformanceTestBasic()
+    public IEnumerator Example_CubeInstantiationPerformance()
     {
         string[] markers =
         {
@@ -97,8 +222,8 @@ public class TestsUsingPerformanceAPI
         }
     }
     
-    [Test, Performance]
-    public void TestPatchingPerformance()
+    [Performance, Test]
+    public void PatchingPerformance()
     {
         var go = new GameObject("Test");
         var behaviour = go.AddComponent<BasicBehaviour>();
@@ -131,11 +256,13 @@ public class TestsUsingPerformanceAPI
             .SampleGroup(patchedGroup)
             .SetUp(() =>
             {
-                SelectiveProfiler.EnableProfilingAsync(methodInfo, false, true).GetAwaiter().GetResult();
+                // TODO wait for completion
+                SelectiveProfiler.EnableProfilingAsync(methodInfo, false, true);
             })
             .CleanUp(() =>
             {
-                SelectiveProfiler.DisableProfiling(methodInfo, false).GetAwaiter().GetResult();
+                // TODO wait for completion
+                SelectiveProfiler.DisableProfiling(methodInfo, false);
             })
             .Run();
     }
