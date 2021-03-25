@@ -154,6 +154,24 @@ namespace Needle.SelectiveProfiling
 				patches.Add(new Profiler_MigrateExpandedState());
 				patches.Add(new Profiler_CellGUI());
 				patches.Add(new Profiler_DoubleClick());
+				patches.Add(new Profiler_SetFrameDataView());
+			}
+
+			private class Profiler_SetFrameDataView : EditorPatch
+			{
+				// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L151
+				protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+				{
+					var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
+					var m = t.GetMethod("SetFrameDataView", (BindingFlags) ~0);
+					targetMethods.Add(m);
+					return Task.CompletedTask;
+				}
+
+				private static void Prefix()
+				{
+					// Debug.Log("SET");
+				}
 			}
 
 			private class Profiler_BuildRows : EditorPatch
@@ -199,16 +217,17 @@ namespace Needle.SelectiveProfiling
 					}
 
 
-					if (items.Count > 0)
-					{
-						var tree = __instance as TreeView;
-						// ExpandPinnedItems(tree, root);
-						var sel = tree?.GetSelection().FirstOrDefault();
-						if (sel != null && items.Any(i => i.id == sel))
-						{
-							tree.FrameItem(sel.Value);
-						}
-					}
+					// if (items.Count > 0)
+					// {
+					// 	var tree = __instance as TreeView;
+					// 	// ExpandPinnedItems(tree, root);
+					// 	var sel = tree?.GetSelection().FirstOrDefault();
+					// 	if (sel != null && items.Any(i => i.id == sel))
+					// 	{
+					// 		// tree.FrameItem(sel.Value);
+					// 		tree.SetExpanded(sel.Value, true);
+					// 	}
+					// }
 					// if (sel >= 0)
 
 					// for (var i = items.Count - 1; i >= 0; i--)
