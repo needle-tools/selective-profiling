@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
@@ -45,52 +46,108 @@ namespace Needle.SelectiveProfiling.Utils
 				assemblies = AppDomain.CurrentDomain.GetAssemblies();
 		}
 		
-
 		
-		public static bool TryGetMethodFromName(string name, out MethodInfo method, int itemId = -1, HierarchyFrameDataView view = null)
-		{
-			if (TryGetMethodFromFullyQualifiedName(name, out method)) return true;
 
-			if (SelectiveProfiler.DevelopmentMode)
-			{
-				if (TryFindMethodFromCallstack(itemId, view, out method)) return true;
-				if (TryFindMethodInAssembliesByName(name, out method)) return true;
-			}
-			
-			return false;
-		}
-
-		private static readonly List<ulong> callstackList = new List<ulong>();
-		private static bool TryFindMethodFromCallstack(int itemId, HierarchyFrameDataView view, out MethodInfo method)
+		public static bool TryGetMethodFromName(string name, out List<MethodInfo> methodsFound, bool includeChildren = true, int itemId = -1, HierarchyFrameDataView view = null)
 		{
-			if (view == null || !view.valid || itemId < 0)
+			methodsFound = null;
+			TryGetMethodFromFullyQualifiedName(name, ref methodsFound);
+
+			if (includeChildren)
 			{
-				method = null;
-				return false;
-			}
-			
-			var callStack = view.ResolveItemCallstack(itemId);
-			Debug.Log(callStack);
-			
-			view.GetItemCallstack(itemId, callstackList);
-			if (callstackList.Count > 0)
-			{
-				Debug.Log(callstackList.Count);
-				foreach (var addr in callstackList)
+				TryFindMethodFromCallstack(itemId, view, ref methodsFound);
+				TryFindMethodsInChildrenFromNames(itemId, view, ref methodsFound);
+
+				if (SelectiveProfiler.DevelopmentMode)
 				{
-					var methodInfo = view.ResolveMethodInfo(addr);
-					if (!string.IsNullOrEmpty(methodInfo.methodName))
-					{
-						Debug.Log("FOUND " + methodInfo.methodName);
-						// if (TryGetMethodFromFullyQualifiedName(methodInfo.methodName, out method))
-						// 	return true;
-					}
+					// if (TryFindMethodInAssembliesByName(name, out method)) return true;
 				}
 			}
 			
-			method = null;
-			return false;
+			return methodsFound != null && methodsFound.Count > 0;
 		}
+
+		private static readonly List<ulong> callstackList = new List<ulong>();
+		private static bool TryFindMethodFromCallstack(int _itemId, HierarchyFrameDataView view, ref List<MethodInfo> methods)
+		{
+			if (view == null || !view.valid || _itemId < 0)
+			{
+				return false;
+			}
+
+			bool FindMethodCallstackRecursive(int itemId, ref List<MethodInfo> foundMethods)
+			{
+				// var callStack = view.ResolveItemCallstack(itemId);
+				// if(!string.IsNullOrEmpty(callStack))
+				// 	Debug.Log(callStack);
+			
+				callstackList.Clear();
+				view.GetItemCallstack(itemId, callstackList);
+				
+				if (callstackList.Count > 0)
+				{
+					// Debug.Log(name + " -> " + callstackList.Count + "\n" + 
+					//           string.Join("\n", callstackList.Select(i => (view.ResolveMethodInfo(i).methodName) ?? string.Empty).Where(s => !string.IsNullOrEmpty(s))) 
+					//           + "\n\n\n"
+					//           );
+					foreach (var addr in callstackList)
+					{
+						var methodInfo = view.ResolveMethodInfo(addr);
+						if (!string.IsNullOrEmpty(methodInfo.methodName))
+						{
+							if (TryGetMethodFromFullyQualifiedName(methodInfo.methodName, ref foundMethods))
+							{
+								// var name = view.GetItemName(itemId);
+								// Debug.Log(name + ": FOUND " + methodInfo.methodName);
+							}
+						}
+					}
+				}
+
+				if (!view.HasItemChildren(itemId)) return foundMethods != null && foundMethods.Count > 0;
+				var children = new List<int>();
+				view.GetItemChildren(itemId, children);
+				foreach (var id in children)
+				{
+					FindMethodCallstackRecursive(id, ref foundMethods);
+				}
+
+				return foundMethods != null && foundMethods.Count > 0;
+			}
+
+			return FindMethodCallstackRecursive(_itemId, ref methods);
+		}
+		
+		private static bool TryFindMethodsInChildrenFromNames(int itemId, HierarchyFrameDataView frameData, ref List<MethodInfo> methods)
+		{
+			if (itemId < 0 || frameData == null || !frameData.valid) return false;
+			
+			void InternalFindMethods(int id, ref List<MethodInfo> methodsList)
+			{
+				var name = frameData.GetItemName(id);
+
+				if (TryGetMethodFromName(name, out var methodInfo, false))
+				{
+					foreach (var m in methodInfo)
+					{
+						if (methodsList == null) methodsList = new List<MethodInfo>();
+						methodsList.Add(m);
+					}
+				}
+
+				if (!frameData.HasItemChildren(id)) return;
+				var children = new List<int>();
+				frameData.GetItemChildren(id, children);
+				foreach (var child in children)
+				{
+					InternalFindMethods(child, ref methodsList);
+				}
+			}
+
+			InternalFindMethods(itemId, ref methods);
+			return methods != null && methods.Count > 0;
+		}
+
 
 		private static bool TryFindMethodInAssembliesByName(string name, out MethodInfo method)
 		{
@@ -113,7 +170,7 @@ namespace Needle.SelectiveProfiling.Utils
 			return false;
 		}
 
-		private static bool TryGetMethodFromFullyQualifiedName(string name, out MethodInfo method)
+		private static bool TryGetMethodFromFullyQualifiedName(string name, ref List<MethodInfo> methodList)
 		{
 			if (!string.IsNullOrEmpty(name))
 			{
@@ -160,42 +217,45 @@ namespace Needle.SelectiveProfiling.Utils
 					var methodName = fullName.Substring(separatorIndex + 1);
 					try
 					{
-						method = type?.GetMethod(methodName, AccessUtils.All);
+						var method = type?.GetMethod(methodName, AccessUtils.All);
+						if (method != null)
+						{
+							if (methodList == null)
+								methodList = new List<MethodInfo>() {method};
+							else methodList.Add(method);
+						}
 					}
 					catch (AmbiguousMatchException am)
 					{
-						// TODO: support returning multiple methods
-						var types = type?.GetMethods(AllDeclared);
-						if (types != null)
+						var _allMethods = type?.GetMethods(AllDeclared);
+						if (_allMethods != null)
 						{
-							foreach (var _method in types)
+							foreach (var _method in _allMethods)
 							{
-								if (_method.Name == methodName)
-								{
-									method = _method;
-									return true;
-								}
+								// TODO: not sure if this is the most save way to collect ambiguous matches
+								if (_method.Name != methodName) continue;
+								if (methodList == null) methodList = new List<MethodInfo>();
+								methodList.Add(_method);
 							}
 						}
+						var success = methodList != null && methodList.Count > 0;
 
 						if (SelectiveProfiler.DebugLog || SelectiveProfiler.DevelopmentMode)
 						{
-							Debug.LogException(am);
-							Debug.Log(fullName);
+							if(!success)
+								Debug.LogException(am);
+							if(SelectiveProfiler.DebugLog)
+								Debug.Log("Found AmbiguousMatch in " + fullName);
 						}
-
-						method = null;
-						return false;
 					}
 #if DEBUG_ACCESS
 					Debug.Log($"{name}\n{assembly}\n{fullName}\n{typeName}\n{type}");
 #endif
-					return method != null;
+					return methodList != null && methodList.Count > 0;
 				}
 			}
 
-			method = null;
-			return false;
+			return methodList != null && methodList.Count > 0;
 		}
 
 
@@ -360,7 +420,6 @@ namespace Needle.SelectiveProfiling.Utils
 				if (fullName.StartsWith("UnityEditor.Profiling") ||
 				    fullName.StartsWith("UnityEditor.HostView") ||
 				    fullName.StartsWith("UnityEngine.UIElements.UIR") || 
-				    //    fullName.StartsWith("UnityEditor.StyleSheets") || 
 				    //    fullName.StartsWith("UnityEngine.UIElements.IMGUIContainer") ||
 				    //    fullName.StartsWith("UnityEngine.SliderHandler") ||
 				    fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem")

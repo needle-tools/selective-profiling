@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
@@ -17,40 +18,13 @@ namespace Needle.SelectiveProfiling
 	
 	internal static class ProfilerHelper
 	{
-		public static bool TryGetMethodsInChildren(int id, HierarchyFrameDataView frameData, out List<MethodInfo> methods)
-		{
-			methods = null;
-			InternalFindMethods(id, frameData, ref methods);
-			return methods != null && methods.Count > 0;
-		}
-
-		private static void InternalFindMethods(int id, HierarchyFrameDataView frameData, ref List<MethodInfo> methods)
-		{
-			var name = frameData.GetItemName(id);
-
-			if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
-			{
-				if (methods == null) methods = new List<MethodInfo>();
-				methods.Add(methodInfo);
-			}
-
-			if (frameData.HasItemChildren(id))
-			{
-				var children = new List<int>();
-				frameData.GetItemChildren(id, children);
-				foreach (var child in children)
-				{
-					InternalFindMethods(child, frameData, ref methods);
-				}
-			}
-		}
 
 		internal static HierarchyItem IsProfiled(TreeViewItem item, HierarchyFrameDataView view)
 		{
-			return IsProfiled(item.id, view, 0);
+			return IsProfiled(item.id, view, 0, false);
 		}
 
-		private static HierarchyItem IsProfiled(int id, HierarchyFrameDataView view, int level)
+		private static HierarchyItem IsProfiled(int id, HierarchyFrameDataView view, int level, bool isChild)
 		{
 			if (view == null || !view.valid) return HierarchyItem.None;
 
@@ -67,9 +41,9 @@ namespace Needle.SelectiveProfiling
 			if (!idToMethod.ContainsKey(markerId))
 			{
 				var name = view.GetItemName(id);
-				if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
+				if (AccessUtils.TryGetMethodFromName(name, out var methodInfo, false))
 				{
-					idToMethod.Add(markerId, methodInfo);
+					idToMethod.Add(markerId, methodInfo.FirstOrDefault());
 				}
 				else if (!profiledChildren.ContainsKey(markerId))
 				{
@@ -82,7 +56,7 @@ namespace Needle.SelectiveProfiling
 						for (var index = children.Count - 1; index >= 0; index--)
 						{
 							var child = children[index];
-							if (IsProfiled(child, view, lvl) == HierarchyItem.None) children.RemoveAt(index);
+							if (IsProfiled(child, view, lvl, true) == HierarchyItem.None) children.RemoveAt(index);
 						}
 						if(!profiledChildren.ContainsKey(markerId))
 							profiledChildren.Add(markerId, children);
@@ -119,7 +93,7 @@ namespace Needle.SelectiveProfiling
 				{
 					foreach (var i in list)
 					{
-						if (IsProfiled(i, view, level) != HierarchyItem.None)
+						if (IsProfiled(i, view, level, true) != HierarchyItem.None)
 							return true;
 					}
 				}

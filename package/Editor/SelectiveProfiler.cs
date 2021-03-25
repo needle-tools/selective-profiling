@@ -443,6 +443,7 @@ namespace Needle.SelectiveProfiling
 			callsFound.Add(method);
 		}
 
+		private static readonly List<MethodInfo> callsList = new List<MethodInfo>();
 		private static async void HandleNestedCalls(MethodInfo source, int depth)
 		{
 			if (!deepProfiling) return;
@@ -457,21 +458,43 @@ namespace Needle.SelectiveProfiling
 					return true;
 				});
 			callsFound.Clear();
-			foreach (var method in local)
+
+			var index = 0;
+			async Task InternalLoop(IEnumerable<MethodInfo> list)
 			{
-				// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
-				if (DeepProfileDebuggingMode)
+				foreach (var method in list)
 				{
-					if (stepDeepProfileList == null) stepDeepProfileList = new List<(MethodInfo, int, MethodInfo)>(100);
-					if (!stepDeepProfileList.Any(e => e.method == method))
-						stepDeepProfileList.Add((method, depth, source));
+					// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
+					if (DeepProfileDebuggingMode)
+					{
+						if (stepDeepProfileList == null) stepDeepProfileList = new List<(MethodInfo, int, MethodInfo)>(100);
+						if (!stepDeepProfileList.Any(e => e.method == method))
+							stepDeepProfileList.Add((method, depth, source));
+					}
+					// dont save nested calls
+					else
+					{
+						// Debug.Log(source + " calls " + method);
+						await InternalEnableProfilingAsync(method, false, true, false, source, depth);
+					}
+
+					++index;
 				}
-				// dont save nested calls
-				else
-				{
-					// Debug.Log(source + " calls " + method);
-					await InternalEnableProfilingAsync(method, false, true, false, source, depth);
-				}
+			}
+
+			try
+			{
+				await InternalLoop(local);
+			}
+			catch (InvalidOperationException ex)
+			{
+				Debug.LogException(ex);
+				// var arr = local.ToArray();
+				// if (index >= 0 && index < arr.Length)
+				// {
+				// 	
+				// }
+				// await InternalLoop(local)
 			}
 		}
 

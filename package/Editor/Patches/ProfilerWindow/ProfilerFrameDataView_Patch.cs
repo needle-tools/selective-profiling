@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
+using Needle.SelectiveProfiling.CodeWrapper;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -151,8 +152,11 @@ namespace Needle.SelectiveProfiling
 					lastPatchedInImmediateMode = selectedId;
 					var name = frameDataView?.GetItemName(item.id);
 					// TODO: test with standalone profiler
-					if (AccessUtils.TryGetMethodFromName(name, out var methodInfo, item.id, frameDataView))
-						SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
+					if (AccessUtils.TryGetMethodFromName(name, out var methods, false, item.id, frameDataView))
+					{
+						// TODO: add immediate profiling again
+						// SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
+					}
 				}
 
 				if (button != 1)
@@ -196,29 +200,39 @@ namespace Needle.SelectiveProfiling
 						var debugLog = settings.DebugLog;
 
 						var name = frameDataView?.GetItemName(item.id);
-						if (AccessUtils.TryGetMethodFromName(name, out var methodInfo, item.id, frameDataView))
+						var didFind = false;
+						if (AccessUtils.TryGetMethodFromName(name, out var methodsList, false, item.id, frameDataView))
 						{
-							if (AccessUtils.AllowPatching(methodInfo, false, debugLog))
-								AddMenuItem(tree, menu, methodInfo);
-							else menu.AddDisabledItem(new GUIContent(AccessUtils.AllowPatchingResultLastReason));
+							foreach (var methodInfo in methodsList)
+							{
+								if (AccessUtils.AllowPatching(methodInfo, false, debugLog))
+								{
+									didFind = true;
+									AddMenuItem(tree, menu, methodInfo, false);
+								}
+								else if(SelectiveProfiler.DevelopmentMode) 
+									menu.AddDisabledItem(new GUIContent(AccessUtils.AllowPatchingResultLastReason));
+							}
 						}
-						else if (ProfilerHelper.TryGetMethodsInChildren(item.id, frameDataView, out var methodsFound))
-						{
-							var availableMethods =
-								methodsFound.Where(e => AccessUtils.AllowPatching(e, false, debugLog)).ToList();
 
-							if (availableMethods.Count > 0)
+						if (AccessUtils.TryGetMethodFromName(name, out methodsList, true, item.id, frameDataView))
+						{
+							if(didFind)
+								menu.AddSeparator(string.Empty);
+							
+							if (methodsList.Any(m => AccessUtils.AllowPatching(m, false, debugLog)))
 							{
 								menu.AddItem(new GUIContent("Enable profiling for all"), false,
-									() => EnableProfilingFromProfilerWindow(availableMethods, tree));
+									() => EnableProfilingFromProfilerWindow(methodsList, tree));
 								menu.AddItem(new GUIContent("Disable profiling for all"), false,
-									() => DisableProfilingFromProfilerWindow(availableMethods, tree));
+									() => DisableProfilingFromProfilerWindow(methodsList, tree));
 								menu.AddSeparator(string.Empty);
+							}
 
-								foreach (var m in availableMethods)
-								{
-									AddMenuItem(tree, menu, m);
-								}
+							foreach (var methodInfo in methodsList)
+							{
+								if (!AccessUtils.AllowPatching(methodInfo, false, debugLog)) continue;
+								AddMenuItem(tree, menu, methodInfo, true);
 							}
 						}
 
@@ -238,9 +252,11 @@ namespace Needle.SelectiveProfiling
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerModules/CPUorGPUProfilerModule.cs#L194
 		}
 
-		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo)
+		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo, bool addTypeSubmenu)
 		{
 			var active = SelectiveProfiler.IsProfiling(methodInfo);
+
+			
 			var ret = methodInfo.ReturnType.Name;
 			// remove void return types
 			if (ret == "Void") ret = string.Empty;
@@ -254,14 +270,21 @@ namespace Needle.SelectiveProfiling
 				return methodName;
 			}
 
-			var label = $"Profile | {ret}{methodInfo.DeclaringType?.Name}.{GetMethodName(true)}";
-			// if menu items are too long nothing is displayed anymore
+			const string prefix = "Profile | ";
 			const int maxLength = 195;
+			// if menu items are too long nothing is displayed anymore
+			
+			var label = prefix + TranspilerUtils.GetNiceMethodName(methodInfo, false);
+
+			if (label.Length > maxLength)
+				label = $"Profile | {ret}{methodInfo.DeclaringType?.Name}.{GetMethodName(true)}";
 			if (label.Length > maxLength)
 				label = $"Profile | {ret}{methodInfo.DeclaringType?.Name}.{GetMethodName(false)}";
 			if (label.Length > maxLength)
 				label = "..." + label.Substring(Mathf.Abs(maxLength - label.Length));
 
+			if (addTypeSubmenu && methodInfo.DeclaringType != null)
+				label = methodInfo.DeclaringType.Name + "/" + label;
 
 			// need to split this into two menu items until we sync state of activated methods between standalone profiler and main process
 			// if (SelectiveProfiler.IsStandaloneProcess)
