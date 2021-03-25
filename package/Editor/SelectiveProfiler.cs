@@ -236,32 +236,36 @@ namespace Needle.SelectiveProfiling
 			return task ?? Task.CompletedTask;
 		}
 
-		internal static void DisableAndForget(MethodInfo info)
+		internal static Task DisableAndForget(MethodInfo info)
 		{
+			Task task = null;
 			if (profiled.TryGetValue(info, out var prof))
 			{
 				// dont need to save state change because we remove it here anyways
-				DisableProfiling(info, false);
+				task = DisableProfiling(info, false);
 				profiled.Remove(info);
 				var match = profiled2.FirstOrDefault(e => e.Value == prof).Key;
 				if (match != null) profiled2.Remove(match);
 			}
 			if(ShouldSave)
 				SelectiveProfilerSettings.Instance.Remove(info);
+			return task ?? Task.CompletedTask;
 		}
 
-		internal static void DisableAndForget(MethodInformation info)
+		internal static Task DisableAndForget(MethodInformation info)
 		{
+			Task task = null;
 			if (profiled2.TryGetValue(info, out var prof))
 			{
 				// dont need to save state change because we remove it here anyways
-				DisableProfiling(prof.Method, false);
+				task = DisableProfiling(prof.Method, false);
 				profiled2.Remove(info);
 				var match = profiled.FirstOrDefault(e => e.Value == prof).Key;
 				if (match != null) profiled.Remove(match);
 			}
 			if(ShouldSave)
 				SelectiveProfilerSettings.Instance.Remove(info);
+			return task ?? Task.CompletedTask;
 		}
 
 		internal static IEnumerable<string> ExpectedPatches()
