@@ -60,6 +60,11 @@ public static class TestHelpers
         Assert.IsFalse(SelectiveProfiler.TryGet(methodInfo, out var info), "Method is patched: " + methodInfo);
     }
     
+    internal static void MustBePatched(MethodInfo methodInfo)
+    {
+        Assert.IsTrue(SelectiveProfiler.TryGet(methodInfo, out var info), "Method is patched: " + methodInfo);
+    }
+    
     internal class PatchMethod : CustomYieldInstruction
     {
         private readonly bool shouldCollectNames = false;

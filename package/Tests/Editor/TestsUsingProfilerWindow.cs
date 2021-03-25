@@ -48,7 +48,7 @@ public class TestsUsingProfilerWindow
         
         Debug.Log(log);
 
-        TestHelpers.MustNotBePatched(methodInfo);
+        TestHelpers.MustNotBePatched(methodInfo); 
     }
     
     
@@ -58,6 +58,7 @@ public class TestsUsingProfilerWindow
         var behaviour = TestHelpers.CreateObjectWithComponent<BasicBehaviour>();
         void Action() => behaviour.MyCall(10000);
         var methodInfo = TestHelpers.GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
+        
         TestHelpers.MustNotBePatched(methodInfo);
         
         var patching = new TestHelpers.PatchMethod(methodInfo, true);

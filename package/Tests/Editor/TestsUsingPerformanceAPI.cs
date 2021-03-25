@@ -58,13 +58,13 @@ public class TestsUsingPerformanceAPI
         
         var patchMethod = new TestHelpers.PatchMethod(testCase.methodInfo, true);
         yield return patchMethod;
-        CollectionAssert.IsNotEmpty(patchMethod.InjectedSampleNames, "No samples injected into " + testCase.methodInfo);
         
         // clean up
         var task = SelectiveProfiler.DisableAndForget(testCase.methodInfo);
         while(!task.IsCompleted)
             yield return null;
         
+        CollectionAssert.IsNotEmpty(patchMethod.InjectedSampleNames, "No samples injected into " + testCase.methodInfo);
         TestHelpers.MustNotBePatched(testCase.methodInfo);
     }
 
@@ -75,12 +75,13 @@ public class TestsUsingPerformanceAPI
         
         var patchMethod = new TestHelpers.PatchMethod(testCase.methodInfo, true);
         yield return patchMethod;
-        CollectionAssert.IsEmpty(patchMethod.InjectedSampleNames, "Samples have been injected into " + testCase.methodInfo);
         
         // clean up
         var task = SelectiveProfiler.DisableAndForget(testCase.methodInfo);
         while(!task.IsCompleted)
             yield return null;
+        
+        CollectionAssert.IsEmpty(patchMethod.InjectedSampleNames, "Samples have been injected into " + testCase.methodInfo);
         
         TestHelpers.MustNotBePatched(testCase.methodInfo);
     }
@@ -95,6 +96,9 @@ public class TestsUsingPerformanceAPI
         var patchMethod = new TestHelpers.PatchMethod(methodInfo, true);
         yield return patchMethod;
 
+        TestHelpers.MustBePatched(methodInfo);
+        CollectionAssert.IsNotEmpty(patchMethod.InjectedSampleNames, "No samples have been injected");
+        
         Debug.Log("Done patching");
         
         var collectorThatShouldReceiveSamples = new ProfilerSampleCollector(methodInfo, patchMethod.InjectedSampleNames, Action);
