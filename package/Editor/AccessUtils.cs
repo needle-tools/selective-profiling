@@ -4,15 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using HarmonyLib;
 using JetBrains.Annotations;
-using Unity.Collections;
 using Unity.Profiling;
-using UnityEditor;
 using UnityEditor.Profiling;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Scripting;
 using Object = UnityEngine.Object;
@@ -40,12 +36,88 @@ namespace Needle.SelectiveProfiling.Utils
 			return assembly?.GetName().Name + ".dll" + ", " + declaring?.Namespace + "::" + declaring?.Name + info.Name + "(TODO:Params)";
 		}
 
-		// TODO: replace with resolve method info from profiler api?
-		public static bool TryGetMethodFromName(string name, out MethodInfo method)
+		private static Assembly[] assemblies;
+		private static Dictionary<Assembly, IEnumerable<Type>> types;
+
+		private static void EnsureAssembliesLoaded()
+		{
+			if(assemblies == null)
+				assemblies = AppDomain.CurrentDomain.GetAssemblies();
+		}
+		
+
+		
+		public static bool TryGetMethodFromName(string name, out MethodInfo method, int itemId = -1, HierarchyFrameDataView view = null)
+		{
+			if (TryGetMethodFromFullyQualifiedName(name, out method)) return true;
+
+			if (SelectiveProfiler.DevelopmentMode)
+			{
+				if (TryFindMethodFromCallstack(itemId, view, out method)) return true;
+				if (TryFindMethodInAssembliesByName(name, out method)) return true;
+			}
+			
+			return false;
+		}
+
+		private static readonly List<ulong> callstackList = new List<ulong>();
+		private static bool TryFindMethodFromCallstack(int itemId, HierarchyFrameDataView view, out MethodInfo method)
+		{
+			if (view == null || !view.valid || itemId < 0)
+			{
+				method = null;
+				return false;
+			}
+			
+			var callStack = view.ResolveItemCallstack(itemId);
+			Debug.Log(callStack);
+			
+			view.GetItemCallstack(itemId, callstackList);
+			if (callstackList.Count > 0)
+			{
+				Debug.Log(callstackList.Count);
+				foreach (var addr in callstackList)
+				{
+					var methodInfo = view.ResolveMethodInfo(addr);
+					if (!string.IsNullOrEmpty(methodInfo.methodName))
+					{
+						Debug.Log("FOUND " + methodInfo.methodName);
+						// if (TryGetMethodFromFullyQualifiedName(methodInfo.methodName, out method))
+						// 	return true;
+					}
+				}
+			}
+			
+			method = null;
+			return false;
+		}
+
+		private static bool TryFindMethodInAssembliesByName(string name, out MethodInfo method)
+		{
+			// EnsureAssembliesLoaded();
+			// foreach (var assembly in assemblies)
+			// {
+			// 	if (types == null) types = new Dictionary<Assembly, IEnumerable<Type>>();
+			// 	if (!types.ContainsKey(assembly)) types.Add(assembly, assembly.GetLoadableTypes());
+			// 	foreach (var type in types[assembly])
+			// 	{
+			// 		if (type.Name == "SceneHierarchyWindow")
+			// 		{
+			// 			Debug.Log(type);
+			// 			break;
+			// 		}
+			// 	}
+			// }
+
+			method = null;
+			return false;
+		}
+
+		private static bool TryGetMethodFromFullyQualifiedName(string name, out MethodInfo method)
 		{
 			if (!string.IsNullOrEmpty(name))
 			{
-				Assembly GetAssembly()
+				Assembly GetAssembly(ref Assembly[] _assemblies)
 				{
 					if (assemblyMap.ContainsKey(name)) return assemblyMap[name];
 
@@ -53,8 +125,8 @@ namespace Needle.SelectiveProfiling.Utils
 					if (dllIndex > 0)
 					{
 						var assemblyName = name.Substring(0, dllIndex) + ", ";
-						var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-						foreach (var ass in assemblies)
+						EnsureAssembliesLoaded();
+						foreach (var ass in _assemblies)
 						{
 							if (ass.FullName.StartsWith(assemblyName))
 							{
@@ -73,7 +145,7 @@ namespace Needle.SelectiveProfiling.Utils
 					return null;
 				}
 
-				var assembly = GetAssembly();
+				var assembly = GetAssembly(ref assemblies);
 				if (assembly != null)
 				{
 					const string separator = "!";
@@ -221,8 +293,7 @@ namespace Needle.SelectiveProfiling.Utils
 
 			if (!method.HasMethodBody())
 			{
-				if (debugLog)
-					Reason("Method has no body: " + GetMethodLogName());
+				Reason("Method has no body: " + GetMethodLogName());
 				return false;
 			}
 
