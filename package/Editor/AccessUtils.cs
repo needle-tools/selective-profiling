@@ -320,6 +320,13 @@ namespace Needle.SelectiveProfiling.Utils
 			return Level.User;
 		}
 
+		public static bool IsProperty(MethodInfo method)
+		{
+			var isPropertyByName = method.IsSpecialName && method.Name.StartsWith("get_") || method.Name.StartsWith("set_");
+			if (isPropertyByName) return true; 
+			return method.DeclaringType?.GetProperties(AccessUtils.AllDeclared).Any(prop => prop.GetSetMethod() == method) ?? false;
+		}
+
 		public static string AllowPatchingResultLastReason;
 		public static bool AllowPatching(MethodInfo method, bool isDeep, bool debugLog)
 		{
@@ -382,7 +389,7 @@ namespace Needle.SelectiveProfiling.Utils
 			var settings = SelectiveProfilerSettings.instance;
 			if (settings.SkipProperties)
 			{
-				if (method.IsSpecialName && method.Name.StartsWith("get_") || method.Name.StartsWith("set_"))
+				if (IsProperty(method))
 				{
 					Reason("Profiling properties is disabled in settings: " + GetMethodLogName() +
 							"\nFor more information please refer to https://github.com/needle-tools/selective-profiling/issues/2");
