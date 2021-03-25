@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IProfilerCollector
+public interface IProfilerDataCollector
 {
     List<string> ReceivedSamples { get; }
 }

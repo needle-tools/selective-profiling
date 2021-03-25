@@ -95,19 +95,41 @@ public class TestsUsingPerformanceAPI
         var patchMethod = new TestHelpers.PatchMethod(methodInfo, true);
         yield return patchMethod;
 
-        var methodIsPatchedAfterPatching = TestHelpers.MethodIsPatched(Action, patchMethod.InjectedSampleNames); 
+        Debug.Log("Done patching");
+        
+        var collectorThatShouldReceiveSamples = new ProfilerSampleCollector(methodInfo, patchMethod.InjectedSampleNames, Action);
+        yield return collectorThatShouldReceiveSamples;
+        var methodIsPatchedAfterPatching = collectorThatShouldReceiveSamples.ReceivedSamples.Count == patchMethod.InjectedSampleNames.Count; 
+        
+        Debug.Log("Done collecting samples where we should receive some\n" + 
+                  TestHelpers.Log(patchMethod.InjectedSampleNames, collectorThatShouldReceiveSamples.ReceivedSamples));
         
         var task = SelectiveProfiler.DisableAndForget(methodInfo);
         while (!task.IsCompleted)
             yield return null;
 
+        Debug.Log("Done unpatching");
+        
+        TestHelpers.MustNotBePatched(methodInfo);
+        
         Assert.IsTrue(methodIsPatchedAfterPatching, 
             $"MethodIsPatched(Action, patchMethod.InjectedSampleNames)\n" +
-            $"[Expected Sample Names: {patchMethod.InjectedSampleNames.Count}]\n{string.Join("\n", patchMethod.InjectedSampleNames)}");
+            TestHelpers.Log(patchMethod.InjectedSampleNames, collectorThatShouldReceiveSamples.ReceivedSamples));
 
-        Assert.IsFalse(TestHelpers.MethodIsPatched(Action, patchMethod.InjectedSampleNames), 
-            $"MethodIsPatched(Action, patchMethod.InjectedSampleNames)\n" +
-            $"[Must not have Samples: {patchMethod.InjectedSampleNames.Count}]\n{string.Join("\n", patchMethod.InjectedSampleNames)}");
+        // seems we need to wait some arbitrary amount of time until Profiler doesn't serve old samples anymore
+        // TODO can we detect that Profiler has actually stopped sending frames? 
+        for(int i = 0; i < 60; i++)
+            yield return null;
+        
+        var collectorThatShouldNotReceiveSamples = new ProfilerSampleCollector(methodInfo, patchMethod.InjectedSampleNames, Action);
+        yield return collectorThatShouldNotReceiveSamples;
+        
+        Debug.Log("Done collecting samples where we should receive 0\n" + 
+                  TestHelpers.Log(patchMethod.InjectedSampleNames, collectorThatShouldNotReceiveSamples.ReceivedSamples));
+        
+        Assert.IsFalse(collectorThatShouldNotReceiveSamples.ReceivedSamples.Count > 0, 
+            $"Collector should not have captured any samples but captured {collectorThatShouldNotReceiveSamples.ReceivedSamples.Count}\n" +
+            TestHelpers.Log(patchMethod.InjectedSampleNames, collectorThatShouldNotReceiveSamples.ReceivedSamples));
     }
 
     [UnityTest]
@@ -133,11 +155,36 @@ public class TestsUsingPerformanceAPI
 
         TestHelpers.MustNotBePatched(methodInfo);
     }
-    
+
     [UnityTest]
-    public IEnumerator CheckIfSampleExists()
+    public IEnumerator ProfilerSamplesAreCollected()
     {
         var behaviour = TestHelpers.CreateObjectWithComponent<BasicBehaviour>();
+        void Action() => behaviour.MyCall(10000);
+        var methodInfo = TestHelpers.GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
+        TestHelpers.MustNotBePatched(methodInfo);
+        
+        var patching = new TestHelpers.PatchMethod(methodInfo, true);
+        yield return patching;
+        
+        var collectorThatShouldReceiveSamples = new ProfilerSampleCollector(methodInfo, patching.InjectedSampleNames, Action);
+        yield return collectorThatShouldReceiveSamples;
+        
+        var task = SelectiveProfiler.DisableAndForget(methodInfo);
+        while (!task.IsCompleted)
+            yield return null;
+        
+        CollectionAssert.AreEqual(patching.InjectedSampleNames, collectorThatShouldReceiveSamples.ReceivedSamples, 
+            TestHelpers.Log(patching.InjectedSampleNames, collectorThatShouldReceiveSamples.ReceivedSamples));
+                
+        TestHelpers.MustNotBePatched(methodInfo);
+    }
+
+    [UnityTest]
+    public IEnumerator ProfilerMarkersAreCollected()
+    {
+        var behaviour = TestHelpers.CreateObjectWithComponent<BasicBehaviour>();
+        void Action() => behaviour.MyCall(10000);
         var methodInfo = TestHelpers.GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
         TestHelpers.MustNotBePatched(methodInfo);
         
@@ -160,7 +207,7 @@ public class TestsUsingPerformanceAPI
         // TODO remove unnecessary loops here, we only want to know if we can collect samples
         for (var i = 0; i < 50; i++)
         {
-            behaviour.MyCall(10000);
+            Action();
             
             marker_Test.Begin();
             for (int j = 0; j < 1000; j++)
@@ -179,9 +226,7 @@ public class TestsUsingPerformanceAPI
         while (!task.IsCompleted)
             yield return null;
         
-        CollectionAssert.AreEqual(recorders, recordersWithData, 
-            $"\n[Expected: {recorders.Count} samples]\n{string.Join("\n", recorders)}\n\n" + 
-            $"[Actual: {recordersWithData.Count} samples]\n{string.Join("\n", recordersWithData)}\n");
+        CollectionAssert.AreEqual(recorders, recordersWithData, TestHelpers.Log(recorders, recordersWithData));
         
         TestHelpers.MustNotBePatched(methodInfo);
     }

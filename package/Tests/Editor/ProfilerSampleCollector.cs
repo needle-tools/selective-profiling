@@ -8,7 +8,7 @@ using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Profiling;
 
-internal class ProfilerDataSampleCollector : CustomYieldInstruction, IProfilerDataCollector
+internal class ProfilerSampleCollector : CustomYieldInstruction, IProfilerDataCollector
     {
         public List<string> ReceivedSamples { get; private set; } = new List<string>();
         
@@ -21,7 +21,7 @@ internal class ProfilerDataSampleCollector : CustomYieldInstruction, IProfilerDa
         private int receivedProfilerFrames = 0;
         private bool haveCollectedAllSamples = false;
         
-        public ProfilerDataSampleCollector(MethodInfo methodInfo, List<string> expectedSampleNames, Action action)
+        public ProfilerSampleCollector(MethodInfo methodInfo, List<string> expectedSampleNames, Action action)
         {
             this.methodInfo = methodInfo;
             this.expectedSamples = expectedSampleNames;

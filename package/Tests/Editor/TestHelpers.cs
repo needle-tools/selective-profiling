@@ -48,6 +48,13 @@ public static class TestHelpers
         return type.GetMethods((BindingFlags)(-1)).FirstOrDefault(x => x.Name.Equals(method, StringComparison.Ordinal));
     }
 
+    internal static string Log<T>(IEnumerable<T> expected, IEnumerable<T> actual)
+    {
+        return 
+            $"\n[Expected: {expected.Count()} samples]\n{string.Join("\n", expected)}\n\n" + 
+            $"[Actual: {actual.Count()} samples]\n{string.Join("\n", actual)}\n";
+    }
+    
     internal static void MustNotBePatched(MethodInfo methodInfo)
     {
         Assert.IsFalse(SelectiveProfiler.TryGet(methodInfo, out var info), "Method is patched: " + methodInfo);
@@ -90,11 +97,11 @@ public static class TestHelpers
         }
     }
 
-    internal static bool MethodIsPatched(Action callMethod, List<string> injectedSampleNames)
-    {
-        var recorders = injectedSampleNames.Select(x => new Sampler(x)).ToList();
-        callMethod();
-        return recorders.Any(x => x.HasCollectedDataAfterStopping);
-    }
+    // internal static bool AllRecordersCollectSamplingData(Action callMethod, List<string> injectedSampleNames)
+    // {
+    //     var recorders = injectedSampleNames.Select(x => new Sampler(x)).ToList();
+    //     callMethod();
+    //     return recorders.Any(x => x.HasCollectedDataAfterStopping);
+    // }
 
 }
