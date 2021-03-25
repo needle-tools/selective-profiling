@@ -157,30 +157,6 @@ public class TestsUsingPerformanceAPI
     }
 
     [UnityTest]
-    public IEnumerator ProfilerSamplesAreCollected()
-    {
-        var behaviour = TestHelpers.CreateObjectWithComponent<BasicBehaviour>();
-        void Action() => behaviour.MyCall(10000);
-        var methodInfo = TestHelpers.GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
-        TestHelpers.MustNotBePatched(methodInfo);
-        
-        var patching = new TestHelpers.PatchMethod(methodInfo, true);
-        yield return patching;
-        
-        var collectorThatShouldReceiveSamples = new ProfilerSampleCollector(methodInfo, patching.InjectedSampleNames, Action);
-        yield return collectorThatShouldReceiveSamples;
-        
-        var task = SelectiveProfiler.DisableAndForget(methodInfo);
-        while (!task.IsCompleted)
-            yield return null;
-        
-        CollectionAssert.AreEqual(patching.InjectedSampleNames, collectorThatShouldReceiveSamples.ReceivedSamples, 
-            TestHelpers.Log(patching.InjectedSampleNames, collectorThatShouldReceiveSamples.ReceivedSamples));
-                
-        TestHelpers.MustNotBePatched(methodInfo);
-    }
-
-    [UnityTest]
     public IEnumerator ProfilerMarkersAreCollected()
     {
         var behaviour = TestHelpers.CreateObjectWithComponent<BasicBehaviour>();

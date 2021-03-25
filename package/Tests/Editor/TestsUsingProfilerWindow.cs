@@ -42,15 +42,37 @@ public class TestsUsingProfilerWindow
             yield return null;
 
         Profiler.enabled = false;
-        
-        var log = 
-            $"\n[Expected: {expectedSamples.Count} samples]\n{string.Join("\n", expectedSamples)}\n\n" +
-            $"[Actual: {receivedSamples.Count} samples]\n{string.Join("\n", receivedSamples)}\n";
+
+        var log = TestHelpers.Log(expectedSamples, receivedSamples);
         CollectionAssert.AreEqual(expectedSamples, receivedSamples, log);
         
         Debug.Log(log);
 
+        TestHelpers.MustNotBePatched(methodInfo);
+    }
+    
+    
+    [UnityTest]
+    public IEnumerator ProfilerSamplesAreCollected()
+    {
+        var behaviour = TestHelpers.CreateObjectWithComponent<BasicBehaviour>();
+        void Action() => behaviour.MyCall(10000);
+        var methodInfo = TestHelpers.GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
+        TestHelpers.MustNotBePatched(methodInfo);
         
+        var patching = new TestHelpers.PatchMethod(methodInfo, true);
+        yield return patching;
+        
+        var collectorThatShouldReceiveSamples = new ProfilerSampleCollector(methodInfo, patching.InjectedSampleNames, Action);
+        yield return collectorThatShouldReceiveSamples;
+        
+        var task = SelectiveProfiler.DisableAndForget(methodInfo);
+        while (!task.IsCompleted)
+            yield return null;
+        
+        CollectionAssert.AreEqual(patching.InjectedSampleNames, collectorThatShouldReceiveSamples.ReceivedSamples, 
+            TestHelpers.Log(patching.InjectedSampleNames, collectorThatShouldReceiveSamples.ReceivedSamples));
+                
         TestHelpers.MustNotBePatched(methodInfo);
     }
 }
