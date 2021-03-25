@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Needle.SelectiveProfiling.CodeWrapper
 {
-	public class InstructionsWrapper : ICodeWrapper
+	internal class InstructionsWrapper : ICodeWrapper
 	{
 		public int Start;
 		public int MethodIndex;

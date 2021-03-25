@@ -123,7 +123,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			return "<" + string.Join(", ", genericArguments.Select(arg => GetNiceTypeName(arg, true))) + ">";
 		}
 
-		private static string GetNiceMethodName(MethodBase method, bool skipRootDeclaringType)
+		internal static string GetNiceMethodName(MethodBase method, bool skipRootDeclaringType)
 		{
 			string _class = null;
 			if (method.DeclaringType != null)

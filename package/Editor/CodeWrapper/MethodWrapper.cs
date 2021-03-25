@@ -11,8 +11,10 @@ using UnityEngine.Profiling;
 
 namespace Needle.SelectiveProfiling.CodeWrapper
 {
-	public class MethodWrapper : ICodeWrapper
+	internal class MethodWrapper : ICodeWrapper
 	{
+		internal static Action<string, string> CapturedILBeforeAfter;
+		
 		private readonly InstructionsWrapper wrapper;
 		private readonly InjectionCallback beforeInject;
 		private readonly bool debugLog;
@@ -30,7 +32,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 		public void Apply(MethodBase method, IList<CodeInstruction> instructions, IList<CodeInstruction> before, IList<CodeInstruction> after)
 		{
-			var IL_Before = string.Join("\n", instructions);
+			var IL_Before = ShouldSaveIL(debugLog) || SelectiveProfiler.DevelopmentMode ? string.Join("\n", instructions) : null;
 			
 			var start = -1;
 			var exceptionBlockStack = 0;
@@ -109,11 +111,26 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				}
 			}
 
-			if (debugLog)
+			if (ShouldSaveIL(debugLog))
 			{
 				var prefix = method != null ? "<b>Transpiled</b> " + method.DeclaringType?.Name + "." + method.Name + "\n" : string.Empty;
-				Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, prefix + IL_Before + "\n\n----\n\n" + string.Join("\n", instructions) + "\n\n");
+				var IL_After = string.Join("\n", instructions);
+				Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, prefix + IL_Before + "\n\n----\n\n" + IL_After + "\n\n");
+
+				try
+				{
+					CapturedILBeforeAfter?.Invoke(IL_Before, IL_After);
+				}
+				catch(Exception e)
+				{
+					Debug.LogException(e);
+				}
 			}
+		}
+
+		private static bool ShouldSaveIL(bool _debugLog)
+		{
+			return _debugLog || CapturedILBeforeAfter != null;
 		}
 	}
 }
