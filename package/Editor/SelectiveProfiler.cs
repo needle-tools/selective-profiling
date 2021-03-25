@@ -20,7 +20,7 @@ namespace Needle.SelectiveProfiling
 	// [AlwaysProfile]
 	public static class SelectiveProfiler
 	{
-		public static string SamplePostfix => DevelopmentMode || DebugLog ? "[debug]" : string.Empty;
+		public static string SamplePostfix => DevelopmentMode ? "[dev]" : DebugLog ? "[debug]" : string.Empty;
 
 		// private static MethodInfo previouslySelectedImmediateProfilingMethod;
 
@@ -88,7 +88,7 @@ namespace Needle.SelectiveProfiling
 		/// <summary>
 		/// check editor state (this does not settings enabled state)
 		/// </summary>
-		internal static bool AllowToBeEnabled => true;// !ProfilerDriver.deepProfiling || DevelopmentMode;
+		internal static bool AllowToBeEnabled => !ProfilerDriver.deepProfiling || DevelopmentMode;
 
 		private static async Task InternalEnableProfilingAsync(
 			MethodInfo method,
