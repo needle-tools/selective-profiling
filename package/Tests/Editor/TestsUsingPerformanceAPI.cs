@@ -49,7 +49,7 @@ public class TestsUsingPerformanceAPI
         return behaviour;
     }
 
-    MethodInfo GetMethodInfo(Type type, string method)
+    static MethodInfo GetMethodInfo(Type type, string method)
     {
         return type.GetMethod(method, (BindingFlags) (-1));
     }
@@ -92,6 +92,39 @@ public class TestsUsingPerformanceAPI
         var recorders = injectedSampleNames.Select(x => new Sampler(x)).ToList();
         callMethod();
         return recorders.Any(x => x.HasCollectedDataAfterStopping);
+    }
+
+    public class PatchingTestCase
+    {
+        public MethodInfo methodInfo;
+        
+        public PatchingTestCase(MethodInfo methodInfo)
+        {
+            this.methodInfo = methodInfo;
+        }
+
+        public override string ToString()
+        {
+            return methodInfo.DeclaringType.FullName + "." + methodInfo;
+        }
+    }
+
+    static IEnumerable<PatchingTestCase> GetPatchingTestCases()
+    {
+        yield return new PatchingTestCase(GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyStaticCall)));
+        yield return new PatchingTestCase(GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall)));
+    }
+    
+    [UnityTest]
+    public IEnumerator PatchHasInjectedSamples([ValueSource(nameof(GetPatchingTestCases))] PatchingTestCase testCase)
+    {
+        var patchMethod = new PatchMethod(testCase.methodInfo, true);
+        yield return patchMethod;
+        CollectionAssert.IsNotEmpty(patchMethod.InjectedSampleNames, "No samples injected into " + testCase.methodInfo);
+        
+        // clean up
+        SelectiveProfiler.DisableAndForget(testCase.methodInfo);
+        yield return null;
     }
 
     [UnityTest]
