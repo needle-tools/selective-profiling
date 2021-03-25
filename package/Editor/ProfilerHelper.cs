@@ -47,19 +47,22 @@ namespace Needle.SelectiveProfiling
 
 		internal static HierarchyItem IsProfiled(TreeViewItem item, HierarchyFrameDataView view)
 		{
-			return IsProfiled(item.id, view);
+			return IsProfiled(item.id, view, 0);
 		}
 
-		private static HierarchyItem IsProfiled(int id, HierarchyFrameDataView view)
+		private static HierarchyItem IsProfiled(int id, HierarchyFrameDataView view, int level)
 		{
 			if (view == null || !view.valid) return HierarchyItem.None;
 
 			var markerId = view.GetItemMarkerID(id);
 
-			idToMethod.Remove(markerId);
-			if (profiledChildren.ContainsKey(markerId))
-				profiledChildren.Remove(markerId);
-
+			if (level <= 0)
+			{
+				if(idToMethod.ContainsKey(markerId))
+					idToMethod.Remove(markerId);
+				if (profiledChildren.ContainsKey(markerId))
+					profiledChildren.Remove(markerId);
+			}
 
 			if (!idToMethod.ContainsKey(markerId))
 			{
@@ -75,13 +78,18 @@ namespace Needle.SelectiveProfiling
 					if (hasChildren)
 					{
 						view.GetItemChildren(id, children);
+						var lvl = ++level;
 						for (var index = children.Count - 1; index >= 0; index--)
 						{
 							var child = children[index];
-							if (IsProfiled(child, view) == HierarchyItem.None) children.RemoveAt(index);
+							if (IsProfiled(child, view, lvl) == HierarchyItem.None) children.RemoveAt(index);
 						}
-
-						profiledChildren.Add(markerId, children);
+						if(!profiledChildren.ContainsKey(markerId))
+							profiledChildren.Add(markerId, children);
+						else
+						{
+							profiledChildren[markerId]?.AddRange(children);
+						}
 					}
 				}
 			}
@@ -89,7 +97,7 @@ namespace Needle.SelectiveProfiling
 			idToMethod.TryGetValue(markerId, out var method);
 
 			if (IsEnabled(method)) return HierarchyItem.Self;
-			if (HasProfiledChild(markerId, view)) return HierarchyItem.Child;
+			if (HasProfiledChild(markerId, view, level)) return HierarchyItem.Child;
 			return HierarchyItem.None;
 		}
 
@@ -101,35 +109,23 @@ namespace Needle.SelectiveProfiling
 			return info != null && SelectiveProfiler.IsProfiling(info);
 		}
 
-		private static bool HasProfiledChild(int markerId, HierarchyFrameDataView view)
+		private static bool HasProfiledChild(int markerId, HierarchyFrameDataView view, int level)
 		{
 			if (profiledChildren.ContainsKey(markerId))
 			{
 				var list = profiledChildren[markerId];
+				++level;
 				if (list != null)
 				{
 					foreach (var i in list)
 					{
-						if (IsProfiled(i, view) != HierarchyItem.None)
+						if (IsProfiled(i, view, level) != HierarchyItem.None)
 							return true;
 					}
 				}
 			}
 
 			return false;
-		}
-
-		[InitializeOnLoadMethod]
-		private static void Init()
-		{
-			EditorApplication.update += OnEditorUpdate;
-		}
-
-		private static int editorUpdateCounter;
-
-		private static void OnEditorUpdate()
-		{
-			editorUpdateCounter++;
 		}
 	}
 }
