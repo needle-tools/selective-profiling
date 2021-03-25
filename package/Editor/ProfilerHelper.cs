@@ -8,6 +8,13 @@ using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
+	internal enum HierarchyItem
+	{
+		None = 0,
+		Child = 1,
+		Self = 2,
+	}
+	
 	internal static class ProfilerHelper
 	{
 		public static bool TryGetMethodsInChildren(int id, HierarchyFrameDataView frameData, out List<MethodInfo> methods)
@@ -37,18 +44,22 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 		}
-		
-		internal static bool IsProfiled(TreeViewItem item, HierarchyFrameDataView view)
+
+		internal static HierarchyItem IsProfiled(TreeViewItem item, HierarchyFrameDataView view)
 		{
 			return IsProfiled(item.id, view);
 		}
 
-		internal static bool IsProfiled(int id, HierarchyFrameDataView view)
+		private static HierarchyItem IsProfiled(int id, HierarchyFrameDataView view)
 		{
-			if (view == null || !view.valid) return false;
-			
-			// TODO: should this id be the marker id
+			if (view == null || !view.valid) return HierarchyItem.None;
+
 			var markerId = view.GetItemMarkerID(id);
+
+			idToMethod.Remove(markerId);
+			if (profiledChildren.ContainsKey(markerId))
+				profiledChildren.Remove(markerId);
+
 
 			if (!idToMethod.ContainsKey(markerId))
 			{
@@ -57,33 +68,29 @@ namespace Needle.SelectiveProfiling
 				{
 					idToMethod.Add(markerId, methodInfo);
 				}
-				// else if (!profiledChildren.ContainsKey(id))
-				// {
-				// 	var hasChildren = view.HasItemChildren(id);
-				// 	var children = hasChildren ? new List<int>() : null;
-				// 	if (hasChildren)
-				// 	{
-				// 		view.GetItemChildren(id, children);
-				// 		for (var index = children.Count - 1; index >= 0; index--)
-				// 		{
-				// 			var i = children[index];
-				// 			if (!IsProfiled(i, view)) children.RemoveAt(index);
-				// 		}
-				// 		profiledChildren.Add(id, children);
-				// 	}
-				// }
+				else if (!profiledChildren.ContainsKey(markerId))
+				{
+					var hasChildren = view.HasItemChildren(id);
+					var children = hasChildren ? new List<int>() : null;
+					if (hasChildren)
+					{
+						view.GetItemChildren(id, children);
+						for (var index = children.Count - 1; index >= 0; index--)
+						{
+							var child = children[index];
+							if (IsProfiled(child, view) == HierarchyItem.None) children.RemoveAt(index);
+						}
+
+						profiledChildren.Add(markerId, children);
+					}
+				}
 			}
 
 			idToMethod.TryGetValue(markerId, out var method);
 
-			if (method == null && (!Application.isPlaying || (markerId + editorUpdateCounter) % 30 == 0))
-			{
-				idToMethod.Remove(markerId);
-				// if(profiledChildren.ContainsKey(id))
-				// 	profiledChildren.Remove(id);
-			}
-			
-			return IsEnabled(method) || HasProfiledChild(markerId, view);
+			if (IsEnabled(method)) return HierarchyItem.Self;
+			if (HasProfiledChild(markerId, view)) return HierarchyItem.Child;
+			return HierarchyItem.None;
 		}
 
 		private static readonly Dictionary<int, MethodInfo> idToMethod = new Dictionary<int, MethodInfo>();
@@ -103,7 +110,7 @@ namespace Needle.SelectiveProfiling
 				{
 					foreach (var i in list)
 					{
-						if (IsProfiled(i, view))
+						if (IsProfiled(i, view) != HierarchyItem.None)
 							return true;
 					}
 				}
@@ -119,6 +126,7 @@ namespace Needle.SelectiveProfiling
 		}
 
 		private static int editorUpdateCounter;
+
 		private static void OnEditorUpdate()
 		{
 			editorUpdateCounter++;

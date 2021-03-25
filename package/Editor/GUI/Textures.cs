@@ -22,10 +22,21 @@ namespace Needle.SelectiveProfiling
 			get
 			{
 				if (!_profiled)
-					_profiled = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.needle.selective-profiling/Editor/GUI/Textures/profiled1.png");
+					_profiled = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.needle.selective-profiling/Editor/GUI/Textures/profiled4.png");
 				return _profiled;
 			}
 		}
 
+		
+		private static Texture2D _profiledChild;
+		public static Texture2D ProfiledChild
+		{
+			get
+			{
+				if (!_profiledChild)
+					_profiledChild = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.needle.selective-profiling/Editor/GUI/Textures/profiled2.png");
+				return _profiledChild;
+			}
+		}
 	}
 }

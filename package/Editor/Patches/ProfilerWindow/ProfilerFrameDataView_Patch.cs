@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -114,13 +115,28 @@ namespace Needle.SelectiveProfiling
 				if (column <= 0)
 				{
 					frameDataView = GetFrameDataView(item);
-					if (ProfilerHelper.IsProfiled(item, frameDataView))
+					var profiled = ProfilerHelper.IsProfiled(item, frameDataView);
+					if (profiled != HierarchyItem.None)
 					{
-						var size = cellRect.height * .5f;
-						var xOff = -size * .5f;
-						var yOff = (cellRect.height - size) * .5f;
-						var rect = new Rect(cellRect.x + cellRect.width - size + xOff, cellRect.y + yOff, size, size);
-						GUI.DrawTexture(rect, Textures.Profiled, ScaleMode.ScaleAndCrop, true, 1, Color.gray, 0, 0);
+
+						Rect GetRect(float size)
+						{
+							var xOff = -size * .5f;
+							var yOff = (cellRect.height - size) * .5f;
+							return new Rect(cellRect.x + cellRect.width - size + xOff, cellRect.y + yOff, size, size);
+						}
+
+						var rectSize = cellRect.height;
+						switch (profiled)
+						{
+							default:
+							case HierarchyItem.Child:
+								GUI.DrawTexture(GetRect(rectSize * .5f), Textures.ProfiledChild, ScaleMode.ScaleAndCrop, true, 1, Color.gray, 0, 0);
+								break;
+							case HierarchyItem.Self:
+								GUI.DrawTexture(GetRect(rectSize * .5f), Textures.Profiled, ScaleMode.ScaleAndCrop, true, 1, Color.gray, 0, 0);
+								break;
+						}
 					}
 				}
 				
