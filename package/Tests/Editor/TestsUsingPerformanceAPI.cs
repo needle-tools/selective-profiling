@@ -267,13 +267,10 @@ public class TestsUsingPerformanceAPI
             Assert.Fail("Method is not patched");
         }
 
-        // TODO this pretends to be sync but is async, how can we actually check the method isn't patched anymore?
-        SelectiveProfiler.DisableAndForget(methodInfo);
+        var task = SelectiveProfiler.DisableAndForget(methodInfo);
+        while (!task.IsCompleted) yield return null;
 
-        if (SelectiveProfiler.TryGet(methodInfo, out var profilingInfoAfterDisable))
-        {
-            Assert.Fail("Method is still patched, disable didn't work");
-        }
+        MustNotBePatched(methodInfo);
     }
 
     void MustNotBePatched(MethodInfo methodInfo)
@@ -323,11 +320,15 @@ public class TestsUsingPerformanceAPI
         // prevent compiler stripping - this should always be false
         if(k < 0) Debug.Log(k);
         
-        SelectiveProfiler.DisableAndForget(methodInfo);
+        var task = SelectiveProfiler.DisableAndForget(methodInfo);
+        while (!task.IsCompleted)
+            yield return null;
         
         CollectionAssert.AreEqual(recorders, recordersWithData, 
             $"\n[Expected: {recorders.Count} samples]\n{string.Join("\n", recorders)}\n\n" + 
             $"[Actual: {recordersWithData.Count} samples]\n{string.Join("\n", recordersWithData)}\n");
+        
+        MustNotBePatched(methodInfo);
     }
 
     [Performance, UnityTest]

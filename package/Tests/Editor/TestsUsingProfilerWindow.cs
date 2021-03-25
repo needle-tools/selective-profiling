@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.TestTools;
 
-public class BasicTests
+public class TestsUsingProfilerWindow
 {
     // // A Test behaves as an ordinary method
     // [Test]
@@ -57,9 +57,13 @@ public class BasicTests
         // call method
         behaviour.MyCall(100000);
 
-        while (receivedProfilerFrames < 10)
+        int maxWaitFrames = 500;
+        
+        while (receivedProfilerFrames < 10 && maxWaitFrames-- > 0)
             yield return null;
 
+        Assert.AreEqual(receivedProfilerFrames, 10, "Received not enough profiler frames from the ProfilerDriver. Is the Profiler window closed?");
+        
         Debug.Log("Received some profiler frames");
 
         Profiler.enabled = false;
