@@ -10,6 +10,7 @@ using Needle.SelectiveProfiling;
 using NUnit.Framework;
 using Unity.PerformanceTesting;
 using Unity.Profiling;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.TestTools;
@@ -184,14 +185,17 @@ public class TestsUsingPerformanceAPI
     static IEnumerable<NamespaceTestCase> TestCasesPerNamespace()
     {
         // get all types
-        var namespaceToTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetLoadableTypes()).ToLookup(x => x.Namespace);
-        foreach (var group in namespaceToTypes)
+        var namespaceToTypes = AppDomain.CurrentDomain
+            .GetAssemblies()
+            .SelectMany(x => x.GetLoadableTypes())
+            .ToLookup(x => x.Namespace);
+        foreach (var group in namespaceToTypes.Where(x => !string.IsNullOrEmpty(x.Key) && x.Key.Contains("Unity")))
         {
             yield return new NamespaceTestCase(group.Key, namespaceToTypes[group.Key]);
         }
     }
 
-    [Ignore("Very slow, please run manually")]
+    [Explicit]
     [UnityTest]
     public IEnumerator CanPatchEverythingInNamespace([ValueSource(nameof(TestCasesPerNamespace))] NamespaceTestCase testCase)
     {
@@ -199,11 +203,17 @@ public class TestsUsingPerformanceAPI
         SelectiveProfilerSettings.instance.DebugLog = false;
         
         // for each type, try to patch all methods
-        var methods = testCase.Types.SelectMany(x => x.GetMethods((BindingFlags) (-1)));
+        var methods = testCase.Types.SelectMany(x => x.GetMethods((BindingFlags) (-1))).ToList();
         var methodsThatDidntHaveSamples = new List<MethodInfo>();
-        
+
+        var p = Progress.Start("Injecting Samples");
+        int current = 0;
         foreach (var methodInfo in methods)
         {
+            current++;
+            if(current % 50 == 0)
+                Progress.Report(p, current, methods.Count, methodInfo.ToString());
+                
             var patchMethod = new PatchMethod(methodInfo, true);
             yield return patchMethod;
 
@@ -214,6 +224,8 @@ public class TestsUsingPerformanceAPI
             while (!task.IsCompleted)
                 yield return null;
         }
+
+        Progress.Remove(p);
 
         var allMethodsCount = methods.Count();
         var methodsThatDidntHaveSamplesCount = methodsThatDidntHaveSamples.Count();
@@ -335,8 +347,9 @@ public class TestsUsingPerformanceAPI
         MustNotBePatched(methodInfo);
     }
 
-    [Performance, UnityTest]
-    [Ignore("Example")]
+    [Explicit]
+    [Performance]
+    [UnityTest]
     public IEnumerator Example_CubeInstantiationPerformance()
     {
         string[] markers =
@@ -379,8 +392,8 @@ public class TestsUsingPerformanceAPI
     //     });
     // }
     
-    [Performance, Test]
-    public void PatchingPerformance()
+    [Performance, UnityTest]
+    public IEnumerator PatchingPerformance()
     {
         var go = new GameObject("Test");
         var behaviour = go.AddComponent<BasicBehaviour>();
@@ -393,7 +406,7 @@ public class TestsUsingPerformanceAPI
         // regular method, not patched
         Measure.Method(() =>
             {
-                behaviour.MyCall(1000);
+                behaviour.MyCall(1000); 
             })
             .WarmupCount(10)
             .MeasurementCount(20)
@@ -401,6 +414,13 @@ public class TestsUsingPerformanceAPI
             // .GC()
             .SampleGroup(unpatchedGroup)
             .Run();
+        
+        using(Measure.Scope("Enable Selective Profiling for " + methodInfo))
+        {
+            var task1 = SelectiveProfiler.EnableProfilingAsync(methodInfo, false, true);
+            while (!task1.IsCompleted)
+                yield return null;
+        }
         
         // patched method
         Measure.Method(() =>
@@ -412,17 +432,17 @@ public class TestsUsingPerformanceAPI
             .IterationsPerMeasurement(50)
             // .GC()
             .SampleGroup(patchedGroup)
-            .SetUp(() =>
-            {
-                // TODO wait for completion
-                SelectiveProfiler.EnableProfilingAsync(methodInfo, false, true);
-            })
-            .CleanUp(() =>
-            {
-                // TODO wait for completion
-                SelectiveProfiler.DisableProfiling(methodInfo, false);
-            })
             .Run();
+        
+        using (Measure.Scope("Disable Selective Profiling for " + methodInfo))
+        {
+
+            var task = SelectiveProfiler.DisableAndForget(methodInfo);
+            while (!task.IsCompleted)
+                yield return null;
+        }
+
+        MustNotBePatched(methodInfo); 
     }
     
 }

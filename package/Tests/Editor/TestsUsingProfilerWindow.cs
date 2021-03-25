@@ -21,17 +21,17 @@ public class TestsUsingProfilerWindow
     // {
     // }
 
-    [SetUp]
-    public void SetUp()
-    {
-        Profiler.enabled = true;
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        Profiler.enabled = false;
-    }
+    // [SetUp]
+    // public void SetUp()
+    // {
+    //     Profiler.enabled = true;
+    // }
+    //
+    // [TearDown]
+    // public void TearDown()
+    // {
+    //     Profiler.enabled = false;
+    // }
 
     // manual way (should work for editor tests)
     // we're turning on the Profiler, and use the callback to get the profiled frames.
