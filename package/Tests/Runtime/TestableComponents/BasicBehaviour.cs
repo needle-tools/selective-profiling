@@ -17,6 +17,90 @@ public class BasicBehaviour : MonoBehaviour
 
     private string thing;
 
+    public void EmptyMethod_MustFail()
+    {
+        
+    }
+
+    public int MethodWithNoCalls_MustFail()
+    {
+        int a = 2;
+        int b = 3;
+        return a + b;
+    }
+    
+    public void MethodWithCallsInsideTry_MustFail()
+    {
+        try
+        {
+            MyInternalCall01();
+        }
+        catch (System.Exception e)
+        {
+            
+        }
+    }
+
+    public void MethodWithCallsAfterTry_MustSucceed()
+    {
+        try
+        {
+            MyInternalCall01();
+        }
+        catch (System.Exception e)
+        {
+            
+        }
+        
+        MyInternalCall02();
+    }
+    
+    public void MethodWithCallsBeforeTry_MustSucceed()
+    {
+        MyInternalCall02();
+        
+        try
+        {
+            MyInternalCall01();
+        }
+        catch (System.Exception e)
+        {
+            
+        }
+    }
+    
+    public void MethodWithCallsInsideCatch_MustFail()
+    {
+        try
+        {
+            MyInternalCall01();
+        }
+        catch (System.Exception e)
+        {
+            MyInternalCall02();
+        }
+    }
+    
+    public void MethodWithCallsInsideNestedTry_MustFail()
+    {
+        try
+        {
+            MyInternalCall01();
+            try
+            {
+                MyInternalCall02();
+            }
+            catch (System.Exception e)
+            {
+                
+            }
+        }
+        catch (System.Exception e)
+        {
+            
+        }
+    }
+    
     public static int MyStaticCall()
     {
         return MyInternalStaticCall();

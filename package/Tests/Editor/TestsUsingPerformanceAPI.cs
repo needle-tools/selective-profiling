@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using needle.EditorPatching;
 using Needle.SelectiveProfiling;
 using NUnit.Framework;
 using Unity.PerformanceTesting;
@@ -51,7 +52,7 @@ public class TestsUsingPerformanceAPI
 
     static MethodInfo GetMethodInfo(Type type, string method)
     {
-        return type.GetMethod(method, (BindingFlags) (-1));
+        return type.GetMethods((BindingFlags)(-1)).FirstOrDefault(x => x.Name.Equals(method, StringComparison.Ordinal));
     }
 
     class PatchMethod : CustomYieldInstruction
@@ -109,22 +110,114 @@ public class TestsUsingPerformanceAPI
         }
     }
 
-    static IEnumerable<PatchingTestCase> GetPatchingTestCases()
+    static IEnumerable<PatchingTestCase> TestCasesThatShouldHaveInjectedSamples()
     {
         yield return new PatchingTestCase(GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyStaticCall)));
         yield return new PatchingTestCase(GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall)));
+        yield return new PatchingTestCase(GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MethodWithCallsBeforeTry_MustSucceed)));
+        yield return new PatchingTestCase(GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MethodWithCallsAfterTry_MustSucceed)));
+    }
+    
+    static IEnumerable<PatchingTestCase> TestCasesThatShouldHaveNoInjectedSamples()
+    {
+        yield return new PatchingTestCase(GetMethodInfo(typeof(Profiler), nameof(Profiler.BeginSample)));
+        yield return new PatchingTestCase(GetMethodInfo(typeof(Profiler), nameof(Profiler.EndSample)));
+        yield return new PatchingTestCase(GetMethodInfo(typeof(ProfilerMarker), nameof(ProfilerMarker.Begin)));
+        yield return new PatchingTestCase(GetMethodInfo(typeof(ProfilerMarker), nameof(ProfilerMarker.End)));
+        yield return new PatchingTestCase(GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MethodWithNoCalls_MustFail)));
+        yield return new PatchingTestCase(GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MethodWithCallsInsideCatch_MustFail)));
+        yield return new PatchingTestCase(GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MethodWithCallsInsideTry_MustFail)));
+        yield return new PatchingTestCase(GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MethodWithCallsInsideNestedTry_MustFail)));
     }
     
     [UnityTest]
-    public IEnumerator PatchHasInjectedSamples([ValueSource(nameof(GetPatchingTestCases))] PatchingTestCase testCase)
+    public IEnumerator PatchHasInjectedSamples([ValueSource(nameof(TestCasesThatShouldHaveInjectedSamples))] PatchingTestCase testCase)
     {
         var patchMethod = new PatchMethod(testCase.methodInfo, true);
         yield return patchMethod;
         CollectionAssert.IsNotEmpty(patchMethod.InjectedSampleNames, "No samples injected into " + testCase.methodInfo);
         
         // clean up
-        SelectiveProfiler.DisableAndForget(testCase.methodInfo);
-        yield return null;
+        var task = SelectiveProfiler.DisableAndForget(testCase.methodInfo);
+        while(!task.IsCompleted)
+            yield return null;
+    }
+
+    [UnityTest]
+    public IEnumerator PatchHasNoInjectedSamples([ValueSource(nameof(TestCasesThatShouldHaveNoInjectedSamples))] PatchingTestCase testCase)
+    {
+        var patchMethod = new PatchMethod(testCase.methodInfo, true);
+        yield return patchMethod;
+        CollectionAssert.IsEmpty(patchMethod.InjectedSampleNames, "Samples have been injected into " + testCase.methodInfo);
+        
+        // clean up
+        var task = SelectiveProfiler.DisableAndForget(testCase.methodInfo);
+        while(!task.IsCompleted)
+            yield return null;
+    }
+
+    public class NamespaceTestCase
+    {
+        public string Namespace { get; }
+        public IEnumerable<Type> Types { get; }
+        
+        public NamespaceTestCase(string nameSpace, IEnumerable<Type> namespaceToType)
+        {
+            this.Namespace = nameSpace;
+            this.Types = namespaceToType;
+        }
+
+        public override string ToString()
+        {
+            return Namespace + " (" + Types.Count() + " types)";
+        }
+    }
+
+    static IEnumerable<NamespaceTestCase> TestCasesPerNamespace()
+    {
+        // get all types
+        var namespaceToTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetLoadableTypes()).ToLookup(x => x.Namespace);
+        foreach (var group in namespaceToTypes)
+        {
+            yield return new NamespaceTestCase(group.Key, namespaceToTypes[group.Key]);
+        }
+    }
+
+    [Ignore("Very slow, please run manually")]
+    [UnityTest]
+    public IEnumerator CanPatchEverythingInNamespace([ValueSource(nameof(TestCasesPerNamespace))] NamespaceTestCase testCase)
+    {
+        var logBefore = SelectiveProfilerSettings.instance.DebugLog; 
+        SelectiveProfilerSettings.instance.DebugLog = false;
+        
+        // for each type, try to patch all methods
+        var methods = testCase.Types.SelectMany(x => x.GetMethods((BindingFlags) (-1)));
+        var methodsThatDidntHaveSamples = new List<MethodInfo>();
+        
+        foreach (var methodInfo in methods)
+        {
+            var patchMethod = new PatchMethod(methodInfo, true);
+            yield return patchMethod;
+
+            if (!patchMethod.InjectedSampleNames.Any())
+                methodsThatDidntHaveSamples.Add(methodInfo);
+            
+            var task = SelectiveProfiler.DisableAndForget(methodInfo);
+            while (!task.IsCompleted)
+                yield return null;
+        }
+
+        var allMethodsCount = methods.Count();
+        var methodsThatDidntHaveSamplesCount = methodsThatDidntHaveSamples.Count();
+        var percentageWithSamples = (float) methodsThatDidntHaveSamplesCount / allMethodsCount * 100f;
+
+        var log = $"Methods without samples ({methodsThatDidntHaveSamplesCount}/{allMethodsCount}, {percentageWithSamples:F2}%): \n{string.Join("\n", methodsThatDidntHaveSamples)}";
+        Debug.Log(log);
+        
+        // We know we can't patch everything here - this might be more suited for another test that only patches methods that we think should succeed
+        // CollectionAssert.IsEmpty(methodsThatDidntHaveSamples, log);
+        
+        SelectiveProfilerSettings.instance.DebugLog = logBefore;
     }
 
     [UnityTest]
@@ -140,10 +233,9 @@ public class TestsUsingPerformanceAPI
             $"MethodIsPatched(Action, patchMethod.InjectedSampleNames)\n" +
             $"[Expected Sample Names: {patchMethod.InjectedSampleNames.Count}]\n{string.Join("\n", patchMethod.InjectedSampleNames)}");
         
-        SelectiveProfiler.DisableAndForget(methodInfo);
-        // TODO actually wait until its unpatched
-        yield return null;
-        yield return null;
+        var task = SelectiveProfiler.DisableAndForget(methodInfo);
+        while (!task.IsCompleted)
+            yield return null;
         
         Assert.IsFalse(MethodIsPatched(Action, patchMethod.InjectedSampleNames), 
             $"MethodIsPatched(Action, patchMethod.InjectedSampleNames)\n" +
