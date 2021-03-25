@@ -188,14 +188,23 @@ namespace Needle.SelectiveProfiling.Utils
 			return Level.User;
 		}
 
+		public static string AllowPatchingResultLastReason;
 		public static bool AllowPatching(MethodInfo method, bool isDeep, bool debugLog)
 		{
 			if (method == null) return false;
+			AllowPatchingResultLastReason = null;
 
 			string GetMethodLogName()
 			{
 				if (method?.DeclaringType != null) return method.DeclaringType.FullName + " -> " + method;
 				return method?.ToString() ?? "null";
+			}
+
+			void Reason(string msg)
+			{
+				AllowPatchingResultLastReason = msg;
+				if(debugLog)
+					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, msg);
 			}
 
 			// see Harmony PatchProcessor.cs:136
@@ -205,9 +214,7 @@ namespace Needle.SelectiveProfiling.Utils
 				// test if resolving worked
 				if (method == null || !method.IsDeclaredMember())
 				{
-					if (debugLog)
-						Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
-							"Method is not declared or null: " + GetMethodLogName());
+					Reason("Method is not declared or null: " + GetMethodLogName());
 					return false;
 				}
 			}
@@ -215,29 +222,17 @@ namespace Needle.SelectiveProfiling.Utils
 			if (!method.HasMethodBody())
 			{
 				if (debugLog)
-					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
-						"Method has no body: " + GetMethodLogName());
+					Reason("Method has no body: " + GetMethodLogName());
 				return false;
 			}
 
-			// if (method.DeclaringType == typeof(EditorApplication))
-			// {
-			// 	if (debugLog)
-			// 		Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
-			// 			"Patching calls EditorApplication is not allowed " + GetMethodLogName());
-			// 	return false;
-			// }
-
-			if (method.DeclaringType == typeof(Profiler) || 
-			    method.DeclaringType == typeof(CustomSampler) || 
+			if (method.DeclaringType == typeof(Profiler) ||
+			    method.DeclaringType == typeof(CustomSampler) ||
 			    method.DeclaringType == typeof(ProfilerMarker) ||
-			    method.DeclaringType == typeof(EditorApplication) ||
 			    method.DeclaringType == typeof(GarbageCollector)
-			    )
+			)
 			{
-				if (debugLog)
-					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
-						"Profiling is not allowed: " + GetMethodLogName());
+				Reason($"Profiling in {method.DeclaringType} is not allowed: " + GetMethodLogName());
 				return false;
 			}
 
@@ -247,10 +242,8 @@ namespace Needle.SelectiveProfiling.Utils
 			if ((method.DeclaringType?.IsGenericType ?? false) ||
 			    method.IsGenericMethod) // && (method.ReturnType.IsGenericType || method.IsGenericMethod || method.ContainsGenericParameters))
 			{
-				if (debugLog)
-					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
-						"Profiling generic types is not supported: " + GetMethodLogName() +
-						"\nSee issue: https://github.com/needle-tools/selective-profiling/issues/6");
+				Reason("Profiling generic types is not supported: " + GetMethodLogName() +
+				       "\nSee issue: https://github.com/needle-tools/selective-profiling/issues/6");
 				return false;
 			}
 
@@ -260,9 +253,7 @@ namespace Needle.SelectiveProfiling.Utils
 			{
 				if (method.IsSpecialName && method.Name.StartsWith("get_") || method.Name.StartsWith("set_"))
 				{
-					if (debugLog)
-						Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
-							"Profiling properties is disabled in settings: " + GetMethodLogName() +
+					Reason("Profiling properties is disabled in settings: " + GetMethodLogName() +
 							"\nFor more information please refer to https://github.com/needle-tools/selective-profiling/issues/2");
 					return false;
 				}
@@ -270,9 +261,7 @@ namespace Needle.SelectiveProfiling.Utils
 
 			if (GetLevel(method.DeclaringType) == Level.System)
 			{
-				if (debugLog)
-					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null,
-						"Profiling system level types is not allowed: " + GetMethodLogName());
+				Reason("Profiling system level types is not allowed: " + GetMethodLogName());
 				return false;
 			}
 
@@ -283,12 +272,13 @@ namespace Needle.SelectiveProfiling.Utils
 				{
 					case "UnityEngine.UIElementsNativeModule":
 					case "UnityEngine.IMGUIModule":
-					case "UnityEngine.CoreModule":
-					case "UnityEditor.CoreModule":
-					// case "UnityEditor.UIElementsModule":
-					// case "UnityEngine.UIElementsModule":
-					// case "UnityEngine.SharedInternalsModule":
-					// case "UnityEditor.PackageManagerUIModule":
+					// case "UnityEngine.CoreModule":
+					// case "UnityEditor.CoreModule":
+						// case "UnityEditor.UIElementsModule":
+						// case "UnityEngine.UIElementsModule":
+						// case "UnityEngine.SharedInternalsModule":
+						// case "UnityEditor.PackageManagerUIModule":
+						Reason("Profiling in " + assemblyName + " is not allowed");
 						return false;
 				}
 			}
@@ -297,14 +287,15 @@ namespace Needle.SelectiveProfiling.Utils
 			if (!string.IsNullOrEmpty(fullName))
 			{
 				if (fullName.StartsWith("UnityEditor.Profiling") ||
-					// fullName.StartsWith("UnityEngine.UIElements.UIR") || 
-				 //    fullName.StartsWith("UnityEditor.StyleSheets") || 
-				 //    fullName.StartsWith("UnityEditor.HostView") || 
-				 //    fullName.StartsWith("UnityEngine.UIElements.IMGUIContainer") ||
-				 //    fullName.StartsWith("UnityEngine.SliderHandler") ||
-					fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem")
-				    )
+				    fullName.StartsWith("UnityEditor.HostView") ||
+				    fullName.StartsWith("UnityEngine.UIElements.UIR") || 
+				    //    fullName.StartsWith("UnityEditor.StyleSheets") || 
+				    //    fullName.StartsWith("UnityEngine.UIElements.IMGUIContainer") ||
+				    //    fullName.StartsWith("UnityEngine.SliderHandler") ||
+				    fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem")
+				)
 				{
+					Reason("Profiling in " + fullName + " is not allowed");
 					return false;
 				}
 			}
@@ -319,8 +310,8 @@ namespace Needle.SelectiveProfiling.Utils
 
 			return true;
 		}
-		
-		
+
+
 		private static string ExtractAssemblyNameWithoutVersion(Assembly assembly)
 		{
 			if (assembly == null) return null;

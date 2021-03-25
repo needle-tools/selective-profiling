@@ -194,16 +194,19 @@ namespace Needle.SelectiveProfiling
 						if(menu.GetItemCount() > 0)
 							menu.AddSeparator(string.Empty);
 
+						var debugLog = settings.DebugLog;
+
 						var name = frameDataView?.GetItemName(item.id);
 						if (AccessUtils.TryGetMethodFromName(name, out var methodInfo))
 						{
-							AddMenuItem(tree, menu, methodInfo);
-							menu.ShowAsContext();
+							if(AccessUtils.AllowPatching(methodInfo, false, debugLog))
+								AddMenuItem(tree, menu, methodInfo);
+							else menu.AddDisabledItem(new GUIContent(AccessUtils.AllowPatchingResultLastReason));
 						}
 						else if (ProfilerHelper.TryGetMethodsInChildren(item.id, frameDataView, out var methodsFound))
 						{
 							var availableMethods =
-								methodsFound.Where(e => AccessUtils.AllowPatching(e, false, false)).ToList();
+								methodsFound.Where(e => AccessUtils.AllowPatching(e, false, debugLog)).ToList();
 
 							if (availableMethods.Count > 0)
 							{
@@ -223,7 +226,8 @@ namespace Needle.SelectiveProfiling
 							menu.AddDisabledItem(new GUIContent("Nothing to profile in " + name));
 						}
 
-						menu.ShowAsContext();
+						if(menu.GetItemCount() > 0)
+							menu.ShowAsContext();
 					}
 				}
 			}
@@ -240,8 +244,24 @@ namespace Needle.SelectiveProfiling
 			// remove void return types
 			if (ret == "Void") ret = string.Empty;
 			else ret += " ";
-			var methodName = methodInfo.Name + "(" + string.Join(",", methodInfo.GetParameters()?.Select(p => p.ParameterType)) + ")";
 
+			string GetMethodName(bool @long)
+			{
+				var methodName = methodInfo.Name;
+				if (@long) methodName += "(" + string.Join(",", methodInfo.GetParameters()?.Select(p => p.ParameterType)) + ")";
+				else methodName += "(" + string.Join(",", methodInfo.GetParameters()?.Select(p => p.ParameterType.Name)) + ")";
+				return methodName;
+			}
+
+			var label = $"Profile | {ret}{methodInfo.DeclaringType?.Name}.{GetMethodName(true)}";
+			// if menu items are too long nothing is displayed anymore
+			const int maxLength = 195;
+			if (label.Length > maxLength)
+				label = $"Profile | {ret}{methodInfo.DeclaringType?.Name}.{GetMethodName(false)}";
+			if (label.Length > maxLength)
+				label = "..." + label.Substring(Mathf.Abs(maxLength-label.Length));
+			
+			
 			// need to split this into two menu items until we sync state of activated methods between standalone profiler and main process
 			// if (SelectiveProfiler.IsStandaloneProcess)
 			// {
@@ -252,7 +272,7 @@ namespace Needle.SelectiveProfiling
 			// }
 			// else
 			{
-				menu.AddItem(new GUIContent($"Profile | {ret}{methodInfo.DeclaringType?.Name}.{methodName}"),
+				menu.AddItem(new GUIContent(label),
 					active, () =>
 					{
 						if (!active) EnableProfilingFromProfilerWindow(methodInfo, tree);
