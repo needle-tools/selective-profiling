@@ -5,8 +5,6 @@ using System.Linq;
 using System.Reflection;
 using Needle.SelectiveProfiling;
 using NUnit.Framework;
-using Unity.PerformanceTesting;
-using Unity.Profiling;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -15,24 +13,6 @@ using UnityEngine.TestTools;
 
 public class TestsUsingProfilerWindow
 {
-    // // A Test behaves as an ordinary method
-    // [Test]
-    // public void BasicTestsSimplePasses()
-    // {
-    // }
-
-    // [SetUp]
-    // public void SetUp()
-    // {
-    //     Profiler.enabled = true;
-    // }
-    //
-    // [TearDown]
-    // public void TearDown()
-    // {
-    //     Profiler.enabled = false;
-    // }
-
     // manual way (should work for editor tests)
     // we're turning on the Profiler, and use the callback to get the profiled frames.
     // we can analyze these to check if injected sampling worked.
@@ -47,9 +27,9 @@ public class TestsUsingProfilerWindow
         // patch
         var methodInfo = typeof(BasicBehaviour).GetMethod(nameof(BasicBehaviour.MyCall), (BindingFlags) (-1));
 
-        TestsUsingPerformanceAPI.MustNotBePatched(methodInfo);
+        TestHelpers.MustNotBePatched(methodInfo);
         
-        var patcher = new TestsUsingPerformanceAPI.PatchMethod(methodInfo, true);
+        var patcher = new TestHelpers.PatchMethod(methodInfo, true);
         yield return patcher;
         var expectedSamples = patcher.InjectedSampleNames;
         var expectedSampleCount = expectedSamples.Count();
@@ -118,6 +98,6 @@ public class TestsUsingProfilerWindow
 
         Profiler.enabled = false;
         
-        TestsUsingPerformanceAPI.MustNotBePatched(methodInfo);
+        TestHelpers.MustNotBePatched(methodInfo);
     }
 }
