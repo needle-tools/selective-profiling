@@ -133,6 +133,8 @@ public class TestsUsingPerformanceAPI
     [UnityTest]
     public IEnumerator PatchHasInjectedSamples([ValueSource(nameof(TestCasesThatShouldHaveInjectedSamples))] PatchingTestCase testCase)
     {
+        MustNotBePatched(testCase.methodInfo);
+        
         var patchMethod = new PatchMethod(testCase.methodInfo, true);
         yield return patchMethod;
         CollectionAssert.IsNotEmpty(patchMethod.InjectedSampleNames, "No samples injected into " + testCase.methodInfo);
@@ -146,6 +148,8 @@ public class TestsUsingPerformanceAPI
     [UnityTest]
     public IEnumerator PatchHasNoInjectedSamples([ValueSource(nameof(TestCasesThatShouldHaveNoInjectedSamples))] PatchingTestCase testCase)
     {
+        MustNotBePatched(testCase.methodInfo);
+        
         var patchMethod = new PatchMethod(testCase.methodInfo, true);
         yield return patchMethod;
         CollectionAssert.IsEmpty(patchMethod.InjectedSampleNames, "Samples have been injected into " + testCase.methodInfo);
@@ -221,22 +225,25 @@ public class TestsUsingPerformanceAPI
     }
 
     [UnityTest]
-    public IEnumerator MinimalExample()
+    public IEnumerator AllInjectedSamplesAreRecorded()
     {
         void Action() => BasicBehaviour.MyStaticCall();
         var methodInfo = GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyStaticCall));
+        MustNotBePatched(methodInfo);
         
         var patchMethod = new PatchMethod(methodInfo, true);
         yield return patchMethod;
-        
-        Assert.IsTrue(MethodIsPatched(Action, patchMethod.InjectedSampleNames), 
-            $"MethodIsPatched(Action, patchMethod.InjectedSampleNames)\n" +
-            $"[Expected Sample Names: {patchMethod.InjectedSampleNames.Count}]\n{string.Join("\n", patchMethod.InjectedSampleNames)}");
+
+        var methodIsPatchedAfterPatching = MethodIsPatched(Action, patchMethod.InjectedSampleNames); 
         
         var task = SelectiveProfiler.DisableAndForget(methodInfo);
         while (!task.IsCompleted)
             yield return null;
-        
+
+        Assert.IsTrue(methodIsPatchedAfterPatching, 
+            $"MethodIsPatched(Action, patchMethod.InjectedSampleNames)\n" +
+            $"[Expected Sample Names: {patchMethod.InjectedSampleNames.Count}]\n{string.Join("\n", patchMethod.InjectedSampleNames)}");
+
         Assert.IsFalse(MethodIsPatched(Action, patchMethod.InjectedSampleNames), 
             $"MethodIsPatched(Action, patchMethod.InjectedSampleNames)\n" +
             $"[Must not have Samples: {patchMethod.InjectedSampleNames.Count}]\n{string.Join("\n", patchMethod.InjectedSampleNames)}");
@@ -246,6 +253,8 @@ public class TestsUsingPerformanceAPI
     public IEnumerator PatchingAndUnpatching_MethodIsGone()
     {
         var methodInfo = GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
+        MustNotBePatched(methodInfo);
+        
         yield return new PatchMethod(methodInfo);
         
         if (SelectiveProfiler.TryGet(methodInfo, out var profilingInfo))
@@ -258,13 +267,10 @@ public class TestsUsingPerformanceAPI
             Assert.Fail("Method is not patched");
         }
 
-        // TODO this pretends to be sync but is async, how can we actually check the method isn't patched anymore?
-        SelectiveProfiler.DisableAndForget(methodInfo);
+        var task = SelectiveProfiler.DisableAndForget(methodInfo);
+        while (!task.IsCompleted) yield return null;
 
-        if (SelectiveProfiler.TryGet(methodInfo, out var profilingInfoAfterDisable))
-        {
-            Assert.Fail("Method is still patched, disable didn't work");
-        }
+        MustNotBePatched(methodInfo);
     }
 
     void MustNotBePatched(MethodInfo methodInfo)
@@ -314,11 +320,15 @@ public class TestsUsingPerformanceAPI
         // prevent compiler stripping - this should always be false
         if(k < 0) Debug.Log(k);
         
-        SelectiveProfiler.DisableAndForget(methodInfo);
+        var task = SelectiveProfiler.DisableAndForget(methodInfo);
+        while (!task.IsCompleted)
+            yield return null;
         
         CollectionAssert.AreEqual(recorders, recordersWithData, 
             $"\n[Expected: {recorders.Count} samples]\n{string.Join("\n", recorders)}\n\n" + 
             $"[Actual: {recordersWithData.Count} samples]\n{string.Join("\n", recordersWithData)}\n");
+        
+        MustNotBePatched(methodInfo);
     }
 
     [Performance, UnityTest]
@@ -353,7 +363,8 @@ public class TestsUsingPerformanceAPI
         var go = new GameObject("Test");
         var behaviour = go.AddComponent<BasicBehaviour>();
         var methodInfo = typeof(BasicBehaviour).GetMethod(nameof(BasicBehaviour.MyCall), (BindingFlags) (-1));
-
+        MustNotBePatched(methodInfo);
+        
         var unpatchedGroup = new SampleGroup("Unpatched Method", SampleUnit.Microsecond);
         var patchedGroup = new SampleGroup("Patched Method", SampleUnit.Microsecond);
         
