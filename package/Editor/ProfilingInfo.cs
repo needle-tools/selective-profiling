@@ -33,7 +33,9 @@ namespace Needle.SelectiveProfiling
 			if (!force && !MethodInformation.Enabled)
 				return PatchManager.CompletedTaskFailed;
 			MethodInformation.Enabled = true;
+			Patch.PatchThreaded = false;
 			var ts = Patch.Enable(false);
+			
 			if (!enabled)
 			{
 				enabled = true;

@@ -99,8 +99,7 @@ namespace Needle.SelectiveProfiling
 			bool enableIfMuted = false,
 			MethodInfo source = null,
 			int depth = 0,
-			bool forceLogs = false,
-			bool patchThreaded = false
+			bool forceLogs = false
 		)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
@@ -181,7 +180,7 @@ namespace Needle.SelectiveProfiling
 
 
 			var patch = new ProfilerSamplePatch(method, null, " " + SamplePostfix);
-			patch.PatchThreaded = patchThreaded;
+			patch.PatchThreaded = true;
 			var info = new ProfilingInfo(patch, method, methodInfo);
 			profiled.Add(method, info);
 			profiled2.Add(methodInfo, info);
@@ -197,6 +196,7 @@ namespace Needle.SelectiveProfiling
 				if (!muted)
 				{
 					enabled = await info.Enable();
+					
 					if(enabled)
 						HandleDeepProfiling();
 				}
@@ -443,6 +443,7 @@ namespace Needle.SelectiveProfiling
 
 		private static readonly bool deepProfiling = SelectiveProfilerSettings.Instance.DeepProfiling;
 		private static readonly HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
+		private static readonly List<MethodInfo> nestedMethods = new List<MethodInfo>();
 
 		internal static void RegisterInternalCalledMethod(MethodInfo method)
 		{
@@ -465,13 +466,18 @@ namespace Needle.SelectiveProfiling
 					if (!AccessUtils.AllowPatching(c, depth > 0, DebugLog)) return false;
 					return true;
 				});
+			nestedMethods.AddRange(local);
 			callsFound.Clear();
-
-			var index = 0;
-			async Task InternalLoop(IEnumerable<MethodInfo> list)
+			
+			async Task InternalLoop(IList<MethodInfo> list)
 			{
-				foreach (var method in list)
+				for (var i = list.Count - 1; i >= 0; i--)
 				{
+					while (i >= list.Count) i -= 1;
+					if (i < 0) break;
+					var method = list[i];
+					if(i < list.Count)
+						list.RemoveAt(i);
 					// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
 					if (DeepProfileDebuggingMode)
 					{
@@ -480,19 +486,19 @@ namespace Needle.SelectiveProfiling
 							stepDeepProfileList.Add((method, depth, source));
 					}
 					// dont save nested calls
-					else
+					else if(!profiled.ContainsKey(method))
 					{
-						// Debug.Log(source + " calls " + method);
+						if(DebugLog)
+							Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, source + " calls " + method);
 						await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 					}
-
-					++index;
+					
 				}
 			}
 
 			try
 			{
-				await InternalLoop(local);
+				await InternalLoop(nestedMethods);
 			}
 			catch (InvalidOperationException ex)
 			{
