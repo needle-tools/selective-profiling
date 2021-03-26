@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -9,10 +8,8 @@ using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
-using UnityEditorInternal;
 using UnityEngine;
 #if UNITY_2020_2_OR_NEWER
-using UnityEditor.MPE;
 
 #endif
 
@@ -219,19 +216,26 @@ namespace Needle.SelectiveProfiling
 						{
 							if(didFind)
 								menu.AddSeparator(string.Empty);
+
+							bool AllowPatching(MethodInfo _mi)
+							{
+								return AccessUtils.AllowPatching(_mi, false, debugLog); 
+							}
+
+							var allowed = methodsList.Distinct().Where(AllowPatching);
+							var count = allowed.Count();
 							
 							if (methodsList.Any(m => AccessUtils.AllowPatching(m, false, debugLog)))
 							{
-								menu.AddItem(new GUIContent("Enable profiling for all"), false,
-									() => EnableProfilingFromProfilerWindow(methodsList, tree));
-								menu.AddItem(new GUIContent("Disable profiling for all"), false,
-									() => DisableProfilingFromProfilerWindow(methodsList, tree));
+								menu.AddItem(new GUIContent("Enable profiling for all [" + count + "]"), false,
+									() => EnableProfilingFromProfilerWindow(allowed, tree));
+								menu.AddItem(new GUIContent("Disable profiling for all [" + count + "]"), false,
+									() => DisableProfilingFromProfilerWindow(allowed, tree));
 								menu.AddSeparator(string.Empty);
 							}
 
-							foreach (var methodInfo in methodsList)
+							foreach (var methodInfo in allowed)
 							{
-								if (!AccessUtils.AllowPatching(methodInfo, false, debugLog)) continue;
 								AddMenuItem(tree, menu, methodInfo, true);
 							}
 						}
@@ -255,7 +259,6 @@ namespace Needle.SelectiveProfiling
 		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo, bool addTypeSubmenu)
 		{
 			var active = SelectiveProfiler.IsProfiling(methodInfo);
-
 			
 			var ret = methodInfo.ReturnType.Name;
 			// remove void return types
@@ -271,7 +274,7 @@ namespace Needle.SelectiveProfiling
 			}
 
 			const string prefix = "Profile | ";
-			const int maxLength = 195;
+			const int maxLength = 180;
 			// if menu items are too long nothing is displayed anymore
 			
 			var label = prefix + TranspilerUtils.GetNiceMethodName(methodInfo, false);
@@ -309,7 +312,9 @@ namespace Needle.SelectiveProfiling
 		private static void EnableProfilingFromProfilerWindow(IEnumerable<MethodInfo> methods, TreeView tree = null)
 		{
 			foreach (var method in methods)
+			{
 				SelectiveProfiler.EnableProfiling(method, SelectiveProfiler.ShouldSave, true, true, true);
+			}
 			if (tree != null)
 				ReloadDelayed(tree);
 		}

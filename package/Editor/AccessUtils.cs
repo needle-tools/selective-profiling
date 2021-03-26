@@ -8,6 +8,7 @@ using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
 using Unity.Profiling;
+using UnityEditor;
 using UnityEditor.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -327,6 +328,19 @@ namespace Needle.SelectiveProfiling.Utils
 			return method.DeclaringType?.GetProperties(AccessUtils.AllDeclared).Any(prop => prop.GetSetMethod() == method) ?? false;
 		}
 
+		public static bool TryGetDeclaredMember<T>(T member, out T declared) where T : MemberInfo
+		{
+			// see Harmony PatchProcessor.cs:136
+			if (member.IsDeclaredMember() is false)
+			{
+				declared = member.GetDeclaredMember();
+				return declared != null;
+			}
+
+			declared = null;
+			return false;
+		}
+
 		public static string AllowPatchingResultLastReason;
 		public static bool AllowPatching(MethodInfo method, bool isDeep, bool debugLog)
 		{
@@ -349,9 +363,11 @@ namespace Needle.SelectiveProfiling.Utils
 			// see Harmony PatchProcessor.cs:136
 			if (method.IsDeclaredMember() is false)
 			{
-				method = method.GetDeclaredMember();
-				// test if resolving worked
-				if (method == null || !method.IsDeclaredMember())
+				if (TryGetDeclaredMember(method, out var declared) && declared.IsDeclaredMember())
+				{
+					method = declared;
+				}
+				else
 				{
 					Reason("Method is not declared or null: " + GetMethodLogName());
 					return false;
@@ -367,7 +383,9 @@ namespace Needle.SelectiveProfiling.Utils
 			if (method.DeclaringType == typeof(Profiler) ||
 			    method.DeclaringType == typeof(CustomSampler) ||
 			    method.DeclaringType == typeof(ProfilerMarker) ||
-			    method.DeclaringType == typeof(GarbageCollector)
+			    method.DeclaringType == typeof(GarbageCollector) ||
+			    method.DeclaringType == typeof(Application) ||
+			    method.DeclaringType == typeof(StackTraceUtility)
 			)
 			{
 				Reason($"Profiling in {method.DeclaringType} is not allowed: " + GetMethodLogName());

@@ -119,6 +119,8 @@ namespace Needle.SelectiveProfiling
 			var settings = SelectiveProfilerSettings.Instance;
 			if (!settings.Enabled) return;
 
+			if (AccessUtils.TryGetDeclaredMember(method, out var declared))
+				method = declared;
 
 			var isDeep = source != null && method != source;
 			if (!AccessUtils.AllowPatching(method, isDeep, settings.DebugLog || forceLogs))
