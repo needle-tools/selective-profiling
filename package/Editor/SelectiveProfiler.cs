@@ -357,7 +357,7 @@ namespace Needle.SelectiveProfiling
 			}
 			
 			var ml = settings.MethodsList;
-			if (ml != null && ml.Count > 0)
+			if (ml != null && ml.Count > 0) 
 			{
 				var methodsList = Application.isPlaying ? ml.ToArray() : ml;
 				foreach (var m in methodsList)
@@ -463,10 +463,7 @@ namespace Needle.SelectiveProfiling
 			if (callsFound.Count <= 0) return;
 
 			
-			foreach (var m in callsFound)
-			{
-				nestedMethods.Add(m);
-			}
+			foreach (var m in callsFound) nestedMethods.Add(m);
 			callsFound.Clear();
 			
 			async Task InternalLoop(IList<MethodInfo> list)
@@ -489,7 +486,7 @@ namespace Needle.SelectiveProfiling
 					else if(!profiled.ContainsKey(method))
 					{
 						if(DebugLog)
-							Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, source + " calls " + method);
+							Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Handle Deep Profile: " + source + " -> " + method + ", Level: " + depth);
 						await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 					}
 					

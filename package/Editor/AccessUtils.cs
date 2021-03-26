@@ -8,6 +8,7 @@ using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
 using needle.EditorPatching;
+using Needle.SelectiveProfiling.CodeWrapper;
 using Unity.Profiling;
 using UnityEditor;
 using UnityEditor.Profiling;
@@ -37,7 +38,8 @@ namespace Needle.SelectiveProfiling.Utils
 			if (info == null) return null;
 			var declaring = info.DeclaringType;
 			var assembly = declaring?.Assembly;
-			return assembly?.GetName().Name + ".dll" + ", " + declaring?.Namespace + "::" + declaring?.Name + info.Name + "(TODO:Params)";
+			return assembly?.GetName().Name + ".dll" + ", " + declaring?.Namespace + "::" + declaring?.Name + info.Name + "(" +
+			       string.Join(", ", info.GetParameters().Select(p => p.ParameterType)) + ")";
 		}
 
 		private static Assembly[] assemblies;

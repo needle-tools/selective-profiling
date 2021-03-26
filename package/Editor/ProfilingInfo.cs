@@ -17,9 +17,19 @@ namespace Needle.SelectiveProfiling
 		public MethodInformation MethodInformation;
 
 		public bool IsActive => Patch != null && PatchManager.IsActive(Patch.ID());
-		internal string Identifier => Method?.GetMethodIdentifier();
+		
+		internal string Identifier
+		{
+			get
+			{
+				if(string.IsNullOrWhiteSpace(identifier)) identifier = Method?.GetMethodIdentifier();
+				return identifier;
+			}
+		}
 
+		private string identifier;
 		private bool enabled;
+		
 
 		public ProfilingInfo(EditorPatchProvider patch, MethodInfo info, MethodInformation mi)
 		{
