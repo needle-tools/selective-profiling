@@ -94,6 +94,8 @@ public static class TestHelpers
                 if (patchingTask.IsCompleted) {
                     if (shouldCollectNames)
                         ProfilerSamplePatch.OnSampleInjected = null;
+                    
+                    SelectiveProfilerSettings.instance.DebugLog = false;
                     return false;
                 }
 

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Needle.SelectiveProfiling;
 using NUnit.Framework;
+using Unity.Profiling;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -75,5 +76,22 @@ public class TestsUsingProfilerWindow
             TestHelpers.Log(patching.InjectedSampleNames, collectorThatShouldReceiveSamples.ReceivedSamples));
                 
         TestHelpers.MustNotBePatched(methodInfo);
+    }
+
+    [UnityTest]
+    public IEnumerator NewCollectorApproach() 
+    {
+        var behaviour = TestHelpers.CreateObjectWithComponent<BasicBehaviour>();
+        void Action() => behaviour.MyCall(10000);
+        var methodInfo = TestHelpers.GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
+        
+        TestHelpers.MustNotBePatched(methodInfo);
+        
+        var patching = new TestHelpers.PatchMethod(methodInfo, true);
+        yield return patching;
+        
+        var collector = new ProfilerSampleCollector(methodInfo, patching.InjectedSampleNames, Action);
+        yield return collector.Collect();
+        Debug.Log("Done");
     }
 }
