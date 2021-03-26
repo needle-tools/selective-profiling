@@ -1,6 +1,6 @@
 {
     "name": "needle.SelectiveProfiling.Tests",
-    "rootNamespace": "",
+    "rootNamespace": "Needle.SelectiveProfiling.Tests",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
