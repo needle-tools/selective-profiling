@@ -102,7 +102,7 @@ public class TestsUsingPerformanceAPI
         Debug.Log("Done patching");
         
         var collectorThatShouldReceiveSamples = new ProfilerSampleCollector(methodInfo, patchMethod.InjectedSampleNames, Action);
-        yield return collectorThatShouldReceiveSamples;
+        yield return collectorThatShouldReceiveSamples.CollectSamples();
         var methodIsPatchedAfterPatching = collectorThatShouldReceiveSamples.ReceivedSamples.Count == patchMethod.InjectedSampleNames.Count; 
         
         Debug.Log("Done collecting samples where we should receive some\n" + 
@@ -126,7 +126,7 @@ public class TestsUsingPerformanceAPI
             yield return null;
         
         var collectorThatShouldNotReceiveSamples = new ProfilerSampleCollector(methodInfo, patchMethod.InjectedSampleNames, Action);
-        yield return collectorThatShouldNotReceiveSamples;
+        yield return collectorThatShouldNotReceiveSamples.CollectSamples();
         
         Debug.Log("Done collecting samples where we should receive 0\n" + 
                   TestHelpers.Log(patchMethod.InjectedSampleNames, collectorThatShouldNotReceiveSamples.ReceivedSamples));
@@ -161,6 +161,7 @@ public class TestsUsingPerformanceAPI
     }
 
     [UnityTest]
+    [Explicit]
     public IEnumerator ProfilerMarkersAreCollected()
     {
         var behaviour = TestHelpers.CreateObjectWithComponent<BasicBehaviour>();
