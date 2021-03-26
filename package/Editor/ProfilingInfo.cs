@@ -33,8 +33,29 @@ namespace Needle.SelectiveProfiling
 			if (!force && !MethodInformation.Enabled)
 				return PatchManager.CompletedTaskFailed;
 			MethodInformation.Enabled = true;
-			Patch.PatchThreaded = false;
+			
+			// some methods can only be patched on the main thread
+			// we try to patch on background thread first and if a unity exception with "Can only be executed on main thread"
+			// is thrown we call enable again but request patching on the main thread
+			Patch.SuppressUnityExceptions = !SelectiveProfiler.DebugLog;
+			Patch.PatchThreaded = true;
 			var ts = Patch.Enable(false);
+
+			Task<bool> EnableOnMainThreadIfBackgroundFailed(Task<bool> t)
+			{
+				// when patching on the background thread fails try patching on main thread
+				if (!t.Result && enabled && Patch.EnableException.IsOrHasUnityException_CanOnlyBeCalledFromMainThread())
+				{
+					if(SelectiveProfiler.DebugLog) 
+						Debug.Log("Patching " + Method + " on background thread didnt work, trying to patch on main thread now");
+					Patch.SuppressUnityExceptions = false;
+					Patch.PatchThreaded = false;
+					return Patch.Enable(false);
+				}
+
+				return Patch.IsActive ? PatchManager.CompletedTaskSuccess : PatchManager.CompletedTaskFailed;
+			}
+			ts.ContinueWith(EnableOnMainThreadIfBackgroundFailed);
 			
 			if (!enabled)
 			{
@@ -115,7 +136,7 @@ namespace Needle.SelectiveProfiling
 			{
 				callers.Add(caller);
 				if (SelectiveProfiler.DebugLog)
-					Debug.Log(Method.Name + " called by\n" + string.Join("\n", callers.Select(c => c.Method.Name)));
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, Method.Name + " called by\n" + string.Join("\n", callers.Select(c => c.Method.Name)));
 				caller.AddCallee(this);
 			}
 		}

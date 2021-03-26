@@ -443,13 +443,17 @@ namespace Needle.SelectiveProfiling
 
 		private static readonly bool deepProfiling = SelectiveProfilerSettings.Instance.DeepProfiling;
 		private static readonly HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
-		private static readonly List<MethodInfo> nestedMethods = new List<MethodInfo>();
+		private static readonly  List<MethodInfo> nestedMethods = new List<MethodInfo>();
 
 		internal static void RegisterInternalCalledMethod(MethodInfo method)
 		{
 			if (!deepProfiling) return;
 			if (method == null) return;
 			if (callsFound.Contains(method)) return;
+			
+			var settings = SelectiveProfilerSettings.Instance;
+			if (method.DeclaringType != null && !AccessUtils.AllowedLevel(method, settings.DeepProfileMaxLevel)) return;
+			if (!AccessUtils.AllowPatching(method, true, DebugLog)) return;
 			callsFound.Add(method);
 		}
 
@@ -458,15 +462,11 @@ namespace Needle.SelectiveProfiling
 			if (!deepProfiling) return;
 			if (callsFound.Count <= 0) return;
 
-			var settings = SelectiveProfilerSettings.Instance;
-			var local = callsFound
-				.Where(c =>
-				{
-					if (c.DeclaringType != null && !AccessUtils.AllowedLevel(c, settings.DeepProfileMaxLevel)) return false;
-					if (!AccessUtils.AllowPatching(c, depth > 0, DebugLog)) return false;
-					return true;
-				});
-			nestedMethods.AddRange(local);
+			
+			foreach (var m in callsFound)
+			{
+				nestedMethods.Add(m);
+			}
 			callsFound.Clear();
 			
 			async Task InternalLoop(IList<MethodInfo> list)
@@ -503,12 +503,6 @@ namespace Needle.SelectiveProfiling
 			catch (InvalidOperationException ex)
 			{
 				Debug.LogException(ex);
-				// var arr = local.ToArray();
-				// if (index >= 0 && index < arr.Length)
-				// {
-				// 	
-				// }
-				// await InternalLoop(local)
 			}
 		}
 
