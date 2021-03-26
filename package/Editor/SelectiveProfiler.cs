@@ -469,17 +469,13 @@ namespace Needle.SelectiveProfiling
 				});
 			nestedMethods.AddRange(local);
 			callsFound.Clear();
-
-			Debug.Log(nestedMethods.Count);
-
-			var index = 0;
+			
 			async Task InternalLoop(IList<MethodInfo> list)
 			{
 				for (var i = list.Count - 1; i >= 0; i--)
 				{
 					while (i >= list.Count) i -= 1;
 					if (i < 0) break;
-					index = i;
 					var method = list[i];
 					if(i < list.Count)
 						list.RemoveAt(i);
@@ -493,7 +489,8 @@ namespace Needle.SelectiveProfiling
 					// dont save nested calls
 					else if(!profiled.ContainsKey(method))
 					{
-						Debug.Log(source + " calls " + method);
+						if(DebugLog)
+							Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, source + " calls " + method);
 						await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 					}
 					

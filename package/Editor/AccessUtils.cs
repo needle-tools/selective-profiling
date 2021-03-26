@@ -235,6 +235,7 @@ namespace Needle.SelectiveProfiling.Utils
 					catch (AmbiguousMatchException am)
 					{
 						var _allMethods = type?.GetMethods(AllDeclared);
+						var found = 0;
 						if (_allMethods != null)
 						{
 							foreach (var _method in _allMethods)
@@ -243,6 +244,7 @@ namespace Needle.SelectiveProfiling.Utils
 								if (_method.Name != methodName) continue;
 								if (methodList == null) methodList = new List<MethodInfo>();
 								methodList.Add(_method);
+								++found;
 							}
 						}
 
@@ -253,7 +255,7 @@ namespace Needle.SelectiveProfiling.Utils
 							if (!success)
 								Debug.LogException(am);
 							if (SelectiveProfiler.DebugLog)
-								Debug.Log("Found AmbiguousMatch for " + fullName + (success ? " but returning " + methodList.Count + " matching methods" : " and could not find matching methods"));
+								Debug.Log("Found AmbiguousMatch for <i>" + fullName + "</i>" + (success ? " but returning " + found + " matching methods" : " and could not find matching methods"));
 						}
 					}
 #if DEBUG_ACCESS
@@ -388,15 +390,17 @@ namespace Needle.SelectiveProfiling.Utils
 				return false;
 			}
 
-			if (method.DeclaringType == typeof(Profiler) ||
-			    method.DeclaringType == typeof(GarbageCollector) ||
+			if (
+				method.DeclaringType == typeof(GC) ||
+				method.DeclaringType == typeof(GarbageCollector) ||
+				method.DeclaringType == typeof(Profiler) ||
+				typeof(ProfilerDriver).IsAssignableFrom(method.DeclaringType) ||
+				typeof(ProfilerMarker).IsAssignableFrom(method.DeclaringType) ||
+				typeof(CustomSampler).IsAssignableFrom(method.DeclaringType) ||
 			    method.DeclaringType == typeof(Application) ||
 			    method.DeclaringType == typeof(StackTraceUtility) ||
 			    method.DeclaringType == typeof(AssetDatabase) ||
-			    method.DeclaringType == typeof(Mathf) ||
-			    typeof(ProfilerDriver).IsAssignableFrom(method.DeclaringType) ||
-			    typeof(ProfilerMarker).IsAssignableFrom(method.DeclaringType) ||
-			    typeof(CustomSampler).IsAssignableFrom(method.DeclaringType)
+			    method.DeclaringType == typeof(Mathf)
 			)
 			{
 				Reason($"Profiling in {method.DeclaringType} is not allowed: " + GetMethodLogName());
