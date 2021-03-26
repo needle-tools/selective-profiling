@@ -28,10 +28,10 @@ namespace Needle.SelectiveProfiling
 			this.MethodInformation = mi.Copy();
 		}
 
-		public Task Enable(bool force = false)
+		public Task<bool> Enable(bool force = false)
 		{
 			if (!force && !MethodInformation.Enabled)
-				return Task.CompletedTask;
+				return PatchManager.CompletedTaskFailed;
 			MethodInformation.Enabled = true;
 			var ts = Patch.Enable(false);
 			if (!enabled)

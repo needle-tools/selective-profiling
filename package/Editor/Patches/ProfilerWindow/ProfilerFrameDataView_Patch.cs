@@ -313,7 +313,7 @@ namespace Needle.SelectiveProfiling
 		{
 			foreach (var method in methods)
 			{
-				SelectiveProfiler.EnableProfiling(method, SelectiveProfiler.ShouldSave, true, true, true);
+				SelectiveProfiler.EnableProfilingAsync(method, SelectiveProfiler.ShouldSave, true, true, true);
 			}
 			if (tree != null)
 				ReloadDelayed(tree);
@@ -322,7 +322,7 @@ namespace Needle.SelectiveProfiling
 		private static void EnableProfilingFromProfilerWindow(MethodInfo method, TreeView tree = null)
 		{
 			// Standalone process always return "false" for playing
-			SelectiveProfiler.EnableProfiling(method, SelectiveProfiler.ShouldSave, true, true, true);
+			SelectiveProfiler.EnableProfilingAsync(method, SelectiveProfiler.ShouldSave, true, true, true);
 			if (tree != null)
 				ReloadDelayed(tree);
 		}

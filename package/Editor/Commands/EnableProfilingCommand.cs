@@ -22,7 +22,7 @@ namespace Needle.SelectiveProfiling
 		public override void Execute()
 		{
 			if (method != null && method.TryResolveMethod(out var m, true)) 
-				SelectiveProfiler.EnableProfiling(m, ForceSave || SelectiveProfiler.ShouldSave, Enable, EnableIfMuted, ForceLogs);
+				SelectiveProfiler.EnableProfilingAsync(m, ForceSave || SelectiveProfiler.ShouldSave, Enable, EnableIfMuted, ForceLogs);
 		}
 	}
 }

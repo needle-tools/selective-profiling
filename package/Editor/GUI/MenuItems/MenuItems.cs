@@ -21,7 +21,7 @@ namespace Needle.SelectiveProfiling
 		private static void ProfileAllMethods(MenuCommand cmd)
 		{
 			foreach (var m in AccessUtils.GetMethods(cmd.context, typeof(MonoBehaviour)))
-				SelectiveProfiler.EnableProfiling(m, SelectiveProfiler.ShouldSave);
+				SelectiveProfiler.EnableProfilingAsync(m, SelectiveProfiler.ShouldSave);
 		}
 
 		[MenuItem(Component + "Disable: Profile All User Methods", true)]
@@ -44,7 +44,7 @@ namespace Needle.SelectiveProfiling
 			{
 				if (AccessUtils.GetLevel(comp.GetType()) != Level.User) continue;
 				foreach (var m in AccessUtils.GetMethods(comp, typeof(MonoBehaviour)))
-					SelectiveProfiler.EnableProfiling(m, SelectiveProfiler.ShouldSave);
+					SelectiveProfiler.EnableProfilingAsync(m, SelectiveProfiler.ShouldSave);
 			}
 		}
 

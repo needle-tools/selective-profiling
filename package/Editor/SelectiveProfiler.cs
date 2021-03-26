@@ -38,7 +38,7 @@ namespace Needle.SelectiveProfiling
 			// 	}
 			// }
 			// previouslySelectedImmediateProfilingMethod = method;
-			EnableProfiling(method, false, true, true);
+			EnableProfilingAsync(method, false, true, true);
 		}
 
 		public static bool IsProfiling(MethodInfo method, bool onlySaved = false)
@@ -62,16 +62,18 @@ namespace Needle.SelectiveProfiling
 			return profiled.TryGetValue(method, out var pi ) && pi.IsActive;// && Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
-		public static async void EnableProfiling([NotNull] MethodInfo method,
+		public static bool EnableProfiling([NotNull] MethodInfo method,
 			bool save = true,
 			bool enablePatch = true,
 			bool enableIfMuted = false,
 			bool forceLogs = false)
 		{
-			await EnableProfilingAsync(method, save, enablePatch, enableIfMuted, forceLogs);
+			var task = EnableProfilingAsync(method, save, enablePatch, enableIfMuted, forceLogs);
+			task.RunSynchronously();
+			return task.Result;
 		}
 
-		public static Task EnableProfilingAsync([NotNull] MethodInfo method,
+		public static Task<bool> EnableProfilingAsync([NotNull] MethodInfo method,
 			bool save = true,
 			bool enablePatch = true,
 			bool enableIfMuted = false,
@@ -90,14 +92,15 @@ namespace Needle.SelectiveProfiling
 		/// </summary>
 		internal static bool AllowToBeEnabled => !ProfilerDriver.deepProfiling || DevelopmentMode;
 
-		private static async Task InternalEnableProfilingAsync(
+		private static async Task<bool> InternalEnableProfilingAsync(
 			MethodInfo method,
 			bool save = true,
 			bool enablePatch = true,
 			bool enableIfMuted = false,
 			MethodInfo source = null,
 			int depth = 0,
-			bool forceLogs = false
+			bool forceLogs = false,
+			bool patchThreaded = false
 		)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
@@ -113,11 +116,11 @@ namespace Needle.SelectiveProfiling
 				};
 				QueueCommand(cmd);
 #endif
-				return;
+				return true;
 			}
 
 			var settings = SelectiveProfilerSettings.Instance;
-			if (!settings.Enabled) return;
+			if (!settings.Enabled) return false;
 
 			if (AccessUtils.TryGetDeclaredMember(method, out var declared))
 				method = declared;
@@ -125,7 +128,7 @@ namespace Needle.SelectiveProfiling
 			var isDeep = source != null && method != source;
 			if (!AccessUtils.AllowPatching(method, isDeep, settings.DebugLog || forceLogs))
 			{
-				return;
+				return false;
 			}
 
 			void HandleCallstackRegistration(ProfilingInfo current)
@@ -167,7 +170,7 @@ namespace Needle.SelectiveProfiling
 					HandleDeepProfiling();
 				}
 
-				return;
+				return existingProfilingInfo.IsActive;
 			}
 
 			if (save)
@@ -178,6 +181,7 @@ namespace Needle.SelectiveProfiling
 
 
 			var patch = new ProfilerSamplePatch(method, null, " " + SamplePostfix);
+			patch.PatchThreaded = patchThreaded;
 			var info = new ProfilingInfo(patch, method, methodInfo);
 			profiled.Add(method, info);
 			profiled2.Add(methodInfo, info);
@@ -185,16 +189,19 @@ namespace Needle.SelectiveProfiling
 			HandleCallstackRegistration(info);
 			PatchManager.RegisterPatch(patch);
 
+			var enabled = false;
 			if (enablePatch)
 			{
 				var muted = !methodInfo.Enabled;
 				if (enableIfMuted && muted) settings.SetMuted(methodInfo, false);
 				if (!muted)
 				{
-					await info.Enable();
-					HandleDeepProfiling();
+					enabled = await info.Enable();
+					if(enabled)
+						HandleDeepProfiling();
 				}
 			}
+			return enabled;
 		}
 
 		[MenuItem(MenuItems.ToolsMenu + nameof(DisableProfilingAll))]
@@ -336,7 +343,7 @@ namespace Needle.SelectiveProfiling
 					foreach (var method in methods)
 					{
 						alwaysProfile.Add(method);
-						EnableProfiling(method, false, true, false);
+						await EnableProfilingAsync(method, false, true, false);
 					}
 				}
 
@@ -344,7 +351,7 @@ namespace Needle.SelectiveProfiling
 				foreach (var method in methodsToProfile)
 				{
 					alwaysProfile.Add(method);
-					EnableProfiling(method, false, true, false);
+					await EnableProfilingAsync(method, false, true, false);
 				}
 #endif
 			}
@@ -405,12 +412,12 @@ namespace Needle.SelectiveProfiling
 							if (patch.IsActive == shouldBeActive) continue;
 
 							if (shouldBeActive)
-								EnableProfiling(patch.Method);
+								EnableProfilingAsync(patch.Method);
 							else patch.Disable();
 						}
 						else if (shouldBeActive)
 						{
-							EnableProfiling(method);
+							EnableProfilingAsync(method);
 						}
 						++handled;
 					}
@@ -445,7 +452,6 @@ namespace Needle.SelectiveProfiling
 			callsFound.Add(method);
 		}
 
-		private static readonly List<MethodInfo> callsList = new List<MethodInfo>();
 		private static async void HandleNestedCalls(MethodInfo source, int depth)
 		{
 			if (!deepProfiling) return;

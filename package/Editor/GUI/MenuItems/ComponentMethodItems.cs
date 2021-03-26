@@ -67,7 +67,7 @@ namespace Needle.SelectiveProfiling
 			}
 			else
 			{
-				SelectiveProfiler.EnableProfiling(method, SelectiveProfiler.ShouldSave, true, true);
+				SelectiveProfiler.EnableProfilingAsync(method, SelectiveProfiler.ShouldSave, true, true);
 			}
 		}
 	}

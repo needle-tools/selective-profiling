@@ -458,7 +458,7 @@ namespace Needle.SelectiveProfiling
 					{
 						if (GUILayout.Button("Add", GUILayout.Width(70)))
 						{
-							SelectiveProfiler.EnableProfiling(match.Method, SelectiveProfiler.ShouldSave, true, true);
+							SelectiveProfiler.EnableProfilingAsync(match.Method, SelectiveProfiler.ShouldSave, true, true);
 						}
 					}
 
