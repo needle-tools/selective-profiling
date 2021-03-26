@@ -110,9 +110,24 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				var isMethodCall = inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt;
 				if (isMethodCall || inst.opcode == OpCodes.Newobj || inst.opcode == OpCodes.Newarr)
 				{
+					bool IsProfilerMarkerOrSampler(Type type)
+					{
+						return typeof(ProfilerMarker).IsAssignableFrom(type) ||
+						       typeof(CustomSampler).IsAssignableFrom(type);
+					}
+					
 					if (inst.operand is MethodInfo mi)
 					{
-						if (skipProfilerMethods && (mi.DeclaringType == typeof(Profiler) || mi.DeclaringType == typeof(ProfilerMarker)))
+						bool MethodIsProfilerMethodOrHasProfilerMethodArgument()
+						{
+							return mi.DeclaringType == typeof(Profiler) || IsProfilerMarkerOrSampler(mi.DeclaringType);
+						}
+						
+						// I think we dont have to skip methods that take Profiler.Samplers as arguments as below when in dispose scope
+						// we can probably profile constructors below once we handle dispose scopes correctly?!
+						// but maybe it is a special case as well. According to SRP comment: "Currently there's an issue which results in mismatched markers."
+						
+						if (skipProfilerMethods && MethodIsProfilerMethodOrHasProfilerMethodArgument())
 						{
 							start = -1;
 							continue;
@@ -120,6 +135,24 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 						if (mi.GetCustomAttribute<DontFollow>() == null)
 							SelectiveProfiler.RegisterInternalCalledMethod(mi);
+					}
+
+					if (inst.operand is ConstructorInfo ci)
+					{
+						// TODO: for now dont profile ``UnityEngine.Rendering.ProfilingScope`` until we find a better way to handle cases where using(disposable) is called with custom profiler markers/sample implementation like in ScriptableRenderer.InternalStartRendering
+						if (ci.DeclaringType?.FullName == "UnityEngine.Rendering.ProfilingScope")
+						{
+							start = -1;
+							continue;
+						}
+						
+						// skip constructors that take profiler sampler as argument
+						// this prevents cases where IDisposable implementations (as ProfilerScopes) cause mismatching samples
+						if (skipProfilerMethods && ci.GetParameters().Any(p => IsProfilerMarkerOrSampler(p.ParameterType)))
+						{
+							start = -1;
+							continue;
+						}
 					}
 
 					if (start > index && hasLabel) start = prevStart;
@@ -147,16 +180,16 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 			if (ShouldSaveIL(debugLog))
 			{
-				var prefix = method != null ? "<b>Transpiled</b> " + method.DeclaringType?.Name + "." + method.Name + "\n" : string.Empty;
+				var prefix = debugLog && method != null ? "<b>Transpiled</b> " + method.DeclaringType?.Name + "." + method.Name + "\n" : string.Empty;
 				var IL_After = string.Join("\n", instructions);
-				if (IL_Before?.Length + IL_After.Length > 12000)
+				if (debugLog && IL_Before?.Length + IL_After.Length > 12000)
 				{
 					var msg = "Before " + prefix + IL_Before;
 					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
 					msg = "After " + prefix + IL_After;
 					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
 				}
-				else
+				else if(debugLog)
 				{
 					var msg = prefix + IL_Before + "\n\n----\n\n" + IL_After;
 					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
