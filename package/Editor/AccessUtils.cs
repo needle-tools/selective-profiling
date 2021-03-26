@@ -385,7 +385,8 @@ namespace Needle.SelectiveProfiling.Utils
 			    method.DeclaringType == typeof(ProfilerMarker) ||
 			    method.DeclaringType == typeof(GarbageCollector) ||
 			    method.DeclaringType == typeof(Application) ||
-			    method.DeclaringType == typeof(StackTraceUtility)
+			    method.DeclaringType == typeof(StackTraceUtility) ||
+			    method.DeclaringType == typeof(AssetDatabase)
 			)
 			{
 				Reason($"Profiling in {method.DeclaringType} is not allowed: " + GetMethodLogName());
