@@ -24,7 +24,7 @@ namespace SelectiveProfilingTestComponent
 				label = "";
 			}
 
-			if (Event.current.type == EventType.Repaint && IsRenaming("calling a method"))
+			if (Event.current.type == EventType.Repaint || IsRenaming("calling a method"))
 			{
 				Debug.Log("is repaint " + label);
 			}
@@ -35,9 +35,17 @@ namespace SelectiveProfilingTestComponent
 			{
 				selected = true;
 				label = "";
-				return;
+			}
+
+			string str = "loop0";
+			for (int i = 0; i <= 1; i++)
+			{
+				if (str == "loop1") Debug.Log("HELLO " + i);
+				Debug.Log("run: " + str);
+				str = "loop1";
 			}
 			
+			return;
 			
 			Debug.Log("is never called " + label + ", " + selected);
 
