@@ -47,7 +47,7 @@ namespace Needle.SelectiveProfiling
 				if (!t.Result && enabled && Patch.EnableException.IsOrHasUnityException_CanOnlyBeCalledFromMainThread())
 				{
 					if(SelectiveProfiler.DebugLog) 
-						Debug.Log("Patching " + Method + " on background thread didnt work, trying to patch on main thread now");
+						Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Patching " + Method + " on background thread didnt work, trying to patch on main thread now");
 					Patch.SuppressUnityExceptions = false;
 					Patch.PatchThreaded = false;
 					return Patch.Enable(false);
