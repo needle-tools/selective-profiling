@@ -451,7 +451,6 @@ namespace Needle.SelectiveProfiling
 			if (method == null) return;
 			if (callsFound.Contains(method)) return;
 			callsFound.Add(method);
-			Debug.Log("Found " + method);
 		}
 
 		private static async void HandleNestedCalls(MethodInfo source, int depth)
