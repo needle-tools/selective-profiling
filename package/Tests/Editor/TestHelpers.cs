@@ -55,12 +55,12 @@ public static class TestHelpers
             $"[Actual: {actual.Count()} samples]\n{string.Join("\n", actual)}\n";
     }
     
-    internal static void MustNotBePatched(MethodInfo methodInfo)
+    internal static void AssertIsNotPatched(MethodInfo methodInfo)
     {
         Assert.IsFalse(SelectiveProfiler.TryGet(methodInfo, out var info), "Method is patched: " + methodInfo);
     }
     
-    internal static void MustBePatched(MethodInfo methodInfo)
+    internal static void AssertIsPatched(MethodInfo methodInfo)
     {
         Assert.IsTrue(SelectiveProfiler.TryGet(methodInfo, out var info), "Method is patched: " + methodInfo);
     }
@@ -78,11 +78,13 @@ public static class TestHelpers
             shouldCollectNames = collectInjectedSampleNames;
             
             if(collectInjectedSampleNames)
+            {
                 ProfilerSamplePatch.OnSampleInjected += (methodBase, sampleName) =>
                 {
                     if(!injectedSamples.Contains(sampleName))
                         injectedSamples.Add(sampleName);
                 };
+            }
             
             patchingTask = SelectiveProfiler.EnableProfilingAsync(methodInfo, false, true, true, false);
         }
@@ -111,4 +113,9 @@ public static class TestHelpers
     //     return recorders.Any(x => x.HasCollectedDataAfterStopping);
     // }
 
+    public static void AssertSamplesAreEqual(List<string> expectedSamples, List<string> receivedSamples)
+    {
+        CollectionAssert.AreEqual(expectedSamples, receivedSamples, 
+            TestHelpers.Log(expectedSamples, receivedSamples));
+    }
 }

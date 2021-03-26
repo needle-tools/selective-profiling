@@ -1,34 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using Needle.SelectiveProfiling;
 using NUnit.Framework;
-using UnityEditor;
-using UnityEditor.Profiling;
 using UnityEditorInternal;
-using UnityEngine;
-using UnityEngine.Profiling;
-using Debug = UnityEngine.Debug;
 
 internal class ProfilerSampleCollector : IProfilerDataCollector
 {    
     public List<string> ReceivedSamples { get; private set; } = new List<string>();
-    
-    private int maxTotalFrames;
-    private int collectMaxProfilerFrames;
-    
-    private MethodInfo methodInfo;
     private readonly List<string> expectedSamples;
     private readonly Action action;
-    private int receivedProfilerFrames = 0;
-    private bool haveCollectedAllSamples = false;
     
-    public ProfilerSampleCollector(MethodInfo methodInfo, List<string> expectedSampleNames, Action action)
+    public ProfilerSampleCollector(List<string> expectedSampleNames, Action action)
     {
-        this.methodInfo = methodInfo;
         this.expectedSamples = expectedSampleNames;
         this.action = action;
     }

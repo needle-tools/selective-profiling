@@ -54,7 +54,7 @@ public class TestsUsingPerformanceAPI
     [UnityTest]
     public IEnumerator PatchHasInjectedSamples([ValueSource(nameof(TestCasesThatShouldHaveInjectedSamples))] PatchingTestCase testCase)
     {
-        TestHelpers.MustNotBePatched(testCase.methodInfo);
+        TestHelpers.AssertIsNotPatched(testCase.methodInfo);
         
         var patchMethod = new TestHelpers.PatchMethod(testCase.methodInfo, true);
         yield return patchMethod;
@@ -65,13 +65,13 @@ public class TestsUsingPerformanceAPI
             yield return null;
         
         CollectionAssert.IsNotEmpty(patchMethod.InjectedSampleNames, "No samples injected into " + testCase.methodInfo);
-        TestHelpers.MustNotBePatched(testCase.methodInfo);
+        TestHelpers.AssertIsNotPatched(testCase.methodInfo);
     }
 
     [UnityTest]
     public IEnumerator PatchHasNoInjectedSamples([ValueSource(nameof(TestCasesThatShouldHaveNoInjectedSamples))] PatchingTestCase testCase)
     {
-        TestHelpers.MustNotBePatched(testCase.methodInfo);
+        TestHelpers.AssertIsNotPatched(testCase.methodInfo);
         
         var patchMethod = new TestHelpers.PatchMethod(testCase.methodInfo, true);
         yield return patchMethod;
@@ -83,7 +83,7 @@ public class TestsUsingPerformanceAPI
         
         CollectionAssert.IsEmpty(patchMethod.InjectedSampleNames, "Samples have been injected into " + testCase.methodInfo);
         
-        TestHelpers.MustNotBePatched(testCase.methodInfo);
+        TestHelpers.AssertIsNotPatched(testCase.methodInfo);
     }
 
     [UnityTest]
@@ -91,17 +91,17 @@ public class TestsUsingPerformanceAPI
     {
         void Action() => BasicBehaviour.MyStaticCall();
         var methodInfo = TestHelpers.GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyStaticCall));
-        TestHelpers.MustNotBePatched(methodInfo);
+        TestHelpers.AssertIsNotPatched(methodInfo);
         
         var patchMethod = new TestHelpers.PatchMethod(methodInfo, true);
         yield return patchMethod;
 
-        TestHelpers.MustBePatched(methodInfo);
+        TestHelpers.AssertIsPatched(methodInfo);
         CollectionAssert.IsNotEmpty(patchMethod.InjectedSampleNames, "No samples have been injected");
         
         Debug.Log("Done patching");
         
-        var collectorThatShouldReceiveSamples = new ProfilerSampleCollector(methodInfo, patchMethod.InjectedSampleNames, Action);
+        var collectorThatShouldReceiveSamples = new ProfilerSampleCollector(patchMethod.InjectedSampleNames, Action);
         yield return collectorThatShouldReceiveSamples.CollectSamples();
         var methodIsPatchedAfterPatching = collectorThatShouldReceiveSamples.ReceivedSamples.Count == patchMethod.InjectedSampleNames.Count; 
         
@@ -114,7 +114,7 @@ public class TestsUsingPerformanceAPI
 
         Debug.Log("Done unpatching");
         
-        TestHelpers.MustNotBePatched(methodInfo);
+        TestHelpers.AssertIsNotPatched(methodInfo);
         
         Assert.IsTrue(methodIsPatchedAfterPatching, 
             $"MethodIsPatched(Action, patchMethod.InjectedSampleNames)\n" +
@@ -125,7 +125,7 @@ public class TestsUsingPerformanceAPI
         for(int i = 0; i < 60; i++)
             yield return null;
         
-        var collectorThatShouldNotReceiveSamples = new ProfilerSampleCollector(methodInfo, patchMethod.InjectedSampleNames, Action);
+        var collectorThatShouldNotReceiveSamples = new ProfilerSampleCollector(patchMethod.InjectedSampleNames, Action);
         yield return collectorThatShouldNotReceiveSamples.CollectSamples();
         
         Debug.Log("Done collecting samples where we should receive 0\n" + 
@@ -140,7 +140,7 @@ public class TestsUsingPerformanceAPI
     public IEnumerator PatchingAndUnpatching_MethodIsGone()
     {
         var methodInfo = TestHelpers.GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
-        TestHelpers.MustNotBePatched(methodInfo);
+        TestHelpers.AssertIsNotPatched(methodInfo);
         
         yield return new TestHelpers.PatchMethod(methodInfo);
         
@@ -157,7 +157,7 @@ public class TestsUsingPerformanceAPI
         var task = SelectiveProfiler.DisableAndForget(methodInfo);
         while (!task.IsCompleted) yield return null;
 
-        TestHelpers.MustNotBePatched(methodInfo);
+        TestHelpers.AssertIsNotPatched(methodInfo);
     }
 
     [UnityTest]
@@ -167,7 +167,7 @@ public class TestsUsingPerformanceAPI
         var behaviour = TestHelpers.CreateObjectWithComponent<BasicBehaviour>();
         void Action() => behaviour.MyCall(10000);
         var methodInfo = TestHelpers.GetMethodInfo(typeof(BasicBehaviour), nameof(BasicBehaviour.MyCall));
-        TestHelpers.MustNotBePatched(methodInfo);
+        TestHelpers.AssertIsNotPatched(methodInfo);
         
         var patching = new TestHelpers.PatchMethod(methodInfo, true);
         yield return patching;
@@ -178,6 +178,8 @@ public class TestsUsingPerformanceAPI
         injectedSamples.Add("MyTest");
 
         int k = 0;
+        
+        // TODO could also use ProfilerMarkerCollector here
         
         // Profiler markers created using Profiler.BeginSample() are not supported, switch to ProfilerMarker if possible.
         var recorders = injectedSamples.Select(x => new TestHelpers.Sampler(x)).ToList();
@@ -209,7 +211,7 @@ public class TestsUsingPerformanceAPI
         
         CollectionAssert.AreEqual(recorders, recordersWithData, TestHelpers.Log(recorders, recordersWithData));
         
-        TestHelpers.MustNotBePatched(methodInfo);
+        TestHelpers.AssertIsNotPatched(methodInfo);
     }
 
     

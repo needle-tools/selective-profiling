@@ -5,4 +5,5 @@ using UnityEngine;
 public interface IProfilerDataCollector
 {
     List<string> ReceivedSamples { get; }
+    IEnumerator CollectSamples();
 }

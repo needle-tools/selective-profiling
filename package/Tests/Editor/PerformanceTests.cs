@@ -17,7 +17,7 @@ public class PerformanceTests
         var go = new GameObject("Test");
         var behaviour = go.AddComponent<BasicBehaviour>();
         var methodInfo = typeof(BasicBehaviour).GetMethod(nameof(BasicBehaviour.MyCall), (BindingFlags) (-1));
-        TestHelpers.MustNotBePatched(methodInfo);
+        TestHelpers.AssertIsNotPatched(methodInfo);
         
         var unpatchedGroup = new SampleGroup("Unpatched Method", SampleUnit.Microsecond);
         var patchedGroup = new SampleGroup("Patched Method", SampleUnit.Microsecond);
@@ -64,7 +64,7 @@ public class PerformanceTests
                 yield return null;
         }
 
-        TestHelpers.MustNotBePatched(methodInfo); 
+        TestHelpers.AssertIsNotPatched(methodInfo); 
     }
 
     
