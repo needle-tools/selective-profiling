@@ -235,7 +235,7 @@ public class TestsUsingPerformanceAPI
     
     [Explicit]
     [UnityTest]
-    public IEnumerator CanPatchEverythingInNamespace([ValueSource(nameof(TestCasesPerNamespace))] NamespaceTestCase testCase)
+    public IEnumerator X_CanPatchEverythingInNamespace([ValueSource(nameof(TestCasesPerNamespace))] NamespaceTestCase testCase)
     {
         var logBefore = SelectiveProfilerSettings.instance.DebugLog; 
         SelectiveProfilerSettings.instance.DebugLog = false;
