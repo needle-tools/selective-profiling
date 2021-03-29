@@ -60,7 +60,8 @@ namespace Needle.SelectiveProfiling
 			}
 
 
-			return profiled.TryGetValue(method, out var pi ) && pi.IsActive;// && Patches.Any(e => e.IsActive && e.Method == method);
+			if (!profiled.TryGetValue(method, out var pi )) return false;
+			return pi.IsActive;// && Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
 		public static bool EnableProfiling([NotNull] MethodInfo method,

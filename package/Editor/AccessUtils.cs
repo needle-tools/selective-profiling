@@ -79,55 +79,55 @@ namespace Needle.SelectiveProfiling.Utils
 		}
 
 		private static readonly List<ulong> callstackList = new List<ulong>();
+		private static readonly HashSet<ulong> previouslyFound = new HashSet<ulong>();
 
-		private static bool TryFindMethodFromCallstack(int _itemId, HierarchyFrameDataView view, ref List<MethodInfo> methods)
+		internal static bool TryFindMethodFromCallstack(int _itemId, HierarchyFrameDataView view, ref List<MethodInfo> methods, int maxLevel = int.MaxValue)
 		{
 			if (view == null || !view.valid || _itemId < 0)
 			{
 				return false;
 			}
+			
 
-			bool FindMethodCallstackRecursive(int itemId, ref List<MethodInfo> foundMethods)
+			bool FindMethodCallstackRecursive(int itemId, ref List<MethodInfo> foundMethods, int level = 0)
 			{
-				// var callStack = view.ResolveItemCallstack(itemId);
-				// if(!string.IsNullOrEmpty(callStack))
-				// 	Debug.Log(callStack);
-
 				callstackList.Clear();
 				view.GetItemCallstack(itemId, callstackList);
 
 				if (callstackList.Count > 0)
 				{
-					// Debug.Log(name + " -> " + callstackList.Count + "\n" + 
-					//           string.Join("\n", callstackList.Select(i => (view.ResolveMethodInfo(i).methodName) ?? string.Empty).Where(s => !string.IsNullOrEmpty(s))) 
-					//           + "\n\n\n"
-					//           );
 					foreach (var addr in callstackList)
 					{
+						if (previouslyFound.Contains(addr)) continue;
+						previouslyFound.Add(addr);
 						var methodInfo = view.ResolveMethodInfo(addr);
 						if (!string.IsNullOrEmpty(methodInfo.methodName))
 						{
 							if (TryGetMethodFromFullyQualifiedName(methodInfo.methodName, ref foundMethods))
 							{
-								// var name = view.GetItemName(itemId);
-								// Debug.Log(name + ": FOUND " + methodInfo.methodName);
 							}
 						}
 					}
 				}
-
+				
 				if (!view.HasItemChildren(itemId)) return foundMethods != null && foundMethods.Count > 0;
 				var children = new List<int>();
 				view.GetItemChildren(itemId, children);
-				foreach (var id in children)
+				var nextLevel = ++level;
+				if (nextLevel <= maxLevel)
 				{
-					FindMethodCallstackRecursive(id, ref foundMethods);
+					foreach (var id in children)
+					{
+						FindMethodCallstackRecursive(id, ref foundMethods, nextLevel);
+					}
 				}
-
 				return foundMethods != null && foundMethods.Count > 0;
 			}
 
-			return FindMethodCallstackRecursive(_itemId, ref methods);
+			previouslyFound.Clear();
+			var res = FindMethodCallstackRecursive(_itemId, ref methods);
+			previouslyFound.Clear();
+			return res;
 		}
 
 		private static bool TryFindMethodsInChildrenFromNames(int itemId, HierarchyFrameDataView frameData, ref List<MethodInfo> methods)
