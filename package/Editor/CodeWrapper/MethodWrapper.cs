@@ -180,7 +180,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 			if (ShouldSaveIL(debugLog))
 			{
-				var prefix = debugLog && method != null ? "<b>Transpiled</b> " + method.DeclaringType?.Name + "." + method.Name + "\n" : string.Empty;
+				var prefix = debugLog && method != null ? "<b>Transpiled</b> " + method.DeclaringType?.FullName + "." + method.Name + "\n" : string.Empty;
 				var IL_After = string.Join("\n", instructions);
 				if (debugLog && IL_Before?.Length + IL_After.Length > 12000)
 				{

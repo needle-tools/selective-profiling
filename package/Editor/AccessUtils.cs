@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
+using Mono.Cecil;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
 using Unity.Profiling;
@@ -16,7 +18,11 @@ using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Scripting;
+using Matrix4x4 = UnityEngine.Matrix4x4;
 using Object = UnityEngine.Object;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
+using Vector4 = UnityEngine.Vector4;
 
 namespace Needle.SelectiveProfiling.Utils
 {
@@ -257,7 +263,7 @@ namespace Needle.SelectiveProfiling.Utils
 							if (!success)
 								Debug.LogException(am);
 							if (SelectiveProfiler.DebugLog)
-								Debug.Log("Found AmbiguousMatch for <i>" + fullName + "</i>" + (success ? " but returning " + found + " matching methods" : " and could not find matching methods"));
+								Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Found AmbiguousMatch for <i>" + fullName + "</i>" + (success ? " but returning " + found + " matching methods" : " and could not find matching methods"));
 						}
 					}
 #if DEBUG_ACCESS
@@ -372,6 +378,7 @@ namespace Needle.SelectiveProfiling.Utils
 					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, msg);
 			}
 
+			
 			// see Harmony PatchProcessor.cs:136
 			if (method.IsDeclaredMember() is false)
 			{
@@ -385,6 +392,7 @@ namespace Needle.SelectiveProfiling.Utils
 					return false;
 				}
 			}
+			
 
 			if (!method.HasMethodBody())
 			{
@@ -392,23 +400,40 @@ namespace Needle.SelectiveProfiling.Utils
 				return false;
 			}
 
+			if (method.Name.StartsWith("op_"))
+			{
+				Reason("Operation is not allowed: " + GetMethodLogName());
+				return false;
+			}
+
 			if (
+				method.DeclaringType == typeof(Object) ||
 				method.DeclaringType == typeof(GC) ||
 				method.DeclaringType == typeof(GarbageCollector) ||
 				method.DeclaringType == typeof(Profiler) ||
 				typeof(ProfilerDriver).IsAssignableFrom(method.DeclaringType) ||
 				typeof(ProfilerMarker).IsAssignableFrom(method.DeclaringType) ||
 				typeof(CustomSampler).IsAssignableFrom(method.DeclaringType) ||
+				method.DeclaringType == typeof(UnityException) ||
 			    method.DeclaringType == typeof(Application) ||
 			    method.DeclaringType == typeof(StackTraceUtility) ||
 			    method.DeclaringType == typeof(AssetDatabase) ||
-			    method.DeclaringType == typeof(Mathf)
+				method.DeclaringType == typeof(Time) ||
+				method.DeclaringType == typeof(EditorPrefs) ||
+				method.DeclaringType == typeof(SessionState) ||
+			    method.DeclaringType == typeof(Mathf) ||
+				method.DeclaringType == typeof(Matrix4x4) ||
+				method.DeclaringType == typeof(Vector2) ||
+				method.DeclaringType == typeof(Vector3) ||
+				method.DeclaringType == typeof(Vector4) ||
+				method.DeclaringType == typeof(DragAndDrop) ||
+				method.DeclaringType == typeof(Undo)
 			)
 			{
 				Reason($"Profiling in {method.DeclaringType} is not allowed: " + GetMethodLogName());
 				return false;
 			}
-
+			
 			// Generics
 			// See https://harmony.pardeike.net/articles/patching.html#commonly-unsupported-use-cases
 			// Got various crashes when patching generics was enabled (e.g. patching generic singleton Instance.Getter caused crashes)
@@ -438,6 +463,13 @@ namespace Needle.SelectiveProfiling.Utils
 				return false;
 			}
 
+			var assembly = method.DeclaringType?.Assembly;
+			if (assembly == typeof(PatchManager).Assembly || assembly == typeof(Harmony).Assembly)
+			{
+				Reason($"Profiling method in {assembly} is not allowed: " + GetMethodLogName());
+				return false;
+			}
+
 			var assemblyName = ExtractAssemblyNameWithoutVersion(method.DeclaringType?.Assembly);
 			if (!string.IsNullOrEmpty(assemblyName))
 			{
@@ -447,11 +479,11 @@ namespace Needle.SelectiveProfiling.Utils
 					case "UnityEngine.IMGUIModule":
 					// case "UnityEngine.CoreModule":
 					// case "UnityEditor.CoreModule":
-						// 		// case "UnityEditor.UIElementsModule":
-						// 		// case "UnityEngine.UIElementsModule":
-						// 		// case "UnityEngine.SharedInternalsModule":
-						// 		// case "UnityEditor.PackageManagerUIModule":
-						Reason("Profiling in " + assemblyName + " is not allowed");
+					// case "UnityEditor.UIElementsModule":
+					// case "UnityEngine.UIElementsModule":
+					// case "UnityEngine.SharedInternalsModule":
+					// case "UnityEditor.PackageManagerUIModule":
+						Reason("Profiling in " + assemblyName + " is not allowed: " + GetMethodLogName());
 						return false;
 				}
 			}
@@ -459,25 +491,25 @@ namespace Needle.SelectiveProfiling.Utils
 			var fullName = method.DeclaringType?.FullName;
 			if (!string.IsNullOrEmpty(fullName))
 			{
-				if (fullName.StartsWith("UnityEditor.Profiling") ||
+				if (
+					fullName.StartsWith("System.") ||
+					fullName.StartsWith("UnityEditor.Profiling") ||
+				    fullName.StartsWith("UnityEditorInternal.Profiling") ||
+				    fullName.StartsWith("UnityEditorInternal.InternalEditorUtility") ||
+				    fullName.StartsWith("UnityEditor.ProfilerWindow") ||
 				    fullName.StartsWith("UnityEditor.HostView") ||
 				    fullName.StartsWith("UnityEngine.UIElements.UIR") ||
 				    fullName.StartsWith("UnityEditor.StyleSheets") ||
-				    fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem")
+				    fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem") ||
+				    fullName.StartsWith("UnityEngine.SendMouseEvents") ||
+				    fullName.StartsWith("UnityEditor.PlayModeView") ||
+					fullName.StartsWith("UnityEditor.IMGUI.Controls.TreeViewController")
 				)
 				{
-					Reason("Profiling in " + fullName + " is not allowed");
+					Reason($"Profiling in {fullName} is not allowed: " + GetMethodLogName());
 					return false;
 				}
 			}
-
-			var assembly = method.DeclaringType?.Assembly;
-			if (assembly == typeof(PatchManager).Assembly || assembly == typeof(Harmony).Assembly)
-			{
-				Reason($"Profiling method in {assembly} is not allowed");
-				return false;
-			}
-
 			// if (method.DeclaringType != null)
 			// {
 			// 	if (typeof(MonoBehaviour).IsAssignableFrom(method.DeclaringType) && method.Name == "OnValidate" && method.GetParameters().Length <= 0)
@@ -485,6 +517,19 @@ namespace Needle.SelectiveProfiling.Utils
 			// 		return false;
 			// 	}
 			// }
+			
+			
+
+			foreach (var attr in method.GetCustomAttributes())
+			{
+				var attributeTypeName = attr.TypeId.ToString();
+				if (attributeTypeName == "UnityEngine.Scripting.RequiredByNativeCodeAttribute")
+				{
+					Reason($"Profiling method with {attributeTypeName} attribute is not allowed: " + GetMethodLogName());
+					return false;
+				}
+			}
+
 
 			return true;
 		}
