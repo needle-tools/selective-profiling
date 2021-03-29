@@ -225,7 +225,7 @@ namespace Needle.SelectiveProfiling
 							var allowed = methodsList.Distinct().Where(AllowPatching);
 							var count = allowed.Count();
 							
-							if (methodsList.Any(m => AccessUtils.AllowPatching(m, false, debugLog)))
+							if (count > 0)
 							{
 								menu.AddItem(new GUIContent("Enable profiling for all [" + count + "]"), false,
 									() => EnableProfilingFromProfilerWindow(allowed, tree));

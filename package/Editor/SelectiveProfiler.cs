@@ -197,9 +197,12 @@ namespace Needle.SelectiveProfiling
 				if (!muted)
 				{
 					enabled = await info.Enable();
-					
-					if(enabled)
+
+					if (enabled)
+					{
 						HandleDeepProfiling();
+					}
+					else if(DebugLog) Debug.LogError("Did not enable: " + method + ", " + info.IsActive + ", " + info.Identifier);
 				}
 			}
 			return enabled;
@@ -425,7 +428,7 @@ namespace Needle.SelectiveProfiling
 					if (handled >= 2) break;
 				}
 			}
-
+			
 			if (DeepProfileDebuggingMode)
 				UpdateDeepProfileDebug();
 		}
@@ -443,10 +446,10 @@ namespace Needle.SelectiveProfiling
 		}
 
 		private static readonly bool deepProfiling = SelectiveProfilerSettings.Instance.DeepProfiling;
-		private static readonly HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
-		private static readonly  List<MethodInfo> nestedMethods = new List<MethodInfo>();
+		private static volatile HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
+		// private static volatile List<MethodInfo> nestedMethods = new List<MethodInfo>();
 
-		internal static void RegisterInternalCalledMethod(MethodInfo method)
+		internal static void RegisterInternalCalledMethod(MethodBase source, MethodInfo method)
 		{
 			if (!deepProfiling) return;
 			if (method == null) return;
@@ -463,19 +466,14 @@ namespace Needle.SelectiveProfiling
 			if (!deepProfiling) return;
 			if (callsFound.Count <= 0) return;
 
-			
-			foreach (var m in callsFound) nestedMethods.Add(m);
+			// TODO: refactor deep profiling to use editor update loop
+
+			var list = callsFound.ToArray();
 			callsFound.Clear();
-			
-			async Task InternalLoop(IList<MethodInfo> list)
+			try
 			{
-				for (var i = list.Count - 1; i >= 0; i--)
+				foreach (var method in list)
 				{
-					while (i >= list.Count) i -= 1;
-					if (i < 0) break;
-					var method = list[i];
-					if(i < list.Count)
-						list.RemoveAt(i);
 					// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
 					if (DeepProfileDebuggingMode)
 					{
@@ -490,13 +488,7 @@ namespace Needle.SelectiveProfiling
 							Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Handle Deep Profile: " + source + " -> " + method + ", Level: " + depth);
 						await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 					}
-					
 				}
-			}
-
-			try
-			{
-				await InternalLoop(nestedMethods);
 			}
 			catch (InvalidOperationException ex)
 			{

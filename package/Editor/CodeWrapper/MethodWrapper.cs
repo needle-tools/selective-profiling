@@ -44,7 +44,6 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				var inst = instructions[index];
 				var prevStart = start;
 
-
 				// we dont inject samples in try{} block because we get errors when exception happens and we dont have an end sample
 				// possible solution: wrap profiler samples with "try finally" block so that "end sample" is called even if exception happens
 				exceptionBlockStack += inst.blocks.Count(b => b.blockType == ExceptionBlockType.BeginExceptionBlock);
@@ -134,7 +133,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 						}
 
 						if (mi.GetCustomAttribute<DontFollow>() == null)
-							SelectiveProfiler.RegisterInternalCalledMethod(mi);
+							SelectiveProfiler.RegisterInternalCalledMethod(method, mi);
 					}
 
 					if (inst.operand is ConstructorInfo ci)

@@ -5,6 +5,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
+using NUnit.Framework.Internal;
+using UnityEditor;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling
@@ -29,7 +31,18 @@ namespace Needle.SelectiveProfiling
 
 		private string identifier;
 		private bool enabled;
-		
+
+		[InitializeOnLoadMethod]
+		private static async void Test()
+		{
+			var t0 = new Task<bool>(() => false);
+			Task<bool> Nested(Task<bool> _t) { return PatchManager.CompletedTaskSuccess; }
+			t0.Start();
+			t0 = t0.ContinueWith(Nested).Unwrap();
+			Debug.Log("Start");
+			await t0;
+			Debug.Log(t0.Result); 
+		}
 
 		public ProfilingInfo(EditorPatchProvider patch, MethodInfo info, MethodInformation mi)
 		{
@@ -51,22 +64,6 @@ namespace Needle.SelectiveProfiling
 			Patch.PatchThreaded = true;
 			var ts = Patch.Enable(false);
 
-			Task<bool> EnableOnMainThreadIfBackgroundFailed(Task<bool> t)
-			{
-				// when patching on the background thread fails try patching on main thread
-				if (!t.Result && enabled && Patch.EnableException.IsOrHasUnityException_CanOnlyBeCalledFromMainThread())
-				{
-					if(SelectiveProfiler.DebugLog) 
-						Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Patching " + Method + " on background thread didnt work, trying to patch on main thread now");
-					Patch.SuppressUnityExceptions = false;
-					Patch.PatchThreaded = false;
-					return Patch.Enable(false);
-				}
-
-				return Patch.IsActive ? PatchManager.CompletedTaskSuccess : PatchManager.CompletedTaskFailed;
-			}
-			ts.ContinueWith(EnableOnMainThreadIfBackgroundFailed);
-			
 			if (!enabled)
 			{
 				enabled = true;
@@ -100,12 +97,6 @@ namespace Needle.SelectiveProfiling
 #endif
 			}
 			return t;
-		}
-
-		public void ToggleActive()
-		{
-			if (IsActive) Disable();
-			else Enable();
 		}
 
 		public override string ToString()
