@@ -1,7 +1,9 @@
-﻿namespace Needle.SelectiveProfiling.Commands
+﻿using UnityEngine;
+
+namespace Needle.SelectiveProfiling.Commands
 {
-	public class Command
+	public abstract class Command
 	{
-		
+		protected abstract void Execute();
 	}
 }

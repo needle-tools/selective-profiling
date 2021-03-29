@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
 using needle.EditorPatching;
+using Needle.SelectiveProfiling.Commands;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditorInternal;
@@ -217,19 +218,19 @@ namespace Needle.SelectiveProfiling
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 			if (alwaysProfile.Contains(method)) return Task.CompletedTask;
-
+			
 #if UNITY_2020_2_OR_NEWER
 			if (IsStandaloneProcess)
 			{
-				var cmd = new DisableProfilingCommand(new MethodInformation(method));
-				QueueCommand(cmd);
+				var networkCommand = new DisableProfilingCommand(new MethodInformation(method));
+				QueueCommand(networkCommand);
 				return Task.CompletedTask;
 			}
 #endif
 
+			Task task = null;
 			allowSave &= ShouldSave;
 
-			Task task = null;
 			if (profiled.TryGetValue(method, out var prof))
 			{
 				task = prof.Disable();
