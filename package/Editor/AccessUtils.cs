@@ -4,13 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
-using Mono.Cecil;
 using needle.EditorPatching;
-using Needle.SelectiveProfiling.CodeWrapper;
 using Unity.Profiling;
 using UnityEditor;
 using UnityEditor.Profiling;
@@ -405,7 +402,7 @@ namespace Needle.SelectiveProfiling.Utils
 				Reason("Operation is not allowed: " + GetMethodLogName());
 				return false;
 			}
-
+			
 			if (
 				method.DeclaringType == typeof(Object) ||
 				method.DeclaringType == typeof(GC) ||
@@ -519,10 +516,10 @@ namespace Needle.SelectiveProfiling.Utils
 			// }
 			
 			
-
 			foreach (var attr in method.GetCustomAttributes())
 			{
 				var attributeTypeName = attr.TypeId.ToString();
+				// dont patch methods marked with [RequiredByNativeCode]
 				if (attributeTypeName == "UnityEngine.Scripting.RequiredByNativeCodeAttribute")
 				{
 					Reason($"Profiling method with {attributeTypeName} attribute is not allowed: " + GetMethodLogName());
