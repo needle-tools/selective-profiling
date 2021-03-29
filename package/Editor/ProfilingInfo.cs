@@ -32,18 +32,6 @@ namespace Needle.SelectiveProfiling
 		private string identifier;
 		private bool enabled;
 
-		[InitializeOnLoadMethod]
-		private static async void Test()
-		{
-			var t0 = new Task<bool>(() => false);
-			Task<bool> Nested(Task<bool> _t) { return PatchManager.CompletedTaskSuccess; }
-			t0.Start();
-			t0 = t0.ContinueWith(Nested).Unwrap();
-			Debug.Log("Start");
-			await t0;
-			Debug.Log(t0.Result); 
-		}
-
 		public ProfilingInfo(EditorPatchProvider patch, MethodInfo info, MethodInformation mi)
 		{
 			this.Patch = patch;
