@@ -81,13 +81,12 @@ namespace Needle.SelectiveProfiling.Utils
 		private static readonly List<ulong> callstackList = new List<ulong>();
 		private static readonly HashSet<ulong> previouslyFound = new HashSet<ulong>();
 
-		internal static bool TryFindMethodFromCallstack(int _itemId, HierarchyFrameDataView view, ref List<MethodInfo> methods, int maxLevel = int.MaxValue)
+		internal static bool TryFindMethodFromCallstack(int _itemId, HierarchyFrameDataView view, ref List<MethodInfo> methods, int maxLevel = int.MaxValue, List<int> itemIds = null)
 		{
 			if (view == null || !view.valid || _itemId < 0)
 			{
 				return false;
 			}
-			
 
 			bool FindMethodCallstackRecursive(int itemId, ref List<MethodInfo> foundMethods, int level = 0)
 			{
@@ -103,8 +102,13 @@ namespace Needle.SelectiveProfiling.Utils
 						var methodInfo = view.ResolveMethodInfo(addr);
 						if (!string.IsNullOrEmpty(methodInfo.methodName))
 						{
+							var prevCount = foundMethods?.Count ?? 0;
 							if (TryGetMethodFromFullyQualifiedName(methodInfo.methodName, ref foundMethods))
 							{
+								// if ambiguous method
+								var diff = foundMethods.Count - prevCount;
+								for(var i = 0 ; i < diff; i++)
+									itemIds?.Add(itemId);
 							}
 						}
 					}
@@ -182,7 +186,7 @@ namespace Needle.SelectiveProfiling.Utils
 			return false;
 		}
 
-		private static bool TryGetMethodFromFullyQualifiedName(string name, ref List<MethodInfo> methodList)
+		internal static bool TryGetMethodFromFullyQualifiedName(string name, ref List<MethodInfo> methodList)
 		{
 			if (!string.IsNullOrEmpty(name))
 			{

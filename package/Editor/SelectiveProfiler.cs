@@ -295,6 +295,7 @@ namespace Needle.SelectiveProfiling
 		internal static IEnumerable<MethodInfo> PatchedMethods => profiled.Keys;
 		internal static IEnumerable<MethodInformation> PatchedMethodsInfo => profiled2.Keys;
 		internal static int PatchesCount => profiled.Count;
+		internal static bool AnyEnabled => profiled.Any(kvp => kvp.Value.IsActive);
 		
 		private static readonly Dictionary<MethodInfo, ProfilingInfo> profiled = new Dictionary<MethodInfo, ProfilingInfo>();
 		private static readonly Dictionary<MethodInformation, ProfilingInfo> profiled2 = new Dictionary<MethodInformation, ProfilingInfo>();
