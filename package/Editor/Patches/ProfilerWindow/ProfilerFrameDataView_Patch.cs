@@ -222,9 +222,9 @@ namespace Needle.SelectiveProfiling
 								return AccessUtils.AllowPatching(_mi, false, debugLog); 
 							}
 
-							var allowed = methodsList.Distinct().Where(AllowPatching);
-							var count = allowed.Count();
-							
+							var allowed = methodsList.Distinct().Where(AllowPatching).ToList();
+							// ReSharper disable PossibleMultipleEnumeration
+							var count = allowed.Count;
 							if (count > 0)
 							{
 								menu.AddItem(new GUIContent("Enable profiling for all [" + count + "]"), false,
@@ -234,10 +234,7 @@ namespace Needle.SelectiveProfiling
 								menu.AddSeparator(string.Empty);
 							}
 
-							foreach (var methodInfo in allowed)
-							{
-								AddMenuItem(tree, menu, methodInfo, true);
-							}
+							BuildOptimalMenuItems(tree, menu, allowed);
 						}
 
 						if (menu.GetItemCount() <= 0)
@@ -250,10 +247,41 @@ namespace Needle.SelectiveProfiling
 					}
 				}
 			}
+		}
 
-			// TODO: figure out how to use https://docs.unity3d.com/ScriptReference/Profiling.FrameDataView.ResolveMethodInfo.html
-			// https://docs.unity3d.com/ScriptReference/Profiling.HierarchyFrameDataView.GetItemCallstack.html
-			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerModules/CPUorGPUProfilerModule.cs#L194
+		private static void BuildOptimalMenuItems(TreeView tree, GenericMenu menu, IEnumerable<MethodInfo> methods)
+		{
+			// only put items in submenu with more than one method per declaring type
+			var lookup = methods.ToLookup(e => e.DeclaringType);
+			foreach (var kvp in lookup)
+			{
+				var index = 0;
+				MethodInfo lastMethod = null;
+				foreach (var method in kvp)
+				{
+					if (index <= 0)
+					{
+						lastMethod = method;
+					}
+					else
+					{
+						if (lastMethod != null)
+						{
+							AddMenuItem(tree, menu, lastMethod, true);
+							lastMethod = null;
+						}
+						
+						AddMenuItem(tree, menu, method, true);
+					}
+					
+					++index;
+				}
+				
+				if(lastMethod != null)
+				{
+					AddMenuItem(tree, menu, lastMethod, false);
+				}
+			}
 		}
 
 		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo, bool addTypeSubmenu)
@@ -287,7 +315,7 @@ namespace Needle.SelectiveProfiling
 				label = "..." + label.Substring(Mathf.Abs(maxLength - label.Length));
 
 			if (addTypeSubmenu && methodInfo.DeclaringType != null)
-				label = methodInfo.DeclaringType.Name + "/" + label;
+				label = prefix + methodInfo.DeclaringType.Name + "/" + label;
 
 			// need to split this into two menu items until we sync state of activated methods between standalone profiler and main process
 			// if (SelectiveProfiler.IsStandaloneProcess)
