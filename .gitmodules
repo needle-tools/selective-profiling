@@ -1,0 +1,3 @@
+[submodule "modules/console-hyperlinks"]
+	path = modules/console-hyperlinks
+	url = https://github.com/needle-tools/console-hyperlinks
