@@ -535,6 +535,8 @@ namespace Needle.SelectiveProfiling.Utils
 			// }
 			
 			
+			
+			// TODO: check if [MethodImpl(MethodImplOptions.AggressiveInlining)] makes any problems
 			foreach (var attr in method.GetCustomAttributes())
 			{
 				var attributeTypeName = attr.TypeId.ToString();
