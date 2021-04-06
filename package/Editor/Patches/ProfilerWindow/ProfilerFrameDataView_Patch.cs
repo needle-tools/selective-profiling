@@ -199,6 +199,9 @@ namespace Needle.SelectiveProfiling
 						var debugLog = settings.DebugLog;
 
 						var name = frameDataView?.GetItemName(item.id);
+
+						Debug.Log(name);
+						
 						var didFind = false;
 						if (AccessUtils.TryGetMethodFromName(name, out var methodsList, false, item.id, frameDataView))
 						{
@@ -216,18 +219,19 @@ namespace Needle.SelectiveProfiling
 
 						if (AccessUtils.TryGetMethodFromName(name, out methodsList, true, item.id, frameDataView))
 						{
-							if(didFind)
+
+							var allowed = methodsList.Distinct().Where(AllowPatching).ToList();
+							// ReSharper disable PossibleMultipleEnumeration
+							var count = allowed.Count;
+							
+							if(didFind && count > 1)
 								menu.AddSeparator(string.Empty);
 
 							bool AllowPatching(MethodInfo _mi)
 							{
 								return AccessUtils.AllowPatching(_mi, false, debugLog); 
 							}
-
-							var allowed = methodsList.Distinct().Where(AllowPatching).ToList();
-							// ReSharper disable PossibleMultipleEnumeration
-							var count = allowed.Count;
-							if (count > 0)
+							if (count > 1)
 							{
 								menu.AddItem(new GUIContent("Enable profiling for all [" + count + "]"), false,
 									() => EnableProfilingFromProfilerWindow(allowed, tree));

@@ -35,6 +35,15 @@ namespace Needle.SelectiveProfiling.Utils
 	internal static class AccessUtils
 	{
 		private static readonly Dictionary<string, Assembly> assemblyMap = new Dictionary<string, Assembly>();
+		private static Dictionary<string, MethodInfo> foundMethodCalls = new Dictionary<string, MethodInfo>();
+
+		internal static void RegisterMethodCall(string key, MethodInfo method)
+		{
+			if (!foundMethodCalls.ContainsKey(key))
+			{
+				foundMethodCalls.Add(key, method);
+			}
+		}
 
 		public static string GetMethodIdentifier(this MethodInfo info)
 		{
@@ -190,6 +199,12 @@ namespace Needle.SelectiveProfiling.Utils
 		{
 			if (!string.IsNullOrEmpty(name))
 			{
+				if (foundMethodCalls.ContainsKey(name))
+				{
+					if (methodList == null) methodList = new List<MethodInfo>();
+					methodList.Add(foundMethodCalls[name]);
+				}
+				
 				Assembly GetAssembly(ref Assembly[] _assemblies)
 				{
 					if (assemblyMap.ContainsKey(name)) return assemblyMap[name];

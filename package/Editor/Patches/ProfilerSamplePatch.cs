@@ -6,8 +6,10 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
 using HarmonyLib;
+using Mono.Cecil.Cil;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
+using Needle.SelectiveProfiling.Utils;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -94,22 +96,29 @@ namespace Needle.SelectiveProfiling
 				}
 				return instructions;
 			}
-			
+
+			internal string GetSampleName(CodeInstruction instruction)
+			{
+				return prefix + TranspilerUtils.TryGetMethodName(instruction.opcode, instruction.operand, false) + postfix;
+			}
 			
 			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index)
 			{
-				var methodName = TranspilerUtils.TryGetMethodName(instruction.opcode, instruction.operand, false);
+				var sampleName = GetSampleName(instruction);
+				
+				if(instruction.operand is MethodInfo mi)
+					AccessUtils.RegisterMethodCall(sampleName, mi);
 				
 				if (SelectiveProfiler.InjectSampleWithCallback(currentMethod))
 				{
 					// load reference or null if static
 					InsertBeforeWithCallback[0] = new CodeInstruction(currentMethod == null || currentMethod.IsStatic ? OpCodes.Ldnull : OpCodes.Ldarg_0);
-					InsertBeforeWithCallback[1] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
+					InsertBeforeWithCallback[1] = new CodeInstruction(OpCodes.Ldstr, sampleName);
 					InsertBeforeWithCallback[2] = CodeInstruction.Call(typeof(SelectiveProfiler), nameof(SelectiveProfiler.OnSampleCallback), new []{typeof(object), typeof(string)});
 				}
 				else
 				{
-					InsertBeforeConstant[0] = new CodeInstruction(OpCodes.Ldstr, prefix + methodName + postfix);
+					InsertBeforeConstant[0] = new CodeInstruction(OpCodes.Ldstr, sampleName);
 				}
 			}
 			

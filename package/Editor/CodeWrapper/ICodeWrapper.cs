@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace Needle.SelectiveProfiling.CodeWrapper
 {
-	public delegate void InjectionCallback(MethodBase method, CodeInstruction instruction, int indexw);
+	public delegate void InjectionCallback(MethodBase method, CodeInstruction instruction, int index);
 	
 	public interface ICodeWrapper
 	{
