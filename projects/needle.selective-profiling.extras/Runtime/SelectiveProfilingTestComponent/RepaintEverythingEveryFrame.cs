@@ -6,20 +6,22 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class RepaintEverythingEveryFrame : MonoBehaviour
 {
-	public bool EditorUpdate;
 
 	private void OnValidate()
 	{
 		EditorApplication.update -= InternalEditorUtility.RepaintAllViews;
-		if (EditorUpdate)
+		if (enabled)
 			EditorApplication.update += InternalEditorUtility.RepaintAllViews;
 	}
 
-#if UNITY_EDITOR
-	void Update()
+	private void OnEnable()
 	{
-		if (!EditorUpdate)
-			UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
+		EditorApplication.update -= InternalEditorUtility.RepaintAllViews;
+		EditorApplication.update += InternalEditorUtility.RepaintAllViews;
 	}
-#endif
+
+	private void OnDisable()
+	{
+		EditorApplication.update -= InternalEditorUtility.RepaintAllViews;
+	}
 }
