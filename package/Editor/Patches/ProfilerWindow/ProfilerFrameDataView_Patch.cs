@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
@@ -10,7 +13,9 @@ using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
+using UnityEditorInternal;
 using UnityEngine;
+
 #if UNITY_2020_2_OR_NEWER
 
 #endif
@@ -27,6 +32,8 @@ namespace Needle.SelectiveProfiling
 			if (!SelectiveProfiler.AllowToBeEnabled) return;
 			patches.Add(new Profiler_SelectionChanged());
 			patches.Add(new Profiler_CellGUI());
+			patches.Add(new Profiler_BuildRows());
+			patches.Add(new Profiler_GetItemName());
 		}
 
 		public override void OnEnabledPatch()
@@ -83,6 +90,165 @@ namespace Needle.SelectiveProfiling
 				else selectedId = selectedIds[0];
 			}
 		}
+
+		private class Profiler_GetItemName : EditorPatch
+		{
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var asm = typeof(EventMarker).Assembly;
+				var t = asm.GetType("UnityEditorInternal.Profiling.CPUorGPUProfilerModule");
+				var m = t.GetMethod("GetItemName", AccessUtils.AllDeclared);
+				targetMethods.Add(m);
+				return Task.CompletedTask; 
+			}
+			
+			private static bool Prefix(object __instance, out string __result, HierarchyFrameDataView frameData, int itemId)
+			{
+				if(itemId > 1_000_000)
+				{
+					var name = frameData.GetItemName(itemId - 1_000_000);
+					var separator = name.LastIndexOf('/');
+					if (separator > 0 && separator < name.Length)
+					{
+						__result = name.Substring(0, separator);
+						// __result = name.Substring(separator + 1);
+						return false;
+					}
+				}
+				// else
+				// {
+				// 	var name = frameData.GetItemName(itemId);
+				// 	var separator = name.LastIndexOf('/');
+				// 	if (separator > 0 && separator < name.Length)
+				// 	{
+				// 		__result = name.Substring(separator + 1);
+				// 		return false;
+				// 	}
+				// }
+
+				__result = null;
+				return true;
+			}
+		}
+		
+		private class Profiler_BuildRows : EditorPatch
+		{
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
+				// var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
+				var m = t.GetMethod("BuildRows", (BindingFlags) ~0);
+				targetMethods.Add(m);
+				return Task.CompletedTask;
+			}
+
+			private class ItemData
+			{
+				public int LastRemovedIndex = -1;
+				public string Key;
+				public List<TreeViewItem> Items = new List<TreeViewItem>(4);
+			}
+
+			private static readonly List<ItemData> reparentList = new List<ItemData>();
+
+			private static void Postfix(object __instance, ref IList<TreeViewItem> __result)
+			{
+				var treeView = __instance as TreeView;
+				var list = __result;
+
+
+				HierarchyFrameDataView fdv = null;
+				if (list != null && list.Count > 0)
+				{
+					reparentList.Clear();
+					for (var index = list.Count - 1; index >= 0; index--)
+					{
+						var item = list[index];
+						if(fdv == null)
+							fdv = GetFrameDataView(item);
+						var name = fdv.GetItemName(item.id);
+						if (!name.Contains('/')) continue;
+
+						var parentName = name.Substring(0, name.IndexOf('/'));
+						var data = reparentList.FirstOrDefault(i => i.Key == parentName);
+
+						if (data == null)
+						{
+							data = new ItemData();
+							reparentList.Add(data);
+						}
+						data.Key = parentName;
+						data.LastRemovedIndex = index;
+						data.Items.Add(item);
+						list.RemoveAt(index);
+					}
+
+					for (var index = 0; index < reparentList.Count; index++)
+					{
+						var rem = reparentList[index];
+						var firstItem = rem.Items.LastOrDefault();
+						
+						// list.Insert(rem.LastRemovedIndex, rem.Items.LastOrDefault());
+						var itemType = firstItem.GetType();
+						var typeName = itemType.FullName;
+						var assemblyName = itemType.Assembly.FullName;
+						if (string.IsNullOrEmpty(typeName)) return;
+						// list.Insert(rem.index, rem.item);
+
+						var newId = firstItem.id + 1_000_000;
+						var newParent = Activator.CreateInstance(AppDomain.CurrentDomain, assemblyName, typeName,
+							true, AccessUtils.All,
+							null, new object[] {fdv, newId, firstItem.depth, firstItem.parent}, CultureInfo.CurrentCulture, null).Unwrap() as TreeViewItem;
+						if (newParent == null) throw new InvalidOperationException();
+						list.Insert(rem.LastRemovedIndex, newParent);
+						foreach (var ch in rem.Items)
+						{
+							ch.depth = newParent.depth + 1;
+							newParent.AddChild(ch);
+							if(treeView.IsExpanded(newId))
+								list.Insert(rem.LastRemovedIndex+1, ch);
+						}
+						
+					}
+
+					reparentList.Clear();
+				}
+			}
+			
+			
+			// private static void Postfix(object __instance, IList<TreeViewItem> newRows, ref List<int> newExpandedIds)
+			// {
+			// 	var tv = __instance as TreeView;
+			// 	for (var index = newRows.Count - 1; index >= 0; index--)
+			// 	{
+			// 		var item = newRows[index];
+			// 		// if (!tv.IsExpanded(item.id)) continue;
+			// 		var fdv = GetFrameDataView(item);
+			// 		var name = fdv.GetItemName(item.id);
+			// 		if (!name.Contains('/')) continue;
+			// 		var parent = item.parent;
+			// 		var sections = name.Split('/');
+			// 		if (sections.Length <= 1) continue;
+			// 		var typeName = item.GetType().FullName;
+			// 		Debug.Log(typeName);
+			// 		if (string.IsNullOrEmpty(typeName)) continue;
+			// 		// public FrameDataTreeViewItem(HierarchyFrameDataView frameDataView, int id, int depth, TreeViewItem parent)
+			// 		Debug.Log(item.GetType() + ", " + fdv.GetItemName(item.id));
+			// 		
+			// 		// if(newExpandedIds == null || newExpandedIds.Contains(item.id))
+			// 		{
+			// 			var child = Activator.CreateInstance(AppDomain.CurrentDomain, item.GetType().Assembly.FullName, typeName,
+			// 				true, AccessUtils.All,
+			// 				null, new object[] {fdv, item.id, item.depth + 1, item}, CultureInfo.CurrentCulture, null).Unwrap() as TreeViewItem;
+			// 			newRows.Insert(index+1, child); 
+			//
+			// 			// if (newExpandedIds == null) newExpandedIds = new List<int>();
+			// 			// newExpandedIds.Add(item.id);
+			// 		}
+			// 	}
+			// }
+		}
+
 
 		private class Profiler_CellGUI : EditorPatch
 		{
@@ -199,7 +365,7 @@ namespace Needle.SelectiveProfiling
 						var debugLog = settings.DebugLog;
 
 						var name = frameDataView?.GetItemName(item.id);
-						
+
 						var didFind = false;
 						if (AccessUtils.TryGetMethodFromName(name, out var methodsList, false, item.id, frameDataView))
 						{
@@ -210,25 +376,25 @@ namespace Needle.SelectiveProfiling
 									didFind = true;
 									AddMenuItem(tree, menu, methodInfo, false);
 								}
-								else if(SelectiveProfiler.DevelopmentMode) 
+								else if (SelectiveProfiler.DevelopmentMode)
 									menu.AddDisabledItem(new GUIContent(AccessUtils.AllowPatchingResultLastReason));
 							}
 						}
 
 						if (AccessUtils.TryGetMethodFromName(name, out methodsList, true, item.id, frameDataView))
 						{
-
 							var allowed = methodsList.Distinct().Where(AllowPatching).ToList();
 							// ReSharper disable PossibleMultipleEnumeration
 							var count = allowed.Count;
-							
-							if(didFind && count > 1)
+
+							if (didFind && count > 1)
 								menu.AddSeparator(string.Empty);
 
 							bool AllowPatching(MethodInfo _mi)
 							{
-								return AccessUtils.AllowPatching(_mi, false, debugLog); 
+								return AccessUtils.AllowPatching(_mi, false, debugLog);
 							}
+
 							if (count > 1)
 							{
 								menu.AddItem(new GUIContent("Enable profiling for all [" + count + "]"), false,
@@ -275,59 +441,59 @@ namespace Needle.SelectiveProfiling
 							if (kvp.All(e => SelectiveProfiler.IsProfiling(e)))
 							{
 								menu.AddDisabledItem(new GUIContent(
-										GetTypeSubmenuName(kvp.Key)  + "/Enable profiling in " + kvp.Key),  
+										GetTypeSubmenuName(kvp.Key) + "/Enable profiling in " + kvp.Key),
 									false);
 								menu.AddItem(new GUIContent(
-										GetTypeSubmenuName(kvp.Key)  + "/Disable profiling in " + kvp.Key), 
+										GetTypeSubmenuName(kvp.Key) + "/Disable profiling in " + kvp.Key),
 									true,
 									() => DisableProfilingFromProfilerWindow(kvp, tree));
 							}
 							else if (kvp.Any(e => SelectiveProfiler.IsProfiling(e)))
 							{
-								menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key)  + "/Enable profiling in " + kvp.Key), 
+								menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key) + "/Enable profiling in " + kvp.Key),
 									true,
 									() => EnableProfilingFromProfilerWindow(kvp, tree));
 								menu.AddItem(new GUIContent(
-										GetTypeSubmenuName(kvp.Key)  + "/Disable profiling in " + kvp.Key), 
+										GetTypeSubmenuName(kvp.Key) + "/Disable profiling in " + kvp.Key),
 									true,
 									() => DisableProfilingFromProfilerWindow(kvp, tree));
 							}
 							else
 							{
-								menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key)  + "/Enable profiling in " + kvp.Key), 
+								menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key) + "/Enable profiling in " + kvp.Key),
 									false,
 									() => EnableProfilingFromProfilerWindow(kvp, tree));
 								menu.AddDisabledItem(new GUIContent(
-										GetTypeSubmenuName(kvp.Key)  + "/Disable profiling in " + kvp.Key), 
+										GetTypeSubmenuName(kvp.Key) + "/Disable profiling in " + kvp.Key),
 									false);
 							}
-							
+
 							menu.AddSeparator(GetTypeSubmenuName(kvp.Key) + "/");
-							
+
 							AddMenuItem(tree, menu, lastMethod, true);
 							lastMethod = null;
 						}
-						
+
 						AddMenuItem(tree, menu, method, true);
 					}
-					
+
 					++index;
 				}
-				
-				if(lastMethod != null)
+
+				if (lastMethod != null)
 				{
 					AddMenuItem(tree, menu, lastMethod, false);
 				}
 			}
 		}
-		
+
 		private const string MenuItemPrefix = "Profile | ";
 		private static string GetTypeSubmenuName(Type type) => MenuItemPrefix + type.Name;
 
 		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo, bool addTypeSubmenu)
 		{
 			var active = SelectiveProfiler.IsProfiling(methodInfo);
-			
+
 			var ret = methodInfo.ReturnType.Name;
 			// remove void return types
 			if (ret == "Void") ret = string.Empty;
@@ -343,7 +509,7 @@ namespace Needle.SelectiveProfiling
 
 			const int maxLength = 180;
 			// if menu items are too long nothing is displayed anymore
-			
+
 			var label = MenuItemPrefix + TranspilerUtils.GetNiceMethodName(methodInfo, false);
 
 			if (label.Length > maxLength)
@@ -382,6 +548,7 @@ namespace Needle.SelectiveProfiling
 			{
 				SelectiveProfiler.EnableProfilingAsync(method, SelectiveProfiler.ShouldSave, true, true, true);
 			}
+
 			if (tree != null)
 				ReloadDelayed(tree);
 		}

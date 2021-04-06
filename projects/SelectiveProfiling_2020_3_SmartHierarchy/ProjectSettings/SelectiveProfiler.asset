@@ -26,6 +26,11 @@ MonoBehaviour:
     Type: AV.Hierarchy.HierarchyItemCreator
     Method: AV.Hierarchy.HierarchyItemBase CreateForInstance(Int32, UnityEngine.Object,
       UnityEditor.IMGUI.Controls.TreeViewItem)
+  - Enabled: 1
+    Assembly: AV.Hierarchy, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: AV.Hierarchy.SmartHierarchy
+    Method: Boolean TryGetOrCreateItem(UnityEditor.IMGUI.Controls.TreeViewItem, AV.Hierarchy.HierarchyItemBase
+      ByRef)
   PinnedMethods:
   - needle.SelectiveProfiling.Extras.dll!::MyIEnumeratorComponent.Update()
   - PlayerEndOfFrame

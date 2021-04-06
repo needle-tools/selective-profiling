@@ -103,7 +103,10 @@ namespace Needle.SelectiveProfiling
 			
 			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index)
 			{
+				var parentType = currentMethod.DeclaringType?.Name;
 				var sampleName = GetSampleName(instruction);
+				if (!string.IsNullOrWhiteSpace(parentType))
+					sampleName = parentType + "/" + sampleName;
 				
 				if(instruction.operand is MethodInfo mi)
 					AccessUtils.RegisterMethodCall(sampleName, mi);
