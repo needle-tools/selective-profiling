@@ -33,7 +33,6 @@ namespace Needle.SelectiveProfiling
 			{
 				++update;
 				if (update % 20 != 0) return;
-				Debug.Log("Clear");
 				idToMethod.Clear();
 				profiledChildren.Clear();
 			};
@@ -122,7 +121,7 @@ namespace Needle.SelectiveProfiling
 
 				// if (found) Debug.Log("Found in level " + level + ": " + idToMethod[itemId]);
 
-				if (!found && level < 10)
+				if (!found && level < 3)
 				{
 					void CollectChildrenIds(int currentId)
 					{

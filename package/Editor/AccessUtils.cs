@@ -477,7 +477,7 @@ namespace Needle.SelectiveProfiling.Utils
 				switch (assemblyName)
 				{
 					case "UnityEngine.UIElementsNativeModule":
-					case "UnityEngine.IMGUIModule":
+					// case "UnityEngine.IMGUIModule":
 					// case "UnityEngine.CoreModule":
 					// case "UnityEditor.CoreModule":
 					// case "UnityEditor.UIElementsModule":
@@ -493,18 +493,18 @@ namespace Needle.SelectiveProfiling.Utils
 			if (!string.IsNullOrEmpty(fullName))
 			{
 				if (
-					fullName.StartsWith("System.") ||
-					fullName.StartsWith("UnityEditor.Profiling") ||
-				    fullName.StartsWith("UnityEditorInternal.Profiling") ||
-				    fullName.StartsWith("UnityEditorInternal.InternalEditorUtility") ||
-				    fullName.StartsWith("UnityEditor.ProfilerWindow") ||
-				    fullName.StartsWith("UnityEditor.HostView") ||
-				    fullName.StartsWith("UnityEngine.UIElements.UIR") ||
-				    fullName.StartsWith("UnityEditor.StyleSheets") ||
-				    fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem") ||
-				    fullName.StartsWith("UnityEngine.SendMouseEvents") ||
-				    fullName.StartsWith("UnityEditor.PlayModeView") ||
-					fullName.StartsWith("UnityEditor.IMGUI.Controls.TreeViewController")
+					fullName.StartsWith("System.")
+					|| fullName.StartsWith("UnityEditor.Profiling")
+				    || fullName.StartsWith("UnityEditorInternal.Profiling")
+				    || fullName.StartsWith("UnityEditorInternal.InternalEditorUtility")
+				    || fullName.StartsWith("UnityEditor.ProfilerWindow")
+				    || fullName.StartsWith("UnityEditor.HostView")
+				    || fullName.StartsWith("UnityEngine.UIElements.UIR")
+					|| fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem")
+					// || fullName.StartsWith("UnityEditor.IMGUI.Controls.TreeViewController")
+				    // || fullName.StartsWith("UnityEditor.StyleSheets")
+				 //    || fullName.StartsWith("UnityEngine.SendMouseEvents")
+				 //    || fullName.StartsWith("UnityEditor.PlayModeView")
 				)
 				{
 					Reason($"Profiling in {fullName} is not allowed: " + GetMethodLogName());
