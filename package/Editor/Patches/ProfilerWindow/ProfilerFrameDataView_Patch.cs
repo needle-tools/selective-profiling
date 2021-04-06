@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
@@ -267,6 +269,13 @@ namespace Needle.SelectiveProfiling
 					{
 						if (lastMethod != null)
 						{
+							// we have multiple methods
+							menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key)  + "/Enable profiling for all in " + kvp.Key), false,
+								() => EnableProfilingFromProfilerWindow(kvp, tree));
+							menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key)  + "/Disable profiling for all in " + kvp.Key), false,
+								() => DisableProfilingFromProfilerWindow(kvp, tree));
+							menu.AddSeparator(GetTypeSubmenuName(kvp.Key) + "/");
+							
 							AddMenuItem(tree, menu, lastMethod, true);
 							lastMethod = null;
 						}
@@ -283,6 +292,9 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 		}
+		
+		private const string MenuItemPrefix = "Profile | ";
+		private static string GetTypeSubmenuName(Type type) => MenuItemPrefix + type.Name;
 
 		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo, bool addTypeSubmenu)
 		{
@@ -301,11 +313,10 @@ namespace Needle.SelectiveProfiling
 				return methodName;
 			}
 
-			const string prefix = "Profile | ";
 			const int maxLength = 180;
 			// if menu items are too long nothing is displayed anymore
 			
-			var label = prefix + TranspilerUtils.GetNiceMethodName(methodInfo, false);
+			var label = MenuItemPrefix + TranspilerUtils.GetNiceMethodName(methodInfo, false);
 
 			if (label.Length > maxLength)
 				label = $"Profile | {ret}{methodInfo.DeclaringType?.Name}.{GetMethodName(true)}";
@@ -315,7 +326,7 @@ namespace Needle.SelectiveProfiling
 				label = "..." + label.Substring(Mathf.Abs(maxLength - label.Length));
 
 			if (addTypeSubmenu && methodInfo.DeclaringType != null)
-				label = prefix + methodInfo.DeclaringType.Name + "/" + label;
+				label = GetTypeSubmenuName(methodInfo.DeclaringType) + "/" + label;
 
 			// need to split this into two menu items until we sync state of activated methods between standalone profiler and main process
 			// if (SelectiveProfiler.IsStandaloneProcess)
