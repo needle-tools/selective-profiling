@@ -1,0 +1,3 @@
+[submodule "thirdparty/Smart-Hierarchy"]
+	path = thirdparty/Smart-Hierarchy
+	url = https://github.com/neon-age/Smart-Hierarchy
