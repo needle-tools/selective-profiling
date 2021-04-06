@@ -270,10 +270,36 @@ namespace Needle.SelectiveProfiling
 						if (lastMethod != null)
 						{
 							// we have multiple methods
-							menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key)  + "/Enable profiling for all in " + kvp.Key), false,
-								() => EnableProfilingFromProfilerWindow(kvp, tree));
-							menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key)  + "/Disable profiling for all in " + kvp.Key), false,
-								() => DisableProfilingFromProfilerWindow(kvp, tree));
+							if (kvp.All(e => SelectiveProfiler.IsProfiling(e)))
+							{
+								menu.AddDisabledItem(new GUIContent(
+										GetTypeSubmenuName(kvp.Key)  + "/Enable profiling in " + kvp.Key),  
+									false);
+								menu.AddItem(new GUIContent(
+										GetTypeSubmenuName(kvp.Key)  + "/Disable profiling in " + kvp.Key), 
+									true,
+									() => DisableProfilingFromProfilerWindow(kvp, tree));
+							}
+							else if (kvp.Any(e => SelectiveProfiler.IsProfiling(e)))
+							{
+								menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key)  + "/Enable profiling in " + kvp.Key), 
+									true,
+									() => EnableProfilingFromProfilerWindow(kvp, tree));
+								menu.AddItem(new GUIContent(
+										GetTypeSubmenuName(kvp.Key)  + "/Disable profiling in " + kvp.Key), 
+									true,
+									() => DisableProfilingFromProfilerWindow(kvp, tree));
+							}
+							else
+							{
+								menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key)  + "/Enable profiling in " + kvp.Key), 
+									false,
+									() => EnableProfilingFromProfilerWindow(kvp, tree));
+								menu.AddDisabledItem(new GUIContent(
+										GetTypeSubmenuName(kvp.Key)  + "/Disable profiling in " + kvp.Key), 
+									false);
+							}
+							
 							menu.AddSeparator(GetTypeSubmenuName(kvp.Key) + "/");
 							
 							AddMenuItem(tree, menu, lastMethod, true);
