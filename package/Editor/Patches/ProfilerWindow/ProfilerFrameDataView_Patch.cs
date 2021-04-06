@@ -199,8 +199,6 @@ namespace Needle.SelectiveProfiling
 						var debugLog = settings.DebugLog;
 
 						var name = frameDataView?.GetItemName(item.id);
-
-						Debug.Log(name);
 						
 						var didFind = false;
 						if (AccessUtils.TryGetMethodFromName(name, out var methodsList, false, item.id, frameDataView))
