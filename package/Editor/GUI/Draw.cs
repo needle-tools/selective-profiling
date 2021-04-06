@@ -54,12 +54,14 @@ namespace Needle.SelectiveProfiling
 				}
 
 				settings.Enabled = EditorGUILayout.ToggleLeft(new GUIContent("Enabled", ""), settings.Enabled);
-				settings.ImmediateMode =
-					EditorGUILayout.ToggleLeft(new GUIContent("Immediate Mode", "Automatically profile selected method in Unity Profiler Window"),
-						settings.ImmediateMode);
-				settings.SkipProperties = EditorGUILayout.ToggleLeft(
-					new GUIContent("Skip Properties", "Patching property getters does fail in some cases and should generally not be necessary"),
-					settings.SkipProperties);
+				// settings.ImmediateMode =
+				// 	EditorGUILayout.ToggleLeft(new GUIContent("Immediate Mode", "Automatically profile selected method in Unity Profiler Window"),
+				// 		settings.ImmediateMode);
+				
+				// settings.SkipProperties = EditorGUILayout.ToggleLeft(
+				// 	new GUIContent("Skip Properties", "Patching property getters does fail in some cases and should generally not be necessary"),
+				// 	settings.SkipProperties);
+				
 				settings.UseAlwaysProfile = EditorGUILayout.ToggleLeft(
 					new GUIContent("Use [AlwaysProfile]", ""),
 					settings.UseAlwaysProfile);
