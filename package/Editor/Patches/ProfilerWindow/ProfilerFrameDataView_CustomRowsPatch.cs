@@ -26,6 +26,13 @@ namespace Needle.SelectiveProfiling
 			patches.Add(new FrameDataTreeViewItem_Init());
 		}
 		
+		/// <summary>
+		/// used to distinguish between injected item and actual item
+		/// you can not query profiler frame data for injected parents because those samples dont really exist
+		/// they are just to group related samples
+		/// e.g. when injecting in a script called by some editor event the resulting samples may scattered together with other samples created from totally unrelated subscribers
+		/// like in SceneHierarchyWindow.OnGUI.repaint
+		/// </summary>
 		internal const int ParentIdOffset = 1_000_000;
 
 		private class FrameDataTreeViewItem_Init : EditorPatch

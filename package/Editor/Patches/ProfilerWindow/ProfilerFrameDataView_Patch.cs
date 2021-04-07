@@ -203,10 +203,18 @@ namespace Needle.SelectiveProfiling
 
 						var debugLog = settings.DebugLog;
 
-						var name = frameDataView?.GetItemName(item.id);
+						var id = item.id;
+						var isInjectedParent = id > ProfilerFrameDataView_CustomRowsPatch.ParentIdOffset;
+						if (isInjectedParent)
+							id -= ProfilerFrameDataView_CustomRowsPatch.ParentIdOffset;
+						var name = frameDataView?.GetItemName(id);
+
+						// use parent id for injected rows
+						if (isInjectedParent)
+							id = item.parent.id;
 
 						var didFind = false;
-						if (AccessUtils.TryGetMethodFromName(name, out var methodsList, false, item.id, frameDataView))
+						if (AccessUtils.TryGetMethodFromName(name, out var methodsList, false, id, frameDataView))
 						{
 							foreach (var methodInfo in methodsList)
 							{
@@ -220,7 +228,7 @@ namespace Needle.SelectiveProfiling
 							}
 						}
 
-						if (AccessUtils.TryGetMethodFromName(name, out methodsList, true, item.id, frameDataView))
+						if (AccessUtils.TryGetMethodFromName(name, out methodsList, true, id, frameDataView))
 						{
 							var allowed = methodsList.Distinct().Where(AllowPatching).ToList();
 							// ReSharper disable PossibleMultipleEnumeration
@@ -248,6 +256,11 @@ namespace Needle.SelectiveProfiling
 
 						if (menu.GetItemCount() <= 0)
 						{
+							// get the injected parent base name
+							if (isInjectedParent)
+								name = name?.Substring(0, name.IndexOf(ProfilerSamplePatch.TypeSampleNameSeparator));
+							// make sure we dont have slashes in path
+							else name = name?.Replace("/", " ");
 							menu.AddDisabledItem(new GUIContent("Nothing to profile in " + name));
 						}
 
