@@ -286,6 +286,7 @@ namespace Needle.SelectiveProfiling
 		{
 			yield return typeof(ProfilerFrameDataView_Patch).FullName;
 			yield return typeof(ContextMenuPatches).FullName;
+			yield return typeof(ProfilerFrameDataView_CustomRowsPatch).FullName;
 		}
 
 		internal static bool DebugLog => SelectiveProfilerSettings.Instance.DebugLog;

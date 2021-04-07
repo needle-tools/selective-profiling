@@ -39,6 +39,8 @@ namespace Needle.SelectiveProfiling
 		private readonly string prefix;
 		private readonly string postfix;
 		private readonly MethodBase method;
+		
+		internal const string TypeSampleNameSeparator = "/";
 
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
@@ -100,13 +102,14 @@ namespace Needle.SelectiveProfiling
 			{
 				return prefix + TranspilerUtils.TryGetMethodName(instruction.opcode, instruction.operand, false) + postfix;
 			}
+
 			
 			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index)
 			{
 				var parentType = currentMethod.DeclaringType?.Name;
 				var sampleName = GetSampleName(instruction);
 				if (!string.IsNullOrWhiteSpace(parentType))
-					sampleName = parentType + "/" + sampleName;
+					sampleName = parentType + TypeSampleNameSeparator + sampleName;
 				
 				if(instruction.operand is MethodInfo mi)
 					AccessUtils.RegisterMethodCall(sampleName, mi);
@@ -126,7 +129,7 @@ namespace Needle.SelectiveProfiling
 			
 			private static readonly List<CodeInstruction> InsertBeforeConstant = new List<CodeInstruction>()
 			{
-				new CodeInstruction(OpCodes.Ldstr, "%MARKER%"),
+				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
 				new CodeInstruction(OpCodes.Nop),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};
@@ -134,7 +137,7 @@ namespace Needle.SelectiveProfiling
 			private static readonly List<CodeInstruction> InsertBeforeWithCallback = new List<CodeInstruction>()
 			{
 				new CodeInstruction(OpCodes.Ldarg_0), // load "this"
-				new CodeInstruction(OpCodes.Ldstr, "%MARKER%"),
+				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
 				new CodeInstruction(OpCodes.Nop), // will be replaced by load call to SelectiveProfiler.GetName
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};
