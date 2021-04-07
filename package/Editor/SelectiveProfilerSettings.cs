@@ -91,8 +91,8 @@ namespace Needle.SelectiveProfiling
 		public bool DeepProfiling = false;
 		public int MaxDepth = 1;
 		public Level DeepProfileMaxLevel = (Level) ~0;
-		
-		public bool AllowPinning = false;
+
+		public bool AllowPinning => SelectiveProfiler.DevelopmentMode;
 
 		public bool DebugLog;
 

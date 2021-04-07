@@ -140,7 +140,7 @@ namespace Needle.SelectiveProfiling
 			{
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
 				// var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
-				var m = t.GetMethod("BuildRows", (BindingFlags) ~0);
+				var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
 				targetMethods.Add(m);
 				return Task.CompletedTask;
 			}
@@ -156,11 +156,11 @@ namespace Needle.SelectiveProfiling
 
 			private static readonly Stack<ItemData> stack = new Stack<ItemData>();
 
-			private static void Postfix(object __instance, ref IList<TreeViewItem> __result)
+			private static void Postfix(object __instance,  IList<TreeViewItem> newRows, List<int> newExpandedIds)
 			{
 				var treeView = __instance as TreeView;
 				if (treeView == null) return;
-				var list = __result;
+				var list = newRows;
 
 				TreeViewItem CreateNewItem(TreeViewItem item, int newId, int depth)
 				{
@@ -222,6 +222,7 @@ namespace Needle.SelectiveProfiling
 									entry.Key = key;
 									entry.Item = newItem;
 									stack.Push(entry);
+									// treeView.SetExpanded(newItem.id, true);
 								}
 							}
 
@@ -238,8 +239,10 @@ namespace Needle.SelectiveProfiling
 							}
 
 							// only add direct children (not children of children)
-							if(item.depth - parent.depth <= 1)
+							if (item.depth - parent.depth <= 1)
+							{
 								parent.AddChild(item);
+							}
 							
 							// remove from list if any item in the current inject parent stack is not expanded
 							if (stack.Any(e => !treeView.IsExpanded(e.Item.id)))
