@@ -9,6 +9,7 @@ using Needle.SelectiveProfiling.Utils;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
+using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
@@ -22,6 +23,66 @@ namespace Needle.SelectiveProfiling
 		{
 			patches.Add(new Profiler_BuildRows());
 			patches.Add(new Profiler_GetItemName());
+			patches.Add(new FrameDataTreeViewItem_Init());
+		}
+		
+		internal const int ParentIdOffset = 1_000_000;
+
+		private class FrameDataTreeViewItem_Init : EditorPatch
+		{
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var asm = typeof(FrameDataView).Assembly;
+				var t = asm.GetTypes().FirstOrDefault(_t => _t.Name == "FrameDataTreeViewItem");
+				var m = t.GetMethod("Init", BindingFlags.Public | BindingFlags.Instance);
+				targetMethods.Add(m);
+				return Task.CompletedTask;
+			}
+
+			private static void Postfix(TreeViewItem __instance, HierarchyFrameDataView ___m_FrameDataView, string[] ___m_StringProperties )
+			{
+				if (__instance.id > ParentIdOffset)
+				{
+					var id = __instance.id - ParentIdOffset;
+					var frame = ___m_FrameDataView;
+					var name = frame.GetItemName(id);
+					var self = __instance;
+					var children = self.children;
+					var props = ___m_StringProperties;
+					if (children == null) return;
+					for (int i = 1; i < props.Length; i++)
+					{
+						var sum = 0f;
+						switch (i)
+						{
+							case 1: // Total
+							case 2: // Self
+								foreach (var ch in children)
+									sum += frame.GetItemColumnDataAsFloat(ch.id, i);
+								props[i] = sum.ToString("0.0") + "%";
+								break;
+							case 3: // Calls
+								foreach (var ch in children)
+									sum += (int)frame.GetItemColumnDataAsSingle(ch.id, i);
+								props[i] = sum.ToString("0");
+								break;
+							case 4: // GC alloc
+								foreach (var ch in children)
+									sum += frame.GetItemColumnDataAsFloat(ch.id, i);
+								if (sum > 1000)
+									props[i] = (sum / 1000).ToString("0.0") + " KB";
+								else props[i] = sum.ToString("0") + " B";
+								break;
+							case 5: // Time ms
+								foreach (var ch in children) 
+									sum += frame.GetItemColumnDataAsFloat(ch.id, i);
+								props[i] = sum.ToString("0.00");
+								break;
+							
+						}
+					}
+				}
+			}
 		}
 
 		private class Profiler_GetItemName : EditorPatch
@@ -35,14 +96,14 @@ namespace Needle.SelectiveProfiling
 				return Task.CompletedTask;
 			}
 
-			internal const int ParentIdOffset = 1_000_000;
 
 			private static bool Prefix(out string __result, HierarchyFrameDataView frameData, int itemId)
 			{
+				var separatorStr = ProfilerSamplePatch.TypeSampleNameSeparator;
 				if (itemId > ParentIdOffset)
 				{
 					var name = frameData.GetItemName(itemId - 1_000_000);
-					var separator = name.LastIndexOf(ProfilerSamplePatch.TypeSampleNameSeparator, StringComparison.Ordinal);
+					var separator = name.LastIndexOf(separatorStr);
 					if (separator > 0 && separator < name.Length)
 					{
 						__result = name.Substring(0, separator);
@@ -53,7 +114,7 @@ namespace Needle.SelectiveProfiling
 				else if (!SelectiveProfiler.DebugLog)
 				{
 					var name = frameData.GetItemName(itemId);
-					var separator = name.LastIndexOf(ProfilerSamplePatch.TypeSampleNameSeparator, StringComparison.Ordinal);
+					var separator = name.LastIndexOf(separatorStr);
 					if (separator > 0 && separator < name.Length)
 					{
 						__result = name.Substring(separator + 1);
@@ -100,12 +161,19 @@ namespace Needle.SelectiveProfiling
 					var typeName = itemType.FullName;
 					var assemblyName = itemType.Assembly.FullName;
 					if (string.IsNullOrEmpty(typeName)) return null;
+					// creating FrameDataTreeViewItem
+					// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
 					var newItem = Activator.CreateInstance(AppDomain.CurrentDomain, assemblyName, typeName,
 							true, AccessUtils.All,
 							null, new object[] {ProfilerFrameDataView_Patch.GetFrameDataView(item), newId, depth, item.parent}, CultureInfo.CurrentCulture,
 							null)
 						.Unwrap() as TreeViewItem;
 					return newItem;
+				}
+
+				void PopStack()
+				{
+					stack.Pop();
 				}
 
 				HierarchyFrameDataView fdv = null;
@@ -117,13 +185,14 @@ namespace Needle.SelectiveProfiling
 						var item = list[index];
 						if (fdv == null) fdv = ProfilerFrameDataView_Patch.GetFrameDataView(item);
 
+						// if item is leaving stack
 						while (stack.Count > 0 && item.depth + 1 < stack.Peek().Depth)
 						{
-							stack.Pop();
+							PopStack();
 						}
 
 						var name = fdv.GetItemName(item.id);
-						var separatorIndex = name.LastIndexOf(ProfilerSamplePatch.TypeSampleNameSeparator, StringComparison.Ordinal);
+						var separatorIndex = name.LastIndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
 						if (separatorIndex > 0 || stack.Count > 0)
 						{
 							var entry = stack.Count > 0 ? stack.Peek() : null;
@@ -134,7 +203,7 @@ namespace Needle.SelectiveProfiling
 								// or current top entry prefix is different
 								if (entry == null || entry.Key != key)
 								{
-									var newId = item.id + Profiler_GetItemName.ParentIdOffset;
+									var newId = item.id + ParentIdOffset;
 									var newItem = CreateNewItem(item, newId, item.depth + stack.Count);
 									if (entry == null || treeView.IsExpanded(entry.Item.id))
 									{
@@ -151,18 +220,21 @@ namespace Needle.SelectiveProfiling
 
 							entry = stack.Peek();
 							item.depth += stack.Count;
-							var injected = entry.Item;
+							var parent = entry.Item;
 
 							// check that item should still be a child of the injected parent
-							if (item.depth <= injected.depth)
+							if (item.depth <= parent.depth)
 							{
 								item.depth -= stack.Count;
-								stack.Pop();
+								PopStack();
 								continue;
 							}
 
-							injected.AddChild(item);
-
+							// only add direct children (not children of children)
+							if(item.depth - parent.depth <= 1)
+								parent.AddChild(item);
+							
+							// remove from list if any item in the current inject parent stack is not expanded
 							if (stack.Any(e => !treeView.IsExpanded(e.Item.id)))
 							{
 								list.RemoveAt(index);

@@ -285,8 +285,8 @@ namespace Needle.SelectiveProfiling
 		internal static IEnumerable<string> ExpectedPatches()
 		{
 			yield return typeof(ProfilerFrameDataView_Patch).FullName;
-			yield return typeof(ContextMenuPatches).FullName;
 			yield return typeof(ProfilerFrameDataView_CustomRowsPatch).FullName;
+			yield return typeof(ContextMenuPatches).FullName;
 		}
 
 		internal static bool DebugLog => SelectiveProfilerSettings.Instance.DebugLog;

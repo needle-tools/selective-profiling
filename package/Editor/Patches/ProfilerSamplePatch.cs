@@ -40,7 +40,7 @@ namespace Needle.SelectiveProfiling
 		private readonly string postfix;
 		private readonly MethodBase method;
 		
-		internal const string TypeSampleNameSeparator = "/";
+		internal const char TypeSampleNameSeparator = '/';
 
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
@@ -108,7 +108,9 @@ namespace Needle.SelectiveProfiling
 			{
 				var parentType = currentMethod.DeclaringType?.Name;
 				var sampleName = GetSampleName(instruction);
-				if (!string.IsNullOrWhiteSpace(parentType))
+				
+				// when using the custom rows patch prefix the sample with the method name
+				if (!string.IsNullOrWhiteSpace(parentType) && PatchManager.IsActive(typeof(ProfilerFrameDataView_CustomRowsPatch).FullName))
 					sampleName = parentType + TypeSampleNameSeparator + sampleName;
 				
 				if(instruction.operand is MethodInfo mi)

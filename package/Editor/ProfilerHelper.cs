@@ -25,16 +25,16 @@ namespace Needle.SelectiveProfiling
 	{
 		internal static bool HasCallstackEnabled => ProfilerDriver.memoryRecordMode != ProfilerMemoryRecordMode.None;
 
+		private static int frames = 0;
 		[InitializeOnLoadMethod]
 		private static void Update()
 		{
-			var update = 0;
 			EditorApplication.update += () =>
 			{
-				++update;
-				if (update % 20 != 0) return;
-				idToMethod.Clear();
-				profiledChildren.Clear();
+				++frames;
+				// if (frames % 20 != 0) return;
+				// idToMethod.Clear();
+				// profiledChildren.Clear();
 			};
 		}
 
@@ -65,6 +65,14 @@ namespace Needle.SelectiveProfiling
 
 			var name = view.GetItemName(itemId);
 			var key = GetKey(itemId, view);
+
+			if (level == 0 && (itemId + frames) % 30 == 0)
+			{
+				if(idToMethod.ContainsKey(key))
+					idToMethod.Remove(key);
+				if (profiledChildren.ContainsKey(key))
+					profiledChildren.Remove(key);
+			}
 
 			if (!idToMethod.ContainsKey(key))
 			{
