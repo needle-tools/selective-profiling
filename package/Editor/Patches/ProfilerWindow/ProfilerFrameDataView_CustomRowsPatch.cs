@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Threading.Tasks;
-using HarmonyLib;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
@@ -38,6 +36,7 @@ namespace Needle.SelectiveProfiling
 		
 		private static readonly Dictionary<int, string> customRowsInfo = new Dictionary<int, string>(); 
 		internal const int collapsedRowIdOffset = 10_000_000;
+		internal const string k_AllItemsAreCollapsedHint = "All items have been collapsed";
 		
 		/// <summary>
 		/// used to distinguish between injected item and actual item
@@ -51,7 +50,6 @@ namespace Needle.SelectiveProfiling
 
 		internal class Profiler_BuildRows_CollapseItems : EditorPatch
 		{
-			internal const string CollapsedKeyword = "Collapsed";
 			
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
@@ -112,7 +110,7 @@ namespace Needle.SelectiveProfiling
 							changes.RemoveAt(changes.Count - 1);
 							if (insertInfo)
 							{
-								// var id = row.id + collapsedRowIdOffset;
+								var collapsed = row.id + collapsedRowIdOffset;
 								var id = info.lastItem.parent.id;
 								if (!customRowsInfo.ContainsKey(id))
 								{
@@ -120,9 +118,16 @@ namespace Needle.SelectiveProfiling
 									var infoString =
 										$"{info.removedProperties} hidden";// {(info.removedProperties <= 1 ? "property" : "properties")}";
 									customRowsInfo.Add(id, infoString);
-									// var item = CreateNewItem(row, id, info.depth);
-									// newRows.Insert(index, item);
-									// info.lastItem.parent.AddChild(item);
+									
+									var item = CreateNewItem(row, collapsed, info.depth);
+									
+									// add always an item to avoid having empty lists
+									// which results in ArgumentException when expanding empty items (info is still stored in profiler state)
+									if (__instance.IsExpanded(info.lastItem.parent.id) && (!info.lastItem.parent.hasChildren || info.lastItem.parent.children.Count <= 0)) 
+										newRows.Insert(index, item);
+									info.lastItem.parent.AddChild(item);
+									if(!customRowsInfo.ContainsKey(collapsed))
+										customRowsInfo.Add(collapsed, k_AllItemsAreCollapsedHint);
 								}	
 							}
 							info = changes.LastOrDefault();
@@ -187,20 +192,29 @@ namespace Needle.SelectiveProfiling
 				
 				if (customRowsInfo.TryGetValue(item.id, out var info))
 				{
+					var isHint = info == k_AllItemsAreCollapsedHint;
 					var col = GUI.color;
-					// var indent = (float)__instance.GetType()
-					// 	.GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance)
-					// 	.Invoke(__instance, new object[]{item});
-					// cellRect.x = indent;
-					// var prev = style.alignment;
+					var prev = style.alignment;
 					// style.alignment = TextAnchor.MiddleLeft;
 					GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
 					var rect = cellRect;
 					rect.width -= 20;
+
+					if (isHint)
+					{
+						style.alignment = TextAnchor.MiddleLeft;
+						// TODO: cleanup
+						var indent = (float)__instance.GetType()
+							.GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance)
+							.Invoke(__instance, new object[]{item});
+						rect.x = indent;
+					}
+
 					GUI.Label(rect, info, style);
 					GUI.color = col;
-					// style.alignment = prev;
-					// return false;
+					style.alignment = prev;
+					if(isHint)
+						return false;
 				}
 				
 				

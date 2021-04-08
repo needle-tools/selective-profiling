@@ -268,6 +268,17 @@ namespace Needle.SelectiveProfiling
 									menu.AddDisabledItem(new GUIContent(AccessUtils.AllowPatchingResultLastReason));
 							}
 						}
+						
+
+						if (!didFind)//menu.GetItemCount() <= 0)
+						{
+							// get the injected parent base name
+							if (isInjectedParent)
+								name = name?.Substring(0, name.IndexOf(ProfilerSamplePatch.TypeSampleNameSeparator));
+							// make sure we dont have slashes in path
+							else name = name?.Replace("/", " ");
+							menu.AddDisabledItem(new GUIContent("Could not find " + name));
+						}
 
 						if (AccessUtils.TryGetMethodFromName(name, out methodsList, true, id, frameDataView))
 						{
@@ -283,26 +294,22 @@ namespace Needle.SelectiveProfiling
 								return AccessUtils.AllowPatching(_mi, false, debugLog);
 							}
 
+							string parentMenu = null;// count < 5 ? string.Empty : "Methods in Children/";
+							
 							if (count > 1)
 							{
-								menu.AddItem(new GUIContent("Enable profiling for all [" + count + "]"), false,
+								menu.AddSeparator(parentMenu + string.Empty);
+								menu.AddItem(new GUIContent(parentMenu + "Enable profiling for " + count + " Methods below"), false,
 									() => EnableProfilingFromProfilerWindow(allowed, tree));
-								menu.AddItem(new GUIContent("Disable profiling for all [" + count + "]"), false,
+								menu.AddItem(new GUIContent(parentMenu + "Disable profiling for " + count + " Methods below"), false,
 									() => DisableProfilingFromProfilerWindow(allowed, tree));
-								menu.AddSeparator(string.Empty);
 							}
 
-							BuildOptimalMenuItems(tree, menu, allowed);
-						}
-
-						if (menu.GetItemCount() <= 0)
-						{
-							// get the injected parent base name
-							if (isInjectedParent)
-								name = name?.Substring(0, name.IndexOf(ProfilerSamplePatch.TypeSampleNameSeparator));
-							// make sure we dont have slashes in path
-							else name = name?.Replace("/", " ");
-							menu.AddDisabledItem(new GUIContent("Nothing to profile in " + name));
+							if (count > 0)
+							{
+								menu.AddSeparator(parentMenu + string.Empty);
+								BuildOptimalMenuItems(tree, menu, allowed, parentMenu);
+							}
 						}
 
 						if (menu.GetItemCount() > 0)
@@ -312,12 +319,22 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private static void BuildOptimalMenuItems(TreeView tree, GenericMenu menu, IEnumerable<MethodInfo> methods)
+		private static void BuildOptimalMenuItems(TreeView tree, GenericMenu menu, IEnumerable<MethodInfo> methods, string parent = null)
 		{
+			if (parent != null && !parent.EndsWith("/")) parent += "/";
+			
 			// only put items in submenu with more than one method per declaring type
 			var lookup = methods.ToLookup(e => e.DeclaringType);
 			foreach (var kvp in lookup)
 			{
+				string GetMenuString(string prefix)
+				{
+					var str = GetTypeSubmenuName(kvp.Key) + prefix + kvp.Key;
+					if (parent != null)
+						str = parent + str;
+					return str;
+				}
+				
 				var index = 0;
 				MethodInfo lastMethod = null;
 				foreach (var method in kvp)
@@ -333,41 +350,37 @@ namespace Needle.SelectiveProfiling
 							// we have multiple methods
 							if (kvp.All(e => SelectiveProfiler.IsProfiling(e)))
 							{
-								menu.AddDisabledItem(new GUIContent(
-										GetTypeSubmenuName(kvp.Key) + "/Enable profiling in " + kvp.Key),
+								menu.AddDisabledItem(new GUIContent(GetMenuString("/Enable profiling for all Methods in ")),
 									false);
-								menu.AddItem(new GUIContent(
-										GetTypeSubmenuName(kvp.Key) + "/Disable profiling in " + kvp.Key),
+								menu.AddItem(new GUIContent(GetMenuString("/Disable profiling for all Methods in ")),
 									true,
 									() => DisableProfilingFromProfilerWindow(kvp, tree));
 							}
 							else if (kvp.Any(e => SelectiveProfiler.IsProfiling(e)))
 							{
-								menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key) + "/Enable profiling in " + kvp.Key),
+								menu.AddItem(new GUIContent(GetMenuString("/Enable profiling for all Methods in ")),
 									true,
 									() => EnableProfilingFromProfilerWindow(kvp, tree));
-								menu.AddItem(new GUIContent(
-										GetTypeSubmenuName(kvp.Key) + "/Disable profiling in " + kvp.Key),
+								menu.AddItem(new GUIContent(GetMenuString("/Disable profiling for all Methods in ")),
 									true,
 									() => DisableProfilingFromProfilerWindow(kvp, tree));
 							}
 							else
 							{
-								menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key) + "/Enable profiling in " + kvp.Key),
+								menu.AddItem(new GUIContent(GetMenuString("/Enable profiling for all Methods in ")),
 									false,
 									() => EnableProfilingFromProfilerWindow(kvp, tree));
-								menu.AddDisabledItem(new GUIContent(
-										GetTypeSubmenuName(kvp.Key) + "/Disable profiling in " + kvp.Key),
+								menu.AddDisabledItem(new GUIContent(GetMenuString("/Disable profiling for all Methods in ")),
 									false);
 							}
 
-							menu.AddSeparator(GetTypeSubmenuName(kvp.Key) + "/");
+							menu.AddSeparator(parent + GetTypeSubmenuName(kvp.Key));
 
-							AddMenuItem(tree, menu, lastMethod, true);
+							AddMenuItem(tree, menu, lastMethod, true, parent);
 							lastMethod = null;
 						}
 
-						AddMenuItem(tree, menu, method, true);
+						AddMenuItem(tree, menu, method, true, parent);
 					}
 
 					++index;
@@ -375,7 +388,7 @@ namespace Needle.SelectiveProfiling
 
 				if (lastMethod != null)
 				{
-					AddMenuItem(tree, menu, lastMethod, false);
+					AddMenuItem(tree, menu, lastMethod, false, parent);
 				}
 			}
 		}
@@ -383,7 +396,7 @@ namespace Needle.SelectiveProfiling
 		private const string MenuItemPrefix = "Profile | ";
 		private static string GetTypeSubmenuName(Type type) => MenuItemPrefix + type.Name;
 
-		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo, bool addTypeSubmenu)
+		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo, bool addTypeSubmenu, string parent = null)
 		{
 			var active = SelectiveProfiler.IsProfiling(methodInfo);
 
@@ -425,6 +438,11 @@ namespace Needle.SelectiveProfiling
 			// }
 			// else
 			{
+				if (parent != null)
+				{
+					if (!parent.EndsWith("/")) parent += "/";
+					label = parent + label;
+				}
 				menu.AddItem(new GUIContent(label),
 					active, () =>
 					{
