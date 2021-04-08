@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Threading.Tasks;
+using HarmonyLib;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
@@ -30,21 +32,45 @@ namespace Needle.SelectiveProfiling
 			// patches.Add(new FrameDataTreeViewItem_Init());
 			patches.Add(new Profiler_GetItemName());
 			patches.Add(new Profiler_CellGUI());
-			patches.Add(new Profiler_BuildRows_HideProperties());
+			patches.Add(new Profiler_BuildRows_CollapseItems());
 		}
 
+		
+		private static readonly Dictionary<int, string> customRowsInfo = new Dictionary<int, string>(); 
+		internal const int collapsedRowIdOffset = 10_000_000;
+		
+		/// <summary>
+		/// used to distinguish between injected item and actual item
+		/// you can not query profiler frame data for injected parents because those samples dont really exist
+		/// they are just to group related samples
+		/// e.g. when injecting in a script called by some editor event the resulting samples may scattered together with other samples created from totally unrelated subscribers
+		/// like in SceneHierarchyWindow.OnGUI.repaint
+		/// </summary>
+		internal const int parentIdOffset = 1_000_000;
+		
 
-		private class Profiler_BuildRows_HideProperties : EditorPatch
+		internal class Profiler_BuildRows_CollapseItems : EditorPatch
 		{
+			internal const string CollapsedKeyword = "Collapsed";
+			
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
-				// var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
 				var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
 				targetMethods.Add(m);
 				return Task.CompletedTask;
 			}
 
+			private class CollapseInfo
+			{
+				public int depth;
+				public TreeViewItem lastItem;
+				public int removedProperties;
+				// TODO: we could also accumulate the GC ect data to display it
+			}
+
+			private static readonly List<CollapseInfo> changes = new List<CollapseInfo>();
+			
 			private static void Postfix(TreeView __instance, IList<TreeViewItem> newRows, HierarchyFrameDataView ___m_FrameDataView)
 			{
 				if (newRows == null) return;
@@ -52,13 +78,71 @@ namespace Needle.SelectiveProfiling
 				if (!SelectiveProfilerSettings.instance.HideProperties) return;
 				var frame = ___m_FrameDataView;
 				if (frame == null || !frame.valid) return;
-				for (var index = newRows.Count - 1; index >= 0; index--)
+				changes.Clear();
+				customRowsInfo.Clear();
+
+				bool insertInfo = true;
+
+				TreeViewItem CreateNewItem(TreeViewItem item, int newId, int depth)
+				{
+					var itemType = item.GetType();
+					var typeName = itemType.FullName;
+					var assemblyName = itemType.Assembly.FullName;
+					if (string.IsNullOrEmpty(typeName)) return null;
+					// creating FrameDataTreeViewItem
+					// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
+					var newItem = Activator.CreateInstance(AppDomain.CurrentDomain, assemblyName, typeName,
+							true, AccessUtils.All,
+							null, new object[] {ProfilerFrameDataView_Patch.GetFrameDataView(item), newId, depth, item.parent}, CultureInfo.CurrentCulture,
+							null)
+						.Unwrap() as TreeViewItem;
+					return newItem;
+				}
+				
+				for (var index = 0; index < newRows.Count; index++)
 				{
 					var row = newRows[index];
+					CollapseInfo info;
+					
+					if(changes.Count > 0)
+					{
+						info = changes.LastOrDefault();
+						while (changes.Count > 0 && info?.depth > row.depth)
+						{
+							changes.RemoveAt(changes.Count - 1);
+							if (insertInfo)
+							{
+								var id = row.id + collapsedRowIdOffset;
+								if (!customRowsInfo.ContainsKey(id))
+								{
+									// throw new Exception("Key already exists: " + id + ": " + customRowsInfo[id] + ", " + frame.GetItemName(row.id));
+									var infoString =
+										$"{CollapsedKeyword} {info.removedProperties} {(info.removedProperties <= 1 ? "property" : "properties")}";
+									customRowsInfo.Add(id, infoString);
+									var item = CreateNewItem(row, id, info.depth);
+									newRows.Insert(index, item);
+									info.lastItem.parent.AddChild(item);
+								}	
+							}
+							info = changes.LastOrDefault();
+						}
+					}
+					
+					row = newRows[index];
 					var name = frame.GetItemName(row.id);
 					if (name.Contains("set ") || name.Contains("get "))
 					{
+						info = changes.LastOrDefault(c => c.depth == row.depth);
+						if (info == null)
+						{
+							info = new CollapseInfo() {depth = row.depth};
+							changes.Add(info);
+						}
+						info.removedProperties += 1;
+						info.lastItem = row;
 						newRows.RemoveAt(index);
+						row.parent.children.Remove(row);
+						index -= 1;
 					}
 				}
 			}
@@ -90,21 +174,41 @@ namespace Needle.SelectiveProfiling
 				if (column != 0) return true;
 				var frame = ___m_FrameDataView;
 				if (frame == null || !frame.valid) return true;
-				if (item.id > ParentIdOffset) return true;
-				var itemName = frame.GetItemName(item.id);
-				var separatorIndex = itemName.IndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
-				if (separatorIndex < 0) return true;
-
+				
 				if (style == null)
 				{
 					style = new GUIStyle(EditorStyles.label);
 					style.alignment = TextAnchor.MiddleRight;
 					style.normal.textColor = Color.white;
-					style.padding = new RectOffset(0, 0, 0, 2);
+					style.padding = new RectOffset(2, 0, 0, 2);
 				}
+				
+				
+				if (customRowsInfo.TryGetValue(item.id, out var info))
+				{
+					var col = GUI.color;
+					var indent = (float)__instance.GetType()
+						.GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance)
+						.Invoke(__instance, new object[]{item});
+					cellRect.x = indent;
+					var prev = style.alignment;
+					style.alignment = TextAnchor.LowerLeft;
+					GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
+					GUI.Label(cellRect, info, style);
+					GUI.color = col;
+					style.alignment = prev;
+					return false;
+				}
+				
+				
+				if (item.id > parentIdOffset) return true;
+				var itemName = frame.GetItemName(item.id);
+				var separatorIndex = itemName.IndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
+				if (separatorIndex < 0) return true;
+
 
 				var name = itemName.Substring(0, separatorIndex);
-				
+
 				// skip is parent contains declaring type name
 				var parent = item.parent;
 				if (parent != null)
@@ -198,14 +302,6 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		/// <summary>
-		/// used to distinguish between injected item and actual item
-		/// you can not query profiler frame data for injected parents because those samples dont really exist
-		/// they are just to group related samples
-		/// e.g. when injecting in a script called by some editor event the resulting samples may scattered together with other samples created from totally unrelated subscribers
-		/// like in SceneHierarchyWindow.OnGUI.repaint
-		/// </summary>
-		internal const int ParentIdOffset = 1_000_000;
 
 		private class FrameDataTreeViewItem_Init : EditorPatch
 		{
@@ -222,9 +318,9 @@ namespace Needle.SelectiveProfiling
 			{
 				var frame = ___m_FrameDataView;
 
-				if (frame != null && frame.valid && __instance.id > ParentIdOffset)
+				if (frame != null && frame.valid && __instance.id > parentIdOffset)
 				{
-					var id = __instance.id - ParentIdOffset;
+					var id = __instance.id - parentIdOffset;
 					var name = frame.GetItemName(id);
 					var self = __instance;
 					var children = self.children;
@@ -283,9 +379,18 @@ namespace Needle.SelectiveProfiling
 					__result = null;
 					return true;
 				}
-
 				var separatorStr = ProfilerSamplePatch.TypeSampleNameSeparator;
-				if (itemId > ParentIdOffset)
+
+				if (itemId > 10_000_000)
+				{
+					if (customRowsInfo.TryGetValue(itemId, out var str))
+					{
+						__result = str;
+						return false;
+					}
+				}
+				// injected custom row
+				else if (itemId > parentIdOffset)
 				{
 					var name = frameData.GetItemName(itemId - 1_000_000);
 					var separator = name.LastIndexOf(separatorStr);
@@ -296,6 +401,7 @@ namespace Needle.SelectiveProfiling
 						return false;
 					}
 				}
+				// fix normal
 				else if (!SelectiveProfiler.DevelopmentMode)
 				{
 					// remove prefix
@@ -410,7 +516,7 @@ namespace Needle.SelectiveProfiling
 								// or current top entry prefix is different
 								if (entry == null || entry.Key != key)
 								{
-									var newId = item.id + ParentIdOffset;
+									var newId = item.id + parentIdOffset;
 									var newItem = CreateNewItem(item, newId, item.depth + stack.Count);
 
 									if (stack.All(e => treeView.IsExpanded(e.Item.id)))

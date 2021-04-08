@@ -204,9 +204,9 @@ namespace Needle.SelectiveProfiling
 						var debugLog = settings.DebugLog;
 
 						var id = item.id;
-						var isInjectedParent = id > ProfilerFrameDataView_CustomRowsPatch.ParentIdOffset;
+						var isInjectedParent = id > ProfilerFrameDataView_CustomRowsPatch.parentIdOffset;
 						if (isInjectedParent)
-							id -= ProfilerFrameDataView_CustomRowsPatch.ParentIdOffset;
+							id -= ProfilerFrameDataView_CustomRowsPatch.parentIdOffset;
 						var name = frameDataView?.GetItemName(id);
 
 						// use parent id for injected rows

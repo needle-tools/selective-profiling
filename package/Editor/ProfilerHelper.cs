@@ -30,6 +30,8 @@ namespace Needle.SelectiveProfiling
 		internal static void RepaintProfiler()
 		{
 			profilerTreeView?.Reload();
+			profilerTreeView?.SetFocusAndEnsureSelectedItem();
+
 			// if (!profilerWindow)
 			// {
 			// 	var windows = Resources.FindObjectsOfTypeAll<EditorWindow>();
