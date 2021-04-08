@@ -147,26 +147,24 @@ namespace Needle.SelectiveProfiling
 						}
 						else children = null;
 						if (!hasChildren) return;
+						// TODO: figure out why this crashes the editor in edit mode
 						view.GetItemChildren(currentId, children);
-						var childrenLevel = level + 1;
-						for (var index = children.Count - 1; index >= 0; index--)
-						{
-							var ch = children[index];
-							if (IsProfiled(ch, view, childrenLevel) == HierarchyItem.None)
-							{
-								children.RemoveAt(index);
-							}
-						}
+						// var childrenLevel = level + 1;
+						// for (var index = children.Count - 1; index >= 0; index--)
+						// {
+						// 	var ch = children[index];
+						// 	if (IsProfiled(ch, view, childrenLevel) == HierarchyItem.None)
+						// 	{
+						// 		children.RemoveAt(index);
+						// 	}
+						// }
 
 						if (!profiledChildren.ContainsKey(key))
 							profiledChildren.Add(key, children);
 						else profiledChildren[key].AddRange(children);
 					}
 
-					CollectChildrenIds(itemId);
-
-					// if (level == 0 && profiledChildren.ContainsKey(key))
-					// 	Debug.Log(profiledChildren[key].Count);
+					// CollectChildrenIds(itemId);
 				}
 			}
 
