@@ -1,4 +1,7 @@
-﻿using System;
+﻿#define DEBUG_CUSTOMROWS
+#undef DEBUG_CUSTOMROWS
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -10,6 +13,7 @@ using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
 using UnityEngine;
+
 
 namespace Needle.SelectiveProfiling
 {
@@ -25,7 +29,7 @@ namespace Needle.SelectiveProfiling
 			patches.Add(new Profiler_GetItemName());
 			patches.Add(new FrameDataTreeViewItem_Init());
 		}
-		
+
 		/// <summary>
 		/// used to distinguish between injected item and actual item
 		/// you can not query profiler frame data for injected parents because those samples dont really exist
@@ -46,7 +50,7 @@ namespace Needle.SelectiveProfiling
 				return Task.CompletedTask;
 			}
 
-			private static void Postfix(TreeViewItem __instance, HierarchyFrameDataView ___m_FrameDataView, string[] ___m_StringProperties )
+			private static void Postfix(TreeViewItem __instance, HierarchyFrameDataView ___m_FrameDataView, string[] ___m_StringProperties)
 			{
 				var frame = ___m_FrameDataView;
 
@@ -71,7 +75,7 @@ namespace Needle.SelectiveProfiling
 								break;
 							case 3: // Calls
 								foreach (var ch in children)
-									sum += (int)frame.GetItemColumnDataAsSingle(ch.id, i);
+									sum += (int) frame.GetItemColumnDataAsSingle(ch.id, i);
 								props[i] = sum.ToString("0");
 								break;
 							case 4: // GC alloc
@@ -82,11 +86,10 @@ namespace Needle.SelectiveProfiling
 								else props[i] = sum.ToString("0") + " B";
 								break;
 							case 5: // Time ms
-								foreach (var ch in children) 
+								foreach (var ch in children)
 									sum += frame.GetItemColumnDataAsFloat(ch.id, i);
 								props[i] = sum.ToString("0.00");
 								break;
-							
 						}
 					}
 				}
@@ -112,7 +115,7 @@ namespace Needle.SelectiveProfiling
 					__result = null;
 					return true;
 				}
-				
+
 				var separatorStr = ProfilerSamplePatch.TypeSampleNameSeparator;
 				if (itemId > ParentIdOffset)
 				{
@@ -121,12 +124,13 @@ namespace Needle.SelectiveProfiling
 					if (separator > 0 && separator < name.Length)
 					{
 						__result = name.Substring(0, separator);
+						if (SelectiveProfiler.DevelopmentMode) __result += " [CustomRow]";
 						return false;
 					}
 				}
-				// remove prefix
-				else if (!SelectiveProfiler.DebugLog)
+				else if (!SelectiveProfiler.DevelopmentMode)
 				{
+					// remove prefix
 					var name = frameData.GetItemName(itemId);
 					var separator = name.LastIndexOf(separatorStr);
 					if (separator > 0 && separator < name.Length)
@@ -154,6 +158,7 @@ namespace Needle.SelectiveProfiling
 
 			private class ItemData
 			{
+				public int OriginalDepth;
 				public int Depth => Item?.depth ?? -1;
 				public string Key;
 
@@ -163,11 +168,11 @@ namespace Needle.SelectiveProfiling
 
 			private static readonly Stack<ItemData> stack = new Stack<ItemData>();
 
-			private static void Postfix(object __instance,  IList<TreeViewItem> newRows, List<int> newExpandedIds)
+			private static void Postfix(object __instance, IList<TreeViewItem> newRows, List<int> newExpandedIds)
 			{
-				if (!SelectiveProfilerSettings.instance.Enabled) return;
-				if (!SelectiveProfiler.AnyEnabled) return;
-				
+				// if (!SelectiveProfilerSettings.instance.Enabled) return;
+				// if (!SelectiveProfiler.AnyEnabled) return;
+
 				var treeView = __instance as TreeView;
 				if (treeView == null) return;
 				var list = newRows;
@@ -190,48 +195,75 @@ namespace Needle.SelectiveProfiling
 
 				void PopStack()
 				{
-					stack.Pop();
+					var e = stack.Pop();
+#if DEBUG_CUSTOMROWS
+					Debug.Log("<b>POP</b> " + e.Key + ", " + e.Depth + "\n" + PrintStack());
+#endif
 				}
 
-				HierarchyFrameDataView fdv = null;
+#if DEBUG_CUSTOMROWS
+				string PrintStack() => "stack:\n" + string.Join("\n", stack.Select(s => s.Key + " - " + s.Depth)) + "\n\n\n";
+#endif
+
+				HierarchyFrameDataView frame = null;
 				if (list != null && list.Count > 0)
 				{
 					stack.Clear();
 					for (var index = 0; index < list.Count; index++)
 					{
 						var item = list[index];
-						if (fdv == null) fdv = ProfilerFrameDataView_Patch.GetFrameDataView(item);
+						if (frame == null) frame = ProfilerFrameDataView_Patch.GetFrameDataView(item);
+						if (frame == null || !frame.valid) break;
+						// continue;
+
+						var name = frame.GetItemName(item.id);
 
 						// if item is leaving stack
-						while (stack.Count > 0 && item.depth + 1 < stack.Peek().Depth)
+						var separatorIndex = name.LastIndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
+
+						while (stack.Count > 0 && (item.depth < stack.Peek().OriginalDepth))
 						{
+#if DEBUG_CUSTOMROWS
+							Debug.Log(item.depth + " = " + (item.depth + stack.Count) + " < " + stack.Peek().OriginalDepth + ", " + name);
+#endif
 							PopStack();
 						}
 
-						var name = fdv.GetItemName(item.id);
-						var separatorIndex = name.LastIndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
 						if (separatorIndex > 0 || stack.Count > 0)
 						{
+							// Debug.Log(item.depth + " - " + name);
+
 							var entry = stack.Count > 0 ? stack.Peek() : null;
 							if (separatorIndex > 0)
 							{
 								var key = name.Substring(0, separatorIndex);
+								// if (name == "GameObjectTreeViewGUI/DoItemGUI(Rect, int, TreeViewItem, bool, bool, bool)") continue;
 								// check an entry is already injected
 								// or current top entry prefix is different
 								if (entry == null || entry.Key != key)
 								{
 									var newId = item.id + ParentIdOffset;
 									var newItem = CreateNewItem(item, newId, item.depth + stack.Count);
+
 									if (entry == null || treeView.IsExpanded(entry.Item.id))
 									{
 										list.Insert(index, newItem);
 										index += 1;
 									}
 
+									if (item.parent.hasChildren)
+										item.parent.children.Remove(item);
+									item.parent.AddChild(newItem);
+
 									entry = new ItemData();
 									entry.Key = key;
+									entry.OriginalDepth = item.depth;
 									entry.Item = newItem;
 									stack.Push(entry);
+#if DEBUG_CUSTOMROWS
+									Debug.Log("PUSH " + key + ", " + item.depth + " -> " + newItem.depth + ", prev: " + name + ", " + item.depth + "\n" +
+									          PrintStack());
+#endif
 									// treeView.SetExpanded(newItem.id, true);
 								}
 							}
@@ -253,9 +285,9 @@ namespace Needle.SelectiveProfiling
 							{
 								parent.AddChild(item);
 							}
-							
+
 							// remove from list if any item in the current inject parent stack is not expanded
-							if (stack.Any(e => !treeView.IsExpanded(e.Item.id)))
+							if (!stack.All(e => treeView.IsExpanded(e.Item.id)))
 							{
 								list.RemoveAt(index);
 								index -= 1;

@@ -147,8 +147,8 @@ namespace Needle.SelectiveProfiling
 						}
 						else children = null;
 						if (!hasChildren) return;
-						// TODO: figure out why this crashes the editor in edit mode
-						view.GetItemChildren(currentId, children);
+						// TODO: figure out why GetChildren crashes the editor in edit mode. it crashes when having some stacks showing profiled methods unfolded and then enabling/disabling profiler or changing frames
+						// view.GetItemChildren(currentId, children);
 						// var childrenLevel = level + 1;
 						// for (var index = children.Count - 1; index >= 0; index--)
 						// {

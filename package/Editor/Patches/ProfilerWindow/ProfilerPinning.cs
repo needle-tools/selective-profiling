@@ -401,7 +401,7 @@ namespace Needle.SelectiveProfiling
 					if (column == 0)
 					{
 						var cr = cellRect;
-						cr.x = 500;
+						cr.x = cr.x + cr.width - 100;
 						var markerId = ___m_FrameDataView.GetItemMarkerID(item.id);
 						if (markerId == 0)
 						{
