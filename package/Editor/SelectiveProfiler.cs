@@ -326,8 +326,9 @@ namespace Needle.SelectiveProfiling
 			return profiled2.TryGetValue(info, out profile);
 		}
 
-		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-		private static async void InitRuntime()
+		[InitializeOnLoadMethod]
+		// [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+		private static async void InitApply()
 		{
 			if (!AllowToBeEnabled) return;
 			if (IsStandaloneProcess) return;
@@ -335,6 +336,21 @@ namespace Needle.SelectiveProfiling
 			if (!settings.Enabled) return;
 			while (!Profiler.enabled) await Task.Delay(100);
 			ApplyProfiledMethods();
+		}
+
+		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+		private static void Init()
+		{
+			if (!AllowToBeEnabled) return;
+
+			SelectiveProfilerSettings.MethodStateChanged -= OnMethodChanged;
+			SelectiveProfilerSettings.MethodStateChanged += OnMethodChanged;
+
+			SelectiveProfilerSettings.Cleared -= MethodsCleared;
+			SelectiveProfilerSettings.Cleared += MethodsCleared;
+
+			EditorApplication.update -= OnEditorUpdate;
+			EditorApplication.update += OnEditorUpdate;
 		}
 
 		private static async void ApplyProfiledMethods()
@@ -373,21 +389,6 @@ namespace Needle.SelectiveProfiling
 						await EnableProfilingAsync(info, false);
 				}
 			}
-		}
-
-		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-		private static void Init()
-		{
-			if (!AllowToBeEnabled) return;
-
-			SelectiveProfilerSettings.MethodStateChanged -= OnMethodChanged;
-			SelectiveProfilerSettings.MethodStateChanged += OnMethodChanged;
-
-			SelectiveProfilerSettings.Cleared -= MethodsCleared;
-			SelectiveProfilerSettings.Cleared += MethodsCleared;
-
-			EditorApplication.update -= OnEditorUpdate;
-			EditorApplication.update += OnEditorUpdate;
 		}
 
 		private static readonly List<(MethodInformation method, bool state)> stateChangedList = new List<(MethodInformation, bool)>();
