@@ -112,16 +112,17 @@ namespace Needle.SelectiveProfiling
 							changes.RemoveAt(changes.Count - 1);
 							if (insertInfo)
 							{
-								var id = row.id + collapsedRowIdOffset;
+								// var id = row.id + collapsedRowIdOffset;
+								var id = info.lastItem.parent.id;
 								if (!customRowsInfo.ContainsKey(id))
 								{
 									// throw new Exception("Key already exists: " + id + ": " + customRowsInfo[id] + ", " + frame.GetItemName(row.id));
 									var infoString =
-										$"{CollapsedKeyword} {info.removedProperties} {(info.removedProperties <= 1 ? "property" : "properties")}";
+										$"{info.removedProperties} hidden";// {(info.removedProperties <= 1 ? "property" : "properties")}";
 									customRowsInfo.Add(id, infoString);
-									var item = CreateNewItem(row, id, info.depth);
-									newRows.Insert(index, item);
-									info.lastItem.parent.AddChild(item);
+									// var item = CreateNewItem(row, id, info.depth);
+									// newRows.Insert(index, item);
+									// info.lastItem.parent.AddChild(item);
 								}	
 							}
 							info = changes.LastOrDefault();
@@ -187,17 +188,19 @@ namespace Needle.SelectiveProfiling
 				if (customRowsInfo.TryGetValue(item.id, out var info))
 				{
 					var col = GUI.color;
-					var indent = (float)__instance.GetType()
-						.GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance)
-						.Invoke(__instance, new object[]{item});
-					cellRect.x = indent;
-					var prev = style.alignment;
-					style.alignment = TextAnchor.LowerLeft;
+					// var indent = (float)__instance.GetType()
+					// 	.GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance)
+					// 	.Invoke(__instance, new object[]{item});
+					// cellRect.x = indent;
+					// var prev = style.alignment;
+					// style.alignment = TextAnchor.MiddleLeft;
 					GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
-					GUI.Label(cellRect, info, style);
+					var rect = cellRect;
+					rect.width -= 20;
+					GUI.Label(rect, info, style);
 					GUI.color = col;
-					style.alignment = prev;
-					return false;
+					// style.alignment = prev;
+					// return false;
 				}
 				
 				
@@ -268,7 +271,7 @@ namespace Needle.SelectiveProfiling
 				{
 					var col = GUI.color;
 					GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
-					var padding = item.hasChildren ? 18 : 3;
+					var padding = item.hasChildren ? 17 : 3;
 					var rect = cellRect;
 					var width = style.CalcSize(content).x;
 					rect.x -= width + padding;
