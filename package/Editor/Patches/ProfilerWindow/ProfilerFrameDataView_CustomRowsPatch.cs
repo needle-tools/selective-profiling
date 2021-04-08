@@ -252,7 +252,7 @@ namespace Needle.SelectiveProfiling
 					var separator = name.LastIndexOf(separatorStr);
 					if (separator > 0 && separator < name.Length)
 					{
-						__result = name.Substring(separator + 1);
+						__result = name.Substring(separator + 1);// + "[" + name.Substring(0, separator) + "]";
 						return false;
 					}
 				}
@@ -278,12 +278,13 @@ namespace Needle.SelectiveProfiling
 				public int OriginalDepth;
 				public int Depth => Item?.depth ?? -1;
 				public string Key;
+				public int LastIndex;
 
 				public TreeViewItem Item;
 				// public List<TreeViewItem> Items = new List<TreeViewItem>(4);
 			}
 
-			private static readonly Stack<ItemData> stack = new Stack<ItemData>();
+			private static readonly List<ItemData> stack = new List<ItemData>();
 
 			private static void Postfix(object __instance, IList<TreeViewItem> newRows, List<int> newExpandedIds)
 			{
@@ -312,7 +313,7 @@ namespace Needle.SelectiveProfiling
 
 				void PopStack()
 				{
-					var e = stack.Pop();
+					stack.RemoveAt(stack.Count-1);
 #if DEBUG_CUSTOMROWS
 					Debug.Log("<b>POP</b> " + e.Key + ", " + e.Depth + "\n" + PrintStack());
 #endif
@@ -338,7 +339,7 @@ namespace Needle.SelectiveProfiling
 						// if item is leaving stack
 						var separatorIndex = name.LastIndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
 
-						while (stack.Count > 0 && (item.depth < stack.Peek().OriginalDepth))
+						while (stack.Count > 0 && (item.depth < stack.Last().OriginalDepth))
 						{
 #if DEBUG_CUSTOMROWS
 							Debug.Log(item.depth + " = " + (item.depth + stack.Count) + " < " + stack.Peek().OriginalDepth + ", " + name);
@@ -350,10 +351,10 @@ namespace Needle.SelectiveProfiling
 						{
 							// Debug.Log(item.depth + " - " + name);
 
-							var entry = stack.Count > 0 ? stack.Peek() : null;
-							if (separatorIndex > 0)
+							var key = separatorIndex < 0 ? null : name.Substring(0, separatorIndex);
+							var entry = stack.Count > 0 ? stack.LastOrDefault(e => key == null || key == e.Key) : null;
+							if (key != null)
 							{
-								var key = name.Substring(0, separatorIndex);
 								// if (name == "GameObjectTreeViewGUI/DoItemGUI(Rect, int, TreeViewItem, bool, bool, bool)") continue;
 								// check an entry is already injected
 								// or current top entry prefix is different
@@ -372,11 +373,11 @@ namespace Needle.SelectiveProfiling
 										item.parent.children.Remove(item);
 									item.parent.AddChild(newItem);
 
-									entry = new ItemData();
+									entry = new ItemData() {LastIndex = index};
 									entry.Key = key;
 									entry.OriginalDepth = item.depth;
 									entry.Item = newItem;
-									stack.Push(entry);
+									stack.Add(entry);
 #if DEBUG_CUSTOMROWS
 									Debug.Log("PUSH " + key + ", " + item.depth + " -> " + newItem.depth + ", prev: " + name + ", " + item.depth + "\n" +
 									          PrintStack());
@@ -385,8 +386,8 @@ namespace Needle.SelectiveProfiling
 								}
 							}
 
-							entry = stack.Peek();
-							item.depth += stack.Count;
+							entry = stack.Last(e => key == null || e.Key == key);
+							item.depth += stack.IndexOf(entry);
 							var parent = entry.Item;
 
 							// check that item should still be a child of the injected parent
@@ -409,6 +410,8 @@ namespace Needle.SelectiveProfiling
 								list.RemoveAt(index);
 								index -= 1;
 							}
+
+							entry.LastIndex = index;
 						}
 					}
 				}
