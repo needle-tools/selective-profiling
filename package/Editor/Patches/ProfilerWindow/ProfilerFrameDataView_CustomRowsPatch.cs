@@ -99,6 +99,8 @@ namespace Needle.SelectiveProfiling
 				{
 					style = new GUIStyle(EditorStyles.label);
 					style.alignment = TextAnchor.MiddleRight;
+					style.normal.textColor = Color.white;
+					style.padding = new RectOffset(0, 0, 0, 2);
 				}
 
 				var name = itemName.Substring(0, separatorIndex);
