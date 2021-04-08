@@ -245,7 +245,7 @@ namespace Needle.SelectiveProfiling
 									var newId = item.id + ParentIdOffset;
 									var newItem = CreateNewItem(item, newId, item.depth + stack.Count);
 
-									if (entry == null || treeView.IsExpanded(entry.Item.id))
+									if (stack.All(e => treeView.IsExpanded(e.Item.id)))
 									{
 										list.Insert(index, newItem);
 										index += 1;
