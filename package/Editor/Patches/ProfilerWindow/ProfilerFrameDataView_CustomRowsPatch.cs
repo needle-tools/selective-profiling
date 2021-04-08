@@ -30,6 +30,38 @@ namespace Needle.SelectiveProfiling
 			// patches.Add(new FrameDataTreeViewItem_Init());
 			patches.Add(new Profiler_GetItemName());
 			patches.Add(new Profiler_CellGUI());
+			patches.Add(new Profiler_BuildRows_HideProperties());
+		}
+
+
+		private class Profiler_BuildRows_HideProperties : EditorPatch
+		{
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
+				// var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
+				var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
+				targetMethods.Add(m);
+				return Task.CompletedTask;
+			}
+
+			private static void Postfix(TreeView __instance, IList<TreeViewItem> newRows, HierarchyFrameDataView ___m_FrameDataView)
+			{
+				if (newRows == null) return;
+				ProfilerHelper.profilerTreeView = __instance;
+				if (!SelectiveProfilerSettings.instance.HideProperties) return;
+				var frame = ___m_FrameDataView;
+				if (frame == null || !frame.valid) return;
+				for (var index = newRows.Count - 1; index >= 0; index--)
+				{
+					var row = newRows[index];
+					var name = frame.GetItemName(row.id);
+					if (name.Contains("set ") || name.Contains("get "))
+					{
+						newRows.RemoveAt(index);
+					}
+				}
+			}
 		}
 
 
@@ -46,8 +78,13 @@ namespace Needle.SelectiveProfiling
 
 			private static GUIStyle style;
 
+			private class State
+			{
+				public GUIContent Content;
+			}
+
 			private static bool Prefix(TreeView __instance, ref Rect cellRect, TreeViewItem item, int column, HierarchyFrameDataView ___m_FrameDataView, 
-				out GUIContent __state)
+				out State __state)
 			{
 				__state = null;
 				if (column != 0) return true;
@@ -74,75 +111,87 @@ namespace Needle.SelectiveProfiling
 					if (parentName.Contains(name))
 						return true;
 				}
+
 				
-				var content = new GUIContent(name, name);
-				__state = content;
+				// only show tooltip when item is presumably cut off
+				var content = new GUIContent(name, item.depth > 10 ? null : name);
+				__state = new State(){Content = content};
 
 				// draw item on the right if depth < x
-				// if (item.depth < 10)
-				// {
-				// 	// draw label right
-				// 	var col = GUI.color;
-				// 	GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
-				// 	GUI.Label(cellRect, content, style);
-				// 	GUI.color = col;
-				// 	__state = null;
-				// }
+				// e.g. when searching
+				if (item.depth == 0) 
+				{
+					// draw label right
+					var col = GUI.color;
+					GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
+					content.tooltip = null;
+					GUI.Label(cellRect, content, style);
+					GUI.color = col;
+					__state = null;
+					return true;
+				}
 				
 				// indent everything
-				// var width = style.CalcSize(content).x;
-				// var rect = cellRect;
-				// rect.x += item.depth * 14.8f;
-				// rect.width = width;
-				// // var padding = item.hasChildren ? 18 : 3;
-				// // rect.x -= rect.width + padding;
-				// style.alignment = TextAnchor.MiddleLeft;
-				// var col = GUI.color;
-				// GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
-				// GUI.Label(rect, content, style);
-				// GUI.color = col;
-				// cellRect.x += width;
-				// cellRect.width -= width;
-				// __state = null;
+				// if (item.depth <= 0)
+				// {
+				// 	var width = style.CalcSize(content).x;
+				// 	var rect = cellRect;
+				// 	rect.x += 5;
+				// 	rect.width = width;
+				// 	// var padding = item.hasChildren ? 18 : 3;
+				// 	// rect.x -= rect.width + padding;
+				// 	style.alignment = TextAnchor.MiddleLeft;
+				// 	var col = GUI.color;
+				// 	GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
+				// 	content.tooltip = null;
+				// 	GUI.Label(rect, content, style);
+				// 	GUI.color = col;
+				// 	cellRect.x += width - 10;
+				// 	cellRect.width -= width;
+				// 	__state = null;
+				// }
 				return true;
 			}
 
-			private static void Postfix(TreeView __instance, Rect cellRect, TreeViewItem item, GUIContent __state)
+			private static void Postfix(TreeView __instance, Rect cellRect, TreeViewItem item, State __state)
 			{
 				if (__state == null) return;
+				
+				var content = __state.Content;
+				if (content != null)
+				{
+					var col = GUI.color;
+					GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
+					var padding = item.hasChildren ? 18 : 3;
+					var rect = cellRect;
+					var width = style.CalcSize(content).x;
+					rect.x -= width + padding;
+					rect.width = width;
+				
+					if (rect.x < 0)
+					{
+						// draw cut off
+						var prevAlignment = style.alignment;
+						style.alignment = TextAnchor.MiddleLeft;
+						rect.x = 5;
+						rect.width = cellRect.x - rect.x - padding;
+						GUI.Label(rect, content, style);
+						style.alignment = prevAlignment;
+						
+						if (rect.Contains(Event.current.mousePosition))
+						{
+							var tt = typeof(GUIStyle).GetMethod("SetMouseTooltip", BindingFlags.NonPublic | BindingFlags.Static);
+							tt?.Invoke(null, new object[] {content.text, new Rect(Event.current.mousePosition, Vector2.zero)});
+						}
+					}
+					else
+					{
+						// draw normally
+						GUI.Label(rect, content, style);
+					}
+					GUI.color = col;
+				
 
-				
-				var content = __state;
-				var col = GUI.color;
-				GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
-				var padding = item.hasChildren ? 18 : 3;
-				var rect = cellRect;
-				var width = style.CalcSize(content).x;
-				rect.x -= width + padding;
-				rect.width = width;
-				
-				if (rect.x < 0)
-				{
-					// draw cut off
-					var prevAlignment = style.alignment;
-					style.alignment = TextAnchor.MiddleLeft;
-					rect.x = 5;
-					rect.width = cellRect.x - rect.x - padding;
-					GUI.Label(rect, content, style);
-					style.alignment = prevAlignment;
-				}
-				else
-				{
-					// draw normally
-					GUI.Label(rect, content, style);
-				}
-				GUI.color = col;
-				
-
-				if (rect.Contains(Event.current.mousePosition))
-				{
-					var tt = typeof(GUIStyle).GetMethod("SetMouseTooltip", BindingFlags.NonPublic | BindingFlags.Static);
-					tt?.Invoke(null, new object[] {__state.text, new Rect(Event.current.mousePosition, Vector2.zero)});
 				}
 			}
 		}

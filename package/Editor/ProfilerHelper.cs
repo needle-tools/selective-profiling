@@ -25,6 +25,21 @@ namespace Needle.SelectiveProfiling
 	{
 		internal static bool HasCallstackEnabled => ProfilerDriver.memoryRecordMode != ProfilerMemoryRecordMode.None;
 
+		// private static EditorWindow profilerWindow;
+		internal static TreeView profilerTreeView;
+		internal static void RepaintProfiler()
+		{
+			profilerTreeView?.Reload();
+			// if (!profilerWindow)
+			// {
+			// 	var windows = Resources.FindObjectsOfTypeAll<EditorWindow>();
+			// 	profilerWindow = windows.FirstOrDefault(w => w.titleContent.text == "Profiler");
+			// }
+			//
+			// if(profilerWindow)
+			// 	profilerWindow.Repaint();
+		}
+		
 		private static int frames = 0;
 		[InitializeOnLoadMethod]
 		private static void Update()
