@@ -165,6 +165,8 @@ namespace Needle.SelectiveProfiling
 				{
 					return;
 				}
+				
+				// TODO: check if application has focus, apparently this also triggers when unity is open in the background?!
 
 				// right click
 				if (cellRect.Contains(Event.current.mousePosition))

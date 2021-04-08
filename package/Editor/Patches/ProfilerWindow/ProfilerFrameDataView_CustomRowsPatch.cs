@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
+using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
@@ -25,9 +26,125 @@ namespace Needle.SelectiveProfiling
 	{
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
-			patches.Add(new Profiler_BuildRows());
+			// patches.Add(new Profiler_BuildRows());
+			// patches.Add(new FrameDataTreeViewItem_Init());
 			patches.Add(new Profiler_GetItemName());
-			patches.Add(new FrameDataTreeViewItem_Init());
+			patches.Add(new Profiler_CellGUI());
+		}
+
+
+		private class Profiler_CellGUI : EditorPatch
+		{
+			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L647
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
+				var m = t.GetMethod("CellGUI", (BindingFlags) ~0);
+				targetMethods.Add(m);
+				return Task.CompletedTask;
+			}
+
+			private static GUIStyle style;
+
+			private static bool Prefix(TreeView __instance, ref Rect cellRect, TreeViewItem item, int column, HierarchyFrameDataView ___m_FrameDataView, 
+				out GUIContent __state)
+			{
+				__state = null;
+				if (column != 0) return true;
+				var frame = ___m_FrameDataView;
+				if (frame == null || !frame.valid) return true;
+				if (item.id > ParentIdOffset) return true;
+				var itemName = frame.GetItemName(item.id);
+				var separatorIndex = itemName.IndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
+				if (separatorIndex < 0) return true;
+
+				if (style == null)
+				{
+					style = new GUIStyle(EditorStyles.label);
+					style.alignment = TextAnchor.MiddleRight;
+				}
+
+				var name = itemName.Substring(0, separatorIndex);
+				
+				// skip is parent contains declaring type name
+				var parent = item.parent;
+				if (parent != null)
+				{
+					var parentName = frame.GetItemName(parent.id);
+					if (parentName.Contains(name))
+						return true;
+				}
+				
+				var content = new GUIContent(name, name);
+				__state = content;
+
+				// draw item on the right if depth < x
+				// if (item.depth < 10)
+				// {
+				// 	// draw label right
+				// 	var col = GUI.color;
+				// 	GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
+				// 	GUI.Label(cellRect, content, style);
+				// 	GUI.color = col;
+				// 	__state = null;
+				// }
+				
+				// indent everything
+				// var width = style.CalcSize(content).x;
+				// var rect = cellRect;
+				// rect.x += item.depth * 14.8f;
+				// rect.width = width;
+				// // var padding = item.hasChildren ? 18 : 3;
+				// // rect.x -= rect.width + padding;
+				// style.alignment = TextAnchor.MiddleLeft;
+				// var col = GUI.color;
+				// GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
+				// GUI.Label(rect, content, style);
+				// GUI.color = col;
+				// cellRect.x += width;
+				// cellRect.width -= width;
+				// __state = null;
+				return true;
+			}
+
+			private static void Postfix(TreeView __instance, Rect cellRect, TreeViewItem item, GUIContent __state)
+			{
+				if (__state == null) return;
+
+				
+				var content = __state;
+				var col = GUI.color;
+				GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
+				var padding = item.hasChildren ? 18 : 3;
+				var rect = cellRect;
+				var width = style.CalcSize(content).x;
+				rect.x -= width + padding;
+				rect.width = width;
+				
+				if (rect.x < 0)
+				{
+					// draw cut off
+					var prevAlignment = style.alignment;
+					style.alignment = TextAnchor.MiddleLeft;
+					rect.x = 5;
+					rect.width = cellRect.x - rect.x - padding;
+					GUI.Label(rect, content, style);
+					style.alignment = prevAlignment;
+				}
+				else
+				{
+					// draw normally
+					GUI.Label(rect, content, style);
+				}
+				GUI.color = col;
+				
+
+				if (rect.Contains(Event.current.mousePosition))
+				{
+					var tt = typeof(GUIStyle).GetMethod("SetMouseTooltip", BindingFlags.NonPublic | BindingFlags.Static);
+					tt?.Invoke(null, new object[] {__state.text, new Rect(Event.current.mousePosition, Vector2.zero)});
+				}
+			}
 		}
 
 		/// <summary>
