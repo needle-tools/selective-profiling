@@ -179,6 +179,9 @@ namespace Needle.SelectiveProfiling
 					var children = self.children;
 					var props = ___m_StringProperties;
 					if (children == null) return;
+					
+					// TODO: calculate stats for nested injected rows. need to special handle those items because they dont exist in framedata view
+					
 					for (int i = 1; i < props.Length; i++)
 					{
 						var sum = 0f;
