@@ -279,6 +279,7 @@ namespace Needle.SelectiveProfiling
 					var canFilter = list.Count > 10;
 					if (canFilter)
 					{
+						GUILayout.Space(5);
 						ScopeFilter = EditorGUILayout.TextField("Filter", ScopeFilter);
 					}
 

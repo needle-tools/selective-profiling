@@ -32,6 +32,7 @@ namespace Needle.SelectiveProfiling
 			if (!SelectiveProfiler.AllowToBeEnabled) return;
 			patches.Add(new Profiler_SelectionChanged());
 			patches.Add(new Profiler_CellGUI());
+			patches.Add(new Profiler_Toolbar());
 		}
 
 		public override void OnEnabledPatch()
@@ -69,6 +70,46 @@ namespace Needle.SelectiveProfiling
 			if (item != null && (m_frameDataView == null || !m_frameDataView.valid))
 				m_frameDataView = m_FrameDataViewField?.GetValue(item) as HierarchyFrameDataView;
 			return m_frameDataView;
+		}
+
+
+		private class Profiler_Toolbar : EditorPatch
+		{
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView");
+				var m = t.GetMethod("DrawDetailedViewPopup", BindingFlags.Instance | BindingFlags.NonPublic);
+				targetMethods.Add(m);
+
+				return Task.CompletedTask;
+			}
+
+			private static void Postfix()
+			{
+				var rect = GUILayoutUtility.GetRect(50f, 350f, 14, 14, EditorStyles.toolbarButton);
+				if (EditorGUI.DropdownButton(rect, new GUIContent("Selective Profiler"), FocusType.Keyboard, new GUIStyle(EditorStyles.toolbarDropDown)))
+				{
+					rect.y += rect.height / 2;
+					PopupWindow.Show(rect, new SettingsPopup());
+				}
+			}
+
+			public class SettingsPopup : PopupWindowContent
+			{
+				public override Vector2 GetWindowSize()
+				{
+					return new Vector2(400, 500);
+				}
+
+				private Vector2 scroll;
+
+				public override void OnGUI(Rect rect)
+				{
+					scroll = EditorGUILayout.BeginScrollView(scroll);
+					Draw.DefaultSelectiveProfilerUI(SelectiveProfilerSettings.Instance, true);
+					EditorGUILayout.EndScrollView();
+				}
+			}
 		}
 
 
@@ -126,7 +167,7 @@ namespace Needle.SelectiveProfiling
 							var yOff = (cellRect.height - size) * .5f;
 							return new Rect(cellRect.x + cellRect.width - size + xOff, cellRect.y + yOff, size, size);
 						}
-					
+
 						var rectSize = cellRect.height;
 						switch (profiled)
 						{
@@ -165,7 +206,7 @@ namespace Needle.SelectiveProfiling
 				{
 					return;
 				}
-				
+
 				// TODO: check if application has focus, apparently this also triggers when unity is open in the background?!
 
 				// right click
