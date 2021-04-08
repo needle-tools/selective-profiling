@@ -108,18 +108,15 @@ namespace Needle.SelectiveProfiling
 			// 	// TreeView.DefaultStyles.label.normal.textColor = Color.gray;
 			// }
 
-			private static void Prefix(Rect cellRect, int column)
-			{
-			}
-
 			// method https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L676
 			// item: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
 			private static void Postfix(object __instance, Rect cellRect, TreeViewItem item, int column)
 			{
 				HierarchyFrameDataView frameDataView;
-				if (column <= 0)
+				if (column == 0 && Event.current.type == EventType.Repaint)
 				{
 					frameDataView = GetFrameDataView(item);
+					if (frameDataView == null || !frameDataView.valid) return;
 					var profiled = ProfilerHelper.IsProfiled(item, frameDataView);
 					if (profiled != HierarchyItem.None)
 					{
@@ -129,7 +126,7 @@ namespace Needle.SelectiveProfiling
 							var yOff = (cellRect.height - size) * .5f;
 							return new Rect(cellRect.x + cellRect.width - size + xOff, cellRect.y + yOff, size, size);
 						}
-
+					
 						var rectSize = cellRect.height;
 						switch (profiled)
 						{
@@ -150,6 +147,7 @@ namespace Needle.SelectiveProfiling
 
 				var button = Event.current.button;
 				frameDataView = GetFrameDataView(item);
+				if (frameDataView == null || !frameDataView.valid) return;
 
 				if (button == 0 && item.id == selectedId && Settings.ImmediateMode && selectedId != lastPatchedInImmediateMode)
 				{

@@ -48,10 +48,11 @@ namespace Needle.SelectiveProfiling
 
 			private static void Postfix(TreeViewItem __instance, HierarchyFrameDataView ___m_FrameDataView, string[] ___m_StringProperties )
 			{
-				if (__instance.id > ParentIdOffset)
+				var frame = ___m_FrameDataView;
+
+				if (frame != null && frame.valid && __instance.id > ParentIdOffset)
 				{
 					var id = __instance.id - ParentIdOffset;
-					var frame = ___m_FrameDataView;
 					var name = frame.GetItemName(id);
 					var self = __instance;
 					var children = self.children;
@@ -106,6 +107,12 @@ namespace Needle.SelectiveProfiling
 
 			private static bool Prefix(out string __result, HierarchyFrameDataView frameData, int itemId)
 			{
+				if (frameData == null || !frameData.valid)
+				{
+					__result = null;
+					return true;
+				}
+				
 				var separatorStr = ProfilerSamplePatch.TypeSampleNameSeparator;
 				if (itemId > ParentIdOffset)
 				{
@@ -158,6 +165,9 @@ namespace Needle.SelectiveProfiling
 
 			private static void Postfix(object __instance,  IList<TreeViewItem> newRows, List<int> newExpandedIds)
 			{
+				if (!SelectiveProfilerSettings.instance.Enabled) return;
+				if (!SelectiveProfiler.AnyEnabled) return;
+				
 				var treeView = __instance as TreeView;
 				if (treeView == null) return;
 				var list = newRows;
