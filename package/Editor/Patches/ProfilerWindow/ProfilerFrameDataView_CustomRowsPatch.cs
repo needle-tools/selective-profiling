@@ -530,7 +530,7 @@ namespace Needle.SelectiveProfiling
 				var prevAlignment = style.alignment;
 				style.alignment = TextAnchor.MiddleLeft;
 				var prevColor = GUI.color;
-				GUI.color = col;
+				GUI.color = tree.IsSelected(item.id) ? Color.white : col;
 				GUI.Label(rect, content);
 				style.alignment = prevAlignment;
 
