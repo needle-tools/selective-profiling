@@ -9,19 +9,27 @@ public class RepaintEverythingEveryFrame : MonoBehaviour
 
 	private void OnValidate()
 	{
-		EditorApplication.update -= InternalEditorUtility.RepaintAllViews;
+		EditorApplication.update -= OnUpdate;
 		if (enabled)
-			EditorApplication.update += InternalEditorUtility.RepaintAllViews;
+			EditorApplication.update += OnUpdate;
 	}
 
 	private void OnEnable()
 	{
-		EditorApplication.update -= InternalEditorUtility.RepaintAllViews;
-		EditorApplication.update += InternalEditorUtility.RepaintAllViews;
+		EditorApplication.update -= OnUpdate;
+		EditorApplication.update += OnUpdate;
 	}
 
 	private void OnDisable()
 	{
-		EditorApplication.update -= InternalEditorUtility.RepaintAllViews;
+		EditorApplication.update -= OnUpdate;
+	}
+
+	private void OnUpdate()
+	{
+		if (ProfilerDriver.enabled)
+		{
+			InternalEditorUtility.RepaintAllViews();
+		}
 	}
 }

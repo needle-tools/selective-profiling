@@ -232,7 +232,6 @@ namespace Needle.SelectiveProfiling
 							RequestReload(tree, item);
 							expanded.Add(key);
 
-							tree.SetExpanded(item.id, true);
 							if (item.hasChildren)
 							{
 								foreach (var ch in item.children)
@@ -240,6 +239,8 @@ namespace Needle.SelectiveProfiling
 										tree.SetExpanded(ch.id, true);
 							}
 						}
+						
+						tree.SetExpanded(item.id, true);
 					}
 
 					return collapse;
