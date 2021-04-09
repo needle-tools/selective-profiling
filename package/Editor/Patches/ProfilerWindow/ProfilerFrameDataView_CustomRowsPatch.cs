@@ -172,21 +172,25 @@ namespace Needle.SelectiveProfiling
 				public bool TryResolve(TreeView tree, TreeViewItem row, IList<TreeViewItem> list, ref int index)
 				{
 					// Debug.Log("Test " + row.displayName + "\n" + string.Join("\n", collapsedDepth));
-					while (collapsedDepth.Count > 0 && row.depth < collapsedDepth.Peek())
+					while (collapsedDepth.Count > 0 && row.depth <= collapsedDepth.Peek())
 					{
 						// Debug.Log("Pop " + row.displayName + ", " + row.depth + ", " + collapsedDepth.Peek());
 						collapsedDepth.Pop();
 						currentDepthOffset -= 1;
 					}
-
-					row.depth -= collapsedDepth.Count;
 					var res = collapsedDepth.Count <= 0;
+
 
 					if (res)
 					{
 						// NOTE: first index might change
 						// it is possible that items have been inserted in between so this is likely to break
 						CreateAndInsertNewItem(tree, list, firstIndex, ref index, row.id, row.depth, row.parent, "Collapsed " + collapsedItems.Count + " rows");
+					}
+					else
+					{
+						var offset = collapsedDepth.Count;
+						row.depth -= offset;
 					}
 					
 					return res;
