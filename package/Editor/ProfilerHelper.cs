@@ -148,38 +148,38 @@ namespace Needle.SelectiveProfiling
 
 				if (!found && level < 3)
 				{
-					void CollectChildrenIds(int currentId)
-					{
-						var hasChildren = view.HasItemChildren(currentId);
-						List<int> children;
-						if (hasChildren)
-						{
-							if (profiledChildren.ContainsKey(key))
-							{
-								children = profiledChildren[key];
-								children.Clear();
-							}
-
-							children = new List<int>();
-						}
-						else children = null;
-						if (!hasChildren) return;
-						// TODO: figure out why GetChildren crashes the editor in edit mode. it crashes when having some stacks showing profiled methods unfolded and then enabling/disabling profiler or changing frames
-						// view.GetItemChildren(currentId, children);
-						// var childrenLevel = level + 1;
-						// for (var index = children.Count - 1; index >= 0; index--)
-						// {
-						// 	var ch = children[index];
-						// 	if (IsProfiled(ch, view, childrenLevel) == HierarchyItem.None)
-						// 	{
-						// 		children.RemoveAt(index);
-						// 	}
-						// }
-
-						if (!profiledChildren.ContainsKey(key))
-							profiledChildren.Add(key, children);
-						else profiledChildren[key].AddRange(children);
-					}
+					// void CollectChildrenIds(int currentId)
+					// {
+					// 	var hasChildren = view.HasItemChildren(currentId);
+					// 	List<int> children;
+					// 	if (hasChildren)
+					// 	{
+					// 		if (profiledChildren.ContainsKey(key))
+					// 		{
+					// 			children = profiledChildren[key];
+					// 			children.Clear();
+					// 		}
+					//
+					// 		children = new List<int>();
+					// 	}
+					// 	else children = null;
+					// 	if (!hasChildren) return;
+					// 	// TODO: figure out why GetChildren crashes the editor in edit mode. it crashes when having some stacks showing profiled methods unfolded and then enabling/disabling profiler or changing frames
+					// 	// view.GetItemChildren(currentId, children);
+					// 	// var childrenLevel = level + 1;
+					// 	// for (var index = children.Count - 1; index >= 0; index--)
+					// 	// {
+					// 	// 	var ch = children[index];
+					// 	// 	if (IsProfiled(ch, view, childrenLevel) == HierarchyItem.None)
+					// 	// 	{
+					// 	// 		children.RemoveAt(index);
+					// 	// 	}
+					// 	// }
+					//
+					// 	if (!profiledChildren.ContainsKey(key))
+					// 		profiledChildren.Add(key, children);
+					// 	else profiledChildren[key].AddRange(children);
+					// }
 
 					// CollectChildrenIds(itemId);
 				}

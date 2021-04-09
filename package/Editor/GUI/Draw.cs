@@ -73,6 +73,9 @@ namespace Needle.SelectiveProfiling
 				settings.CollapseHierarchyNesting = EditorGUILayout.ToggleLeft(
 					new GUIContent("Collapse Nesting", ""),
 					settings.CollapseHierarchyNesting);
+				settings.ColorPerformanceImpact = EditorGUILayout.ToggleLeft(
+					new GUIContent("Use Colors", ""),
+					settings.ColorPerformanceImpact);
 				if (EditorGUI.EndChangeCheck())
 				{
 					ProfilerHelper.RepaintProfiler();

@@ -91,6 +91,7 @@ namespace Needle.SelectiveProfiling
 		public bool CollapseProperties = false;
 		public bool CollapseHierarchyNesting = false;
 		public bool AllowCollapsing => CollapseProperties || CollapseHierarchyNesting;
+		public bool ColorPerformanceImpact = true;
 
 		public bool DeepProfiling = false;
 		public int MaxDepth = 1;

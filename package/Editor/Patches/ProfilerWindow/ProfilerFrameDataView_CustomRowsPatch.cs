@@ -8,9 +8,11 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
+using UnityEditor.Graphs;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
@@ -58,7 +60,7 @@ namespace Needle.SelectiveProfiling
 				targetMethods.Add(m);
 				return Task.CompletedTask;
 			}
-			
+
 			private static int currentDepthOffset;
 			private static HierarchyFrameDataView frameDataView;
 
@@ -78,8 +80,15 @@ namespace Needle.SelectiveProfiling
 				return newItem;
 			}
 
-			private static TreeViewItem CreateAndInsertNewItem(TreeView tree, IList<TreeViewItem> list, int insertAt, ref int index, int id, int depth, TreeViewItem parent, 
-				string text, Func<bool> insert = null)
+			private static TreeViewItem CreateAndInsertNewItem(TreeView tree,
+				IList<TreeViewItem> list,
+				int insertAt,
+				ref int index,
+				int id,
+				int depth,
+				TreeViewItem parent,
+				string text,
+				Func<bool> insert = null)
 			{
 				id += collapsedRowIdOffset;
 				var item = CreateNewItem(parent, id, depth);
@@ -112,6 +121,7 @@ namespace Needle.SelectiveProfiling
 
 				private readonly TreeViewItem parent;
 				private int depth => parent.depth + 1;
+
 				private int startCount;
 				// we could also accumulate the GC ect data to display it
 
@@ -125,18 +135,18 @@ namespace Needle.SelectiveProfiling
 				{
 					// if we step out consider this to be done
 					if (depth <= row.depth - (currentDepthOffset)) return false;
-					
+
 					var collapsed = row.id;
-					
+
 					// Debug.Log(parent.displayName);
-					var id = parent.id;// ?? -1;
+					var id = parent.id; // ?? -1;
 					if (id >= 0 && !customRowsInfo.ContainsKey(id))
 					{
 						customRowsInfo.Add(id, $"{removedProperties} hidden");
-						
-						CreateAndInsertNewItem(tree, list, index, ref index, collapsed, depth, parent, "All items have been collapsed", 
+
+						CreateAndInsertNewItem(tree, list, index, ref index, collapsed, depth, parent, "All items have been collapsed",
 							() => !parent.hasChildren || parent.children.Count <= 0
-							);
+						);
 					}
 
 					return true;
@@ -161,7 +171,7 @@ namespace Needle.SelectiveProfiling
 				private readonly Func<TreeView, TreeViewItem, string, bool> shouldCollapse;
 				internal static readonly HashSet<int> expanded = new HashSet<int>();
 				private int collapsedCounter;
-				
+
 				private int firstIndex = 0;
 
 				public CollapseRows(Func<TreeView, TreeViewItem, string, bool> shouldCollapse)
@@ -178,6 +188,7 @@ namespace Needle.SelectiveProfiling
 						collapsedDepth.Pop();
 						currentDepthOffset -= 1;
 					}
+
 					var res = collapsedDepth.Count <= 0;
 
 
@@ -193,7 +204,7 @@ namespace Needle.SelectiveProfiling
 						row.depth -= offset;
 						// row.depth += 1;
 					}
-					
+
 					return res;
 				}
 
@@ -210,26 +221,25 @@ namespace Needle.SelectiveProfiling
 						{
 							firstIndex = index;
 						}
+
 						// only expand on first discovery
 						// that allows users to collapse hierarchies again
 						// otherwise they would always be re-opened
 						// var key = item.id + name.GetHashCode();
-						var key = item.id; 
-						if (!expanded.Contains(key)) 
+						var key = item.id;
+						if (!expanded.Contains(key))
 						{
 							RequestReload(tree, item);
 							expanded.Add(key);
-							
+
 							tree.SetExpanded(item.id, true);
 							if (item.hasChildren)
 							{
-								foreach(var ch in item.children)
+								foreach (var ch in item.children)
 									if (ch != null)
 										tree.SetExpanded(ch.id, true);
-							} 
+							}
 						}
-						
-						
 					}
 
 					return collapse;
@@ -238,6 +248,7 @@ namespace Needle.SelectiveProfiling
 				// need to request reload, otherwise expanded children would not be visible
 				// they're only in the rows list if expanded
 				private static int requestCounter;
+
 				private static async void RequestReload(TreeView tree, TreeViewItem item)
 				{
 					requestCounter += 1;
@@ -252,17 +263,17 @@ namespace Needle.SelectiveProfiling
 			}
 
 			private static readonly List<ICollapseHandler> handlers = new List<ICollapseHandler>();
-			
+
 			// using to keep track of which handler type was already active
 			private static readonly List<Type> activeHandlers = new List<Type>();
 
 			// TODO: make configure-able
 			private static readonly HashSet<string> _itemsToCollapse = new HashSet<string>()
 			{
-				"UIRepaint", 
-				"DrawChain", 
-				"UIR.ImmediateRenderer", 
-				"RenderChain.Draw", 
+				"UIRepaint",
+				"DrawChain",
+				"UIR.ImmediateRenderer",
+				"RenderChain.Draw",
 				"UIR.DrawChain",
 				"UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.ProcessEvent()",
 				"UIElementsUtility.DoDispatch(Repaint Event)"
@@ -296,19 +307,19 @@ namespace Needle.SelectiveProfiling
 			{
 				if (newRows == null) return;
 				var settings = SelectiveProfilerSettings.instance;
-				
-				if(!settings.CollapseHierarchyNesting)
+
+				if (!settings.CollapseHierarchyNesting)
 					CollapseRows.expanded.Clear();
 
-				ProfilerHelper.profilerTreeView = __instance; 
+				ProfilerHelper.profilerTreeView = __instance;
 				handlers.Clear();
 				customRowsInfo.Clear();
 
 				if (!settings.AllowCollapsing) return;
-				
+
 				var frame = ___m_FrameDataView;
 				frameDataView = frame;
-				
+
 				var tree = __instance;
 				if (frame == null || !frame.valid) return;
 
@@ -325,18 +336,18 @@ namespace Needle.SelectiveProfiling
 						for (var i = handlers.Count - 1; i >= 0; i--)
 						{
 							var c = handlers[i];
-							if (c.TryResolve(tree, row, newRows, ref index)) 
+							if (c.TryResolve(tree, row, newRows, ref index))
 								handlers.RemoveAt(i);
 						}
 					}
-					
+
 					if (index != prevIndex)
 					{
 						row = newRows[index];
 						name = frame.GetItemName(row.id);
 						row.displayName = name;
 					}
-					
+
 					activeHandlers.Clear();
 
 					// true if any handler of that type did already run
@@ -344,7 +355,7 @@ namespace Needle.SelectiveProfiling
 					{
 						return activeHandlers.Any(t.IsAssignableFrom);
 					}
-					
+
 					void HandleCollapsing(ICollapseHandler handler)
 					{
 						row.displayName = name;
@@ -352,7 +363,7 @@ namespace Needle.SelectiveProfiling
 
 						newRows.RemoveAt(index);
 						index -= 1;
-						
+
 						if (row.hasChildren)
 						{
 							foreach (var ch in row.children)
@@ -362,6 +373,7 @@ namespace Needle.SelectiveProfiling
 								row.parent.AddChild(ch);
 							}
 						}
+
 						row.parent.children.Remove(row);
 						activeHandlers.Add(handler.GetType());
 					}
@@ -372,7 +384,7 @@ namespace Needle.SelectiveProfiling
 						if (DidCollapseWithType(c.GetType())) continue;
 						HandleCollapsing(c);
 					}
-					
+
 					// check if we can/should add new handlers
 					if (name.Contains("set ") || name.Contains("get "))
 					{
@@ -384,7 +396,7 @@ namespace Needle.SelectiveProfiling
 							HandleCollapsing(collapse);
 						}
 					}
-						
+
 					if (settings.CollapseHierarchyNesting && !DidCollapseWithType(typeof(CollapseRows)) && ShouldCollapseRow(tree, row, name))
 					{
 						var handler = new CollapseRows(ShouldCollapseRow);
@@ -410,11 +422,108 @@ namespace Needle.SelectiveProfiling
 				return Task.CompletedTask;
 			}
 
+			private static MethodInfo indentCallback;
+
+			private static float GetContentIdent(TreeView tree, TreeViewItem item)
+			{
+				if (indentCallback == null)
+				{
+					indentCallback = tree.GetType().GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance);
+					if (indentCallback == null) return 0;
+				}
+
+				return (float) indentCallback.Invoke(tree, new object[] {item});
+			}
+
 			private static GUIStyle style;
+
+			private static void EnsureStyles()
+			{
+				if (style == null)
+				{
+					style = new GUIStyle(EditorStyles.label);
+					style.alignment = TextAnchor.MiddleRight;
+					style.normal.textColor = Color.white;
+					style.padding = new RectOffset(2, 0, 0, 2);
+				}
+			}
 
 			private class State
 			{
 				public GUIContent Content;
+			}
+
+			private static bool ShouldShowFullScriptingName()
+			{
+				// 1 << 1 == ShowFullScriptingOptionsName
+				// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerModules/CPUorGPUProfilerModule.cs#L50
+				const int entry = (1 << 1);
+				var val = SessionState.GetInt("Profiler.CPUProfilerModule.m_ProfilerViewFilteringOptions", 0);
+				return (val & entry) != 0;
+			}
+
+			private static Gradient gradient;
+
+			private static bool HandleItemsThatExceedThresholds(string name,
+				Rect rect,
+				TreeView tree,
+				TreeViewItem item,
+				HierarchyFrameDataView frame,
+				[CanBeNull] State state)
+			{
+				if (!SelectiveProfilerSettings.instance.ColorPerformanceImpact)
+					return true;
+				
+				if (frame == null || !frame.valid)
+				{
+					return true;
+				}
+
+				var total = frame.GetItemColumnDataAsFloat(item.id, 1);
+				var alloc = frame.GetItemColumnDataAsFloat(item.id, 4);
+
+				var impact = (total / 10f) + (alloc / 1_000f);
+				impact = Mathf.Clamp01(impact);
+				if (gradient == null)
+					gradient = new Gradient()
+					{
+						colorKeys = new[]
+						{
+							new GradientColorKey(Color.gray, 0.08f),
+							new GradientColorKey(Color.white, .09f),
+							new GradientColorKey(new Color(1f, .7f, .1f), .5f),
+							new GradientColorKey(new Color(1f, .7f, .1f), .999992f),
+							new GradientColorKey(new Color(1f, .3f, .2f), 1f),
+						}
+					};
+
+				var col = gradient.Evaluate(impact);
+
+				if (!ShouldShowFullScriptingName())
+				{
+					const string fullScriptingNameSeparator = "::";
+					var scriptingNameIndex = name.IndexOf(fullScriptingNameSeparator, StringComparison.InvariantCultureIgnoreCase);
+					if (scriptingNameIndex > 0)
+					{
+						name = name.Substring(scriptingNameIndex + fullScriptingNameSeparator.Length);
+					}
+				}
+
+				var content = new GUIContent(name);
+				var indent = GetContentIdent(tree, item);
+				// var width = style.CalcSize(content).x;
+				rect.x += indent;
+				rect.width -= indent;
+				EnsureStyles();
+				var prevAlignment = style.alignment;
+				style.alignment = TextAnchor.MiddleLeft;
+				var prevColor = GUI.color;
+				GUI.color = col;
+				GUI.Label(rect, content);
+				GUI.color = prevColor;
+				style.alignment = prevAlignment;
+				DrawAdditionalInfo(tree, item, rect, state);
+				return false;
 			}
 
 			// ReSharper disable once UnusedMember.Local
@@ -427,18 +536,11 @@ namespace Needle.SelectiveProfiling
 			{
 				__state = null;
 				if (column != 0) return true;
+				
 				var tree = __instance;
 				var frame = ___m_FrameDataView;
 				if (frame == null || !frame.valid) return true;
-
-				if (style == null)
-				{
-					style = new GUIStyle(EditorStyles.label);
-					style.alignment = TextAnchor.MiddleRight;
-					style.normal.textColor = Color.white;
-					style.padding = new RectOffset(2, 0, 0, 2);
-				}
-
+				EnsureStyles();
 
 				// if custom row has additional info e.g. because items were removed
 				if (customRowsInfo.TryGetValue(item.id, out var info))
@@ -447,7 +549,7 @@ namespace Needle.SelectiveProfiling
 					var isHint = info.StartsWith(k_AllItemsAreCollapsedHint);
 					if (isHint)
 						info = info.Substring(k_AllItemsAreCollapsedHint.Length);
-					
+
 					var col = GUI.color;
 					var prev = style.alignment;
 					// style.alignment = TextAnchor.MiddleLeft;
@@ -458,36 +560,34 @@ namespace Needle.SelectiveProfiling
 					if (isHint)
 					{
 						style.alignment = TextAnchor.MiddleLeft;
-						// TODO: remove reflection here
-						var indent = (float) tree.GetType().GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance)
-							?.Invoke(tree, new object[] {item});
+						var indent = GetContentIdent(tree, item);
 						rect.x = indent;
 					}
 
 					GUI.Label(rect, info, style);
 					GUI.color = col;
 					style.alignment = prev;
-					
-					// if this row should just display some hint
-					if (isHint)
-						return false;
+
+					// if this row should just display some special hint
+					if (isHint) return false;
 				}
 
 
-				if (item.id > parentIdOffset) return true;
 				var itemName = frame.GetItemName(item.id);
+				if (item.id > parentIdOffset) return HandleItemsThatExceedThresholds(itemName, cellRect, tree, item, frame, null);
 				var separatorIndex = itemName.IndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
-				if (separatorIndex < 0) return true;
+				if (separatorIndex < 0) return HandleItemsThatExceedThresholds(itemName, cellRect, tree, item, frame, null);
 
+				// draw additional row info
 				var name = itemName.Substring(0, separatorIndex);
-
+				var methodName = itemName.Substring(separatorIndex + 1);
 				// skip is parent contains declaring type name
 				var parent = item.parent;
 				if (parent != null)
 				{
 					var parentName = frame.GetItemName(parent.id);
 					if (parentName.Contains(name))
-						return true;
+						return HandleItemsThatExceedThresholds(methodName, cellRect, tree, item, frame, null);
 				}
 
 
@@ -506,7 +606,7 @@ namespace Needle.SelectiveProfiling
 					GUI.Label(cellRect, content, style);
 					GUI.color = col;
 					__state = null;
-					return true;
+					return HandleItemsThatExceedThresholds(methodName, cellRect, tree, item, frame, __state);
 				}
 
 				// indent everything
@@ -528,19 +628,28 @@ namespace Needle.SelectiveProfiling
 				// 	cellRect.width -= width;
 				// 	__state = null;
 				// }
-				return true;
+				return HandleItemsThatExceedThresholds(methodName, cellRect, tree, item, frame, __state);
 			}
+
 
 			// ReSharper disable once UnusedMember.Local
 			private static void Postfix(TreeView __instance, Rect cellRect, TreeViewItem item, State __state)
 			{
-				if (__state == null) return;
+				DrawAdditionalInfo(__instance, item, cellRect, __state);
+			}
 
-				var content = __state.Content;
+			/// <summary>
+			/// drawing additional info
+			/// </summary>
+			private static void DrawAdditionalInfo(TreeView tree, TreeViewItem item, Rect cellRect, [CanBeNull] State state)
+			{
+				if (state == null) return;
+
+				var content = state.Content;
 				if (content != null)
 				{
 					var col = GUI.color;
-					GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
+					GUI.color = tree.IsSelected(item.id) ? Color.white : Color.gray;
 					var padding = item.hasChildren ? 17 : 3;
 					var rect = cellRect;
 					var width = style.CalcSize(content).x;
