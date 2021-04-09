@@ -58,10 +58,13 @@ namespace Needle.SelectiveProfiling
 				targetMethods.Add(m);
 				return Task.CompletedTask;
 			}
+			
+			private static int currentDepthOffset;
+			private static HierarchyFrameDataView frameDataView;
 
-			private static TreeViewItem CreateNewItem(TreeViewItem item, int newId, int depth)
+			private static TreeViewItem CreateNewItem(TreeViewItem parent, int newId, int depth)
 			{
-				var itemType = item.GetType();
+				var itemType = parent.GetType();
 				var typeName = itemType.FullName;
 				var assemblyName = itemType.Assembly.FullName;
 				if (string.IsNullOrEmpty(typeName)) return null;
@@ -69,13 +72,33 @@ namespace Needle.SelectiveProfiling
 				// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
 				var newItem = Activator.CreateInstance(AppDomain.CurrentDomain, assemblyName, typeName,
 						true, AccessUtils.All,
-						null, new object[] {ProfilerFrameDataView_Patch.GetFrameDataView(item), newId, depth, item.parent}, CultureInfo.CurrentCulture,
+						null, new object[] {frameDataView, newId, depth, parent}, CultureInfo.CurrentCulture,
 						null)
 					.Unwrap() as TreeViewItem;
 				return newItem;
 			}
 
-			private static int currentDepthOffset;
+			private static TreeViewItem CreateAndInsertNewItem(TreeView tree, IList<TreeViewItem> list, int insertAt, ref int index, int id, int depth, TreeViewItem parent, 
+				string text, Func<bool> insert = null)
+			{
+				id += collapsedRowIdOffset;
+				var item = CreateNewItem(parent, id, depth);
+
+				// add always an item to avoid having empty lists
+				// which results in ArgumentException when expanding empty items (info is still stored in profiler state)
+				if (tree.IsExpanded(parent.id) || (insert == null || insert.Invoke()))
+				{
+					// var diff = startCount - list.Count;
+					list.Insert(insertAt, item);
+					index += 1;
+				}
+
+				parent.AddChild(item);
+				if (!customRowsInfo.ContainsKey(id))
+					customRowsInfo.Add(id, k_AllItemsAreCollapsedHint + text);
+				return item;
+			}
+
 
 			private interface ICollapseHandler
 			{
@@ -103,30 +126,17 @@ namespace Needle.SelectiveProfiling
 					// if we step out consider this to be done
 					if (depth <= row.depth - (currentDepthOffset)) return false;
 					
-					var collapsed = row.id + collapsedRowIdOffset;
+					var collapsed = row.id;
+					
 					// Debug.Log(parent.displayName);
 					var id = parent.id;// ?? -1;
 					if (id >= 0 && !customRowsInfo.ContainsKey(id))
 					{
-						// throw new Exception("Key already exists: " + id + ": " + customRowsInfo[id] + ", " + frame.GetItemName(row.id));
-						var infoString =
-							$"{removedProperties} hidden"; // {(removedProperties <= 1 ? "property" : "properties")}";
-						customRowsInfo.Add(id, infoString);
-
-						var item = CreateNewItem(row, collapsed, depth);
-
-						// add always an item to avoid having empty lists
-						// which results in ArgumentException when expanding empty items (info is still stored in profiler state)
-						if (tree.IsExpanded(parent.id) && (!parent.hasChildren || parent.children.Count <= 0))
-						{
-							// var diff = startCount - list.Count;
-							list.Insert(index, item);
-							index += 1;
-						}
-
-						parent.AddChild(item);
-						if (!customRowsInfo.ContainsKey(collapsed))
-							customRowsInfo.Add(collapsed, k_AllItemsAreCollapsedHint + "All items have been collapsed");
+						customRowsInfo.Add(id, $"{removedProperties} hidden");
+						
+						CreateAndInsertNewItem(tree, list, index, ref index, collapsed, depth, parent, "All items have been collapsed", 
+							() => !parent.hasChildren || parent.children.Count <= 0
+							);
 					}
 
 					return true;
@@ -150,6 +160,9 @@ namespace Needle.SelectiveProfiling
 				private readonly Stack<int> collapsedDepth = new Stack<int>();
 				private readonly HashSet<string> itemsToCollapse;
 				internal static readonly HashSet<int> expanded = new HashSet<int>();
+				private List<string> collapsedItems = new List<string>();
+				
+				private int firstIndex = 0;
 
 				public CollapseRows(HashSet<string> itemsToCollapse)
 				{
@@ -167,7 +180,16 @@ namespace Needle.SelectiveProfiling
 					}
 
 					row.depth -= collapsedDepth.Count;
-					return collapsedDepth.Count <= 0;
+					var res = collapsedDepth.Count <= 0;
+
+					if (res)
+					{
+						// NOTE: first index might change
+						// it is possible that items have been inserted in between so this is likely to break
+						CreateAndInsertNewItem(tree, list, firstIndex, ref index, row.id, row.depth, row.parent, "Collapsed " + collapsedItems.Count + " rows");
+					}
+					
+					return res;
 				}
 
 				public bool ShouldCollapse(TreeView tree, TreeViewItem item, string name, IList<TreeViewItem> list, ref int index)
@@ -175,8 +197,14 @@ namespace Needle.SelectiveProfiling
 					var collapse = itemsToCollapse.Contains(name);
 					if (collapse)
 					{
+						collapsedItems.Add(name);
 						collapsedDepth.Push(item.depth + collapsedDepth.Count);
 						currentDepthOffset += 1;
+
+						if (firstIndex == 0)
+						{
+							firstIndex = index;
+						}
 						// only expand on first discovery
 						// that allows users to collapse hierarchies again
 						// otherwise they would always be re-opened
@@ -184,10 +212,19 @@ namespace Needle.SelectiveProfiling
 						var key = item.id; 
 						if (!expanded.Contains(key)) 
 						{
+							RequestReload(tree);
 							expanded.Add(key);
+							
 							tree.SetExpanded(item.id, true);
-							RequestReload(tree); 
+							if (item.hasChildren)
+							{
+								foreach(var ch in item.children)
+									if (ch != null)
+										tree.SetExpanded(ch.id, true);
+							} 
 						}
+						
+						
 					}
 
 					return collapse;
@@ -195,15 +232,15 @@ namespace Needle.SelectiveProfiling
 
 				// need to request reload, otherwise expanded children would not be visible
 				// they're only in the rows list if expanded
-				private static bool requested;
+				// private static bool requested;
 				private static async void RequestReload(TreeView tree)
 				{
 					// if (requested) return;
 					// requested = true;
-					await Task.Delay(1); 
+					await Task.Delay(1);  
 					tree.Reload();
 					tree.SetFocusAndEnsureSelectedItem();
-					requested = false;
+					// requested = false;
 				}
 			}
 
@@ -237,10 +274,11 @@ namespace Needle.SelectiveProfiling
 				handlers.Clear();
 				customRowsInfo.Clear();
 
-				if (!settings.AllowCollapsing)
-					return;
+				if (!settings.AllowCollapsing) return;
 				
 				var frame = ___m_FrameDataView;
+				frameDataView = frame;
+				
 				var tree = __instance;
 				if (frame == null || !frame.valid) return;
 
