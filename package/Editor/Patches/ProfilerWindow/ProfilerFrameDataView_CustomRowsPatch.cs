@@ -2,10 +2,10 @@
 #undef DEBUG_CUSTOMROWS
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
@@ -36,8 +36,8 @@ namespace Needle.SelectiveProfiling
 
 
 		private static readonly Dictionary<int, string> customRowsInfo = new Dictionary<int, string>();
-		internal const int collapsedRowIdOffset = 10_000_000;
-		internal const string k_AllItemsAreCollapsedHint = "All items have been collapsed";
+		private const int collapsedRowIdOffset = 10_000_000;
+		private const string k_AllItemsAreCollapsedHint = "All items have been collapsed";
 
 		/// <summary>
 		/// used to distinguish between injected item and actual item
@@ -49,7 +49,7 @@ namespace Needle.SelectiveProfiling
 		internal const int parentIdOffset = 1_000_000;
 
 
-		internal class Profiler_BuildRows_CollapseItems : EditorPatch
+		private class Profiler_BuildRows_CollapseItems : EditorPatch
 		{
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
@@ -75,6 +75,8 @@ namespace Needle.SelectiveProfiling
 				return newItem;
 			}
 
+			private static int currentDepthOffset;
+
 			private interface ICollapseHandler
 			{
 				bool TryResolve(TreeView tree, TreeViewItem row, IList<TreeViewItem> list, ref int index);
@@ -83,26 +85,28 @@ namespace Needle.SelectiveProfiling
 
 			private class CollapseProperties : ICollapseHandler
 			{
-				public int depth;
-				private TreeViewItem lastItem;
 				private int removedProperties;
 
-				private readonly TreeViewItem currentItem;
+				private readonly TreeViewItem parent;
+				private int depth => parent.depth + 1;
+				private int startCount;
 				// we could also accumulate the GC ect data to display it
 
-				public CollapseProperties(TreeViewItem currentItem)
+				public CollapseProperties(int currentCount, TreeViewItem parent)
 				{
-					this.currentItem = currentItem;
+					this.parent = parent;
+					startCount = currentCount;
 				}
 
 				public bool TryResolve(TreeView tree, TreeViewItem row, IList<TreeViewItem> list, ref int index)
 				{
 					// if we step out consider this to be done
-					if (depth <= row.depth) return false;
-
+					if (depth <= row.depth - (currentDepthOffset)) return false;
+					
 					var collapsed = row.id + collapsedRowIdOffset;
-					var id = lastItem.parent.id;
-					if (!customRowsInfo.ContainsKey(id))
+					// Debug.Log(parent.displayName);
+					var id = parent.id;// ?? -1;
+					if (id >= 0 && !customRowsInfo.ContainsKey(id))
 					{
 						// throw new Exception("Key already exists: " + id + ": " + customRowsInfo[id] + ", " + frame.GetItemName(row.id));
 						var infoString =
@@ -113,12 +117,14 @@ namespace Needle.SelectiveProfiling
 
 						// add always an item to avoid having empty lists
 						// which results in ArgumentException when expanding empty items (info is still stored in profiler state)
-						if (tree.IsExpanded(lastItem.parent.id) && (!lastItem.parent.hasChildren || lastItem.parent.children.Count <= 0))
+						if (tree.IsExpanded(parent.id) && (!parent.hasChildren || parent.children.Count <= 0))
 						{
-							list.Insert(index + 1, item);
+							// var diff = startCount - list.Count;
+							list.Insert(index, item);
+							index += 1;
 						}
 
-						lastItem.parent.AddChild(item);
+						parent.AddChild(item);
 						if (!customRowsInfo.ContainsKey(collapsed))
 							customRowsInfo.Add(collapsed, k_AllItemsAreCollapsedHint);
 					}
@@ -132,7 +138,6 @@ namespace Needle.SelectiveProfiling
 					if (item.depth == depth && (name.Contains("set ") || name.Contains("get ")))
 					{
 						removedProperties += 1;
-						lastItem = item;
 						return true;
 					}
 
@@ -158,6 +163,7 @@ namespace Needle.SelectiveProfiling
 					{
 						// Debug.Log("Pop " + row.displayName + ", " + row.depth + ", " + collapsedDepth.Peek());
 						collapsedDepth.Pop();
+						currentDepthOffset -= 1;
 					}
 
 					row.depth -= collapsedDepth.Count;
@@ -170,10 +176,11 @@ namespace Needle.SelectiveProfiling
 					if (collapse)
 					{
 						collapsedDepth.Push(item.depth + collapsedDepth.Count);
+						currentDepthOffset += 1;
 						// only expand on first discovery
 						// that allows users to collapse hierarchies again
 						// otherwise they would always be re-opened
-						if (!expanded.Contains(item.id))
+						if (!expanded.Contains(item.id)) 
 						{
 							tree.SetExpanded(item.id, true);
 							expanded.Add(item.id);
@@ -229,9 +236,8 @@ namespace Needle.SelectiveProfiling
 				customRowsInfo.Clear();
 
 				if (!settings.AllowCollapsing)
-				{
 					return;
-				}
+				
 				var frame = ___m_FrameDataView;
 				var tree = __instance;
 				if (frame == null || !frame.valid) return;
@@ -249,10 +255,8 @@ namespace Needle.SelectiveProfiling
 						for (var i = handlers.Count - 1; i >= 0; i--)
 						{
 							var c = handlers[i];
-							if (c.TryResolve(tree, row, newRows, ref index))
-							{
+							if (c.TryResolve(tree, row, newRows, ref index)) 
 								handlers.RemoveAt(i);
-							}
 						}
 					}
 					
@@ -277,6 +281,15 @@ namespace Needle.SelectiveProfiling
 						if (!handler.ShouldCollapse(tree, row, name, newRows, ref index)) return;
 						newRows.RemoveAt(index);
 						index -= 1;
+						// if (row.hasChildren)
+						// {
+						// 	foreach (var ch in row.children)
+						// 	{
+						// 		if (ch == null) continue;
+						// 		ch.parent = row.parent;
+						// 		row.parent.AddChild(ch);
+						// 	}
+						// }
 						row.parent.children.Remove(row);
 						activeHandlers.Add(handler.GetType());
 					}
@@ -293,8 +306,7 @@ namespace Needle.SelectiveProfiling
 					{
 						if (settings.CollapseProperties && !DidCollapseWithType(typeof(CollapseProperties)))
 						{
-							var collapse = new CollapseProperties(row.parent);
-							collapse.depth = row.depth;
+							var collapse = new CollapseProperties(newRows.Count, row.parent);
 							handlers.Add(collapse);
 							// Debug.Log(row.parent.displayName + " @ " + index + ", " + row.parent.depth);
 							HandleCollapsing(collapse);
@@ -315,6 +327,9 @@ namespace Needle.SelectiveProfiling
 		}
 
 
+		/// <summary>
+		/// render additional row information
+		/// </summary>
 		private class Profiler_CellGUI : EditorPatch
 		{
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L647
@@ -356,9 +371,12 @@ namespace Needle.SelectiveProfiling
 				}
 
 
+				// if custom row has additional info e.g. because items were removed
 				if (customRowsInfo.TryGetValue(item.id, out var info))
 				{
+					// was row collapsed completely?
 					var isHint = info == k_AllItemsAreCollapsedHint;
+					
 					var col = GUI.color;
 					var prev = style.alignment;
 					// style.alignment = TextAnchor.MiddleLeft;
@@ -378,6 +396,8 @@ namespace Needle.SelectiveProfiling
 					GUI.Label(rect, info, style);
 					GUI.color = col;
 					style.alignment = prev;
+					
+					// if this row should just display some hint
 					if (isHint)
 						return false;
 				}
@@ -387,7 +407,6 @@ namespace Needle.SelectiveProfiling
 				var itemName = frame.GetItemName(item.id);
 				var separatorIndex = itemName.IndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
 				if (separatorIndex < 0) return true;
-
 
 				var name = itemName.Substring(0, separatorIndex);
 
