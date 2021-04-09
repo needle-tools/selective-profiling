@@ -111,7 +111,11 @@ namespace Needle.SelectiveProfiling
 				
 				// when using the custom rows patch prefix the sample with the method name
 				if (!string.IsNullOrWhiteSpace(parentType) && PatchManager.IsActive(typeof(ProfilerFrameDataView_CustomRowsPatch).FullName))
+				{
+					// if (instruction.operand is MethodInfo type)
+					// 	parentType = type.DeclaringType?.Name;
 					sampleName = parentType + TypeSampleNameSeparator + sampleName;
+				}
 				
 				if(instruction.operand is MethodInfo mi)
 					AccessUtils.RegisterMethodCall(sampleName, mi);

@@ -158,17 +158,17 @@ namespace Needle.SelectiveProfiling
 			private class CollapseRows : ICollapseHandler
 			{
 				private readonly Stack<int> collapsedDepth = new Stack<int>();
-				private readonly HashSet<string> itemsToCollapse;
+				private readonly Func<TreeView, TreeViewItem, string, bool> shouldCollapse;
 				internal static readonly HashSet<int> expanded = new HashSet<int>();
-				private List<string> collapsedItems = new List<string>();
+				private int collapsedCounter;
 				
 				private int firstIndex = 0;
 
-				public CollapseRows(HashSet<string> itemsToCollapse)
+				public CollapseRows(Func<TreeView, TreeViewItem, string, bool> shouldCollapse)
 				{
-					this.itemsToCollapse = itemsToCollapse;
+					this.shouldCollapse = shouldCollapse;
 				}
-				
+
 				public bool TryResolve(TreeView tree, TreeViewItem row, IList<TreeViewItem> list, ref int index)
 				{
 					// Debug.Log("Test " + row.displayName + "\n" + string.Join("\n", collapsedDepth));
@@ -185,12 +185,13 @@ namespace Needle.SelectiveProfiling
 					{
 						// NOTE: first index might change
 						// it is possible that items have been inserted in between so this is likely to break
-						CreateAndInsertNewItem(tree, list, firstIndex, ref index, row.id, row.depth, row.parent, "Collapsed " + collapsedItems.Count + " rows");
+						CreateAndInsertNewItem(tree, list, firstIndex, ref index, row.id, row.depth, row.parent, $"Collapsed {collapsedCounter} rows");
 					}
 					else
 					{
 						var offset = collapsedDepth.Count;
 						row.depth -= offset;
+						// row.depth += 1;
 					}
 					
 					return res;
@@ -198,10 +199,10 @@ namespace Needle.SelectiveProfiling
 
 				public bool ShouldCollapse(TreeView tree, TreeViewItem item, string name, IList<TreeViewItem> list, ref int index)
 				{
-					var collapse = itemsToCollapse.Contains(name);
+					var collapse = shouldCollapse.Invoke(tree, item, name);
 					if (collapse)
 					{
-						collapsedItems.Add(name);
+						collapsedCounter += 1;
 						collapsedDepth.Push(item.depth + collapsedDepth.Count);
 						currentDepthOffset += 1;
 
@@ -216,7 +217,7 @@ namespace Needle.SelectiveProfiling
 						var key = item.id; 
 						if (!expanded.Contains(key)) 
 						{
-							RequestReload(tree);
+							RequestReload(tree, item);
 							expanded.Add(key);
 							
 							tree.SetExpanded(item.id, true);
@@ -236,15 +237,17 @@ namespace Needle.SelectiveProfiling
 
 				// need to request reload, otherwise expanded children would not be visible
 				// they're only in the rows list if expanded
-				// private static bool requested;
-				private static async void RequestReload(TreeView tree)
+				private static int requestCounter;
+				private static async void RequestReload(TreeView tree, TreeViewItem item)
 				{
-					// if (requested) return;
-					// requested = true;
-					await Task.Delay(1);  
+					requestCounter += 1;
+					var req = requestCounter;
+					await Task.Delay(25);
+					if (req != requestCounter) return;
+					tree.SetExpanded(item.id, true);
 					tree.Reload();
+					tree.Repaint();
 					tree.SetFocusAndEnsureSelectedItem();
-					// requested = false;
 				}
 			}
 
@@ -264,6 +267,29 @@ namespace Needle.SelectiveProfiling
 				"UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.ProcessEvent()",
 				"UIElementsUtility.DoDispatch(Repaint Event)"
 			};
+
+			private static bool ShouldCollapseRow(TreeView tree, TreeViewItem item, string name)
+			{
+				if (_itemsToCollapse.Contains(name))
+					return true;
+
+				// TODO: support for collapsing items that have no impact
+				// if (frameDataView != null && frameDataView.valid)
+				// {
+				// 	if (item.id < parentIdOffset && !item.hasChildren)
+				// 	{
+				// 		var total = frameDataView.GetItemColumnDataAsFloat(item.id, 1);
+				// 		var alloc = frameDataView.GetItemColumnDataAsFloat(item.id, 4);
+				// 		if (total < 0.01f && alloc < 1)
+				// 		{
+				// 			Debug.Log(name + " - " + total + ", " + alloc + ", id=" + item.id);
+				// 			return true;
+				// 		}
+				// 	}
+				// }
+
+				return false;
+			}
 
 			// ReSharper disable once UnusedMember.Local
 			private static void Postfix(TreeView __instance, IList<TreeViewItem> newRows, HierarchyFrameDataView ___m_FrameDataView)
@@ -323,8 +349,10 @@ namespace Needle.SelectiveProfiling
 					{
 						row.displayName = name;
 						if (!handler.ShouldCollapse(tree, row, name, newRows, ref index)) return;
+
 						newRows.RemoveAt(index);
 						index -= 1;
+						
 						if (row.hasChildren)
 						{
 							foreach (var ch in row.children)
@@ -357,14 +385,11 @@ namespace Needle.SelectiveProfiling
 						}
 					}
 						
-					if (_itemsToCollapse.Contains(name) && !DidCollapseWithType(typeof(CollapseRows)))
+					if (settings.CollapseHierarchyNesting && !DidCollapseWithType(typeof(CollapseRows)) && ShouldCollapseRow(tree, row, name))
 					{
-						if (settings.CollapseHierarchyNesting)
-						{
-							var handler = new CollapseRows(_itemsToCollapse);
-							handlers.Add(handler);
-							HandleCollapsing(handler);
-						}
+						var handler = new CollapseRows(ShouldCollapseRow);
+						handlers.Add(handler);
+						HandleCollapsing(handler);
 					}
 				}
 			}
