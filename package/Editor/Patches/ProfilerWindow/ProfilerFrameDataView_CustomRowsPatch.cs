@@ -489,8 +489,8 @@ namespace Needle.SelectiveProfiling
 					{
 						colorKeys = new[]
 						{
-							new GradientColorKey(Color.gray, 0.08f),
-							new GradientColorKey(Color.white, .09f),
+							new GradientColorKey(Color.gray, 0.001f),
+							new GradientColorKey(Color.white, .05f),
 							new GradientColorKey(new Color(1f, .7f, .1f), .5f),
 							new GradientColorKey(new Color(1f, .7f, .1f), .999992f),
 							new GradientColorKey(new Color(1f, .3f, .2f), 1f),
