@@ -491,10 +491,11 @@ namespace Needle.SelectiveProfiling
 					return true;
 				}
 
-				var total = frame.GetItemColumnDataAsFloat(item.id, 1);
 				var alloc = frame.GetItemColumnDataAsFloat(item.id, 4);
+				var ms = frame.GetItemColumnDataAsFloat(item.id, 5);
 
-				var impact = (total / 10f) + (alloc / 1_000f);
+				var impact = ms / 16f;
+				impact += alloc / 5000f;
 				impact = Mathf.Clamp01(impact);
 				if (gradient == null)
 					gradient = new Gradient()
