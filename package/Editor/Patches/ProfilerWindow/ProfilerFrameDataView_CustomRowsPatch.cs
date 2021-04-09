@@ -254,12 +254,15 @@ namespace Needle.SelectiveProfiling
 				{
 					requestCounter += 1;
 					var req = requestCounter;
-					await Task.Delay(25);
+					// var selection = tree.GetSelection()?.FirstOrDefault() ?? -1;
+					await Task.Delay(1);
 					if (req != requestCounter) return;
 					tree.SetExpanded(item.id, true);
 					tree.Reload();
 					tree.Repaint();
-					tree.SetFocusAndEnsureSelectedItem();
+					// await Task.Delay(10);
+					// tree.SetSelection(new List<int>(){selection});
+					// tree.SetFocusAndEnsureSelectedItem();
 				}
 			}
 
@@ -382,7 +385,8 @@ namespace Needle.SelectiveProfiling
 							}
 						}
 
-						row.parent.children.Remove(row);
+						// NOTE: when removing the row from parents children expanding does not work when frame changes and selected item is child of collapsed items 
+						// row.parent.children.Remove(row);
 						activeHandlers.Add(handler.GetType());
 					}
 
