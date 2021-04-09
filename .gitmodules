@@ -1,3 +1,6 @@
 [submodule "thirdparty/Smart-Hierarchy"]
 	path = thirdparty/Smart-Hierarchy
 	url = https://github.com/neon-age/Smart-Hierarchy
+[submodule "projects/unity-open-project-1"]
+	path = projects/unity-open-project-1
+	url = https://github.com/UnityTechnologies/open-project-1.git
