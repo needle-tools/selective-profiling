@@ -146,6 +146,7 @@ namespace Needle.SelectiveProfiling
 			{
 				private readonly Stack<int> collapsedDepth = new Stack<int>();
 				private readonly HashSet<string> itemsToCollapse;
+				internal static readonly HashSet<int> expanded = new HashSet<int>();
 
 				public CollapseCalls(HashSet<string> itemsToCollapse)
 				{
@@ -171,10 +172,31 @@ namespace Needle.SelectiveProfiling
 					if (collapse)
 					{
 						collapsedDepth.Push(item.depth + collapsedDepth.Count);
-						tree.SetExpanded(item.id, true);
+						// only expand on first discovery
+						// that allows users to collapse hierarchies again
+						// otherwise they would always be re-opened
+						if (!expanded.Contains(item.id))
+						{
+							tree.SetExpanded(item.id, true);
+							expanded.Add(item.id);
+							RequestReload(tree);
+						}
 					}
 
 					return collapse;
+				}
+
+				// need to request reload, otherwise expanded children would not be visible
+				// they're only in the rows list if expanded
+				private static bool requested;
+				private static async void RequestReload(TreeView tree)
+				{
+					if (requested) return;
+					requested = true;
+					await Task.Delay(1);
+					tree.Reload();
+					tree.SetFocusAndEnsureSelectedItem();
+					requested = false;
 				}
 			}
 
@@ -197,12 +219,18 @@ namespace Needle.SelectiveProfiling
 			{
 				if (newRows == null) return;
 				var settings = SelectiveProfilerSettings.instance;
+				
+				if(!settings.CollapseHierarchyNesting)
+					CollapseCalls.expanded.Clear();
 
-				ProfilerHelper.profilerTreeView = __instance;
+				ProfilerHelper.profilerTreeView = __instance; 
 				collapsed.Clear();
 				customRowsInfo.Clear();
 
-				if (!settings.AllowCollapsing) return;
+				if (!settings.AllowCollapsing)
+				{
+					return;
+				}
 				var frame = ___m_FrameDataView;
 				var tree = __instance;
 				if (frame == null || !frame.valid) return;
