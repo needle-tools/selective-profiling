@@ -59,7 +59,6 @@ namespace Needle.SelectiveProfiling
 				return Task.CompletedTask;
 			}
 
-
 			private static TreeViewItem CreateNewItem(TreeViewItem item, int newId, int depth)
 			{
 				var itemType = item.GetType();
@@ -85,9 +84,8 @@ namespace Needle.SelectiveProfiling
 			private class CollapseProperties : ICollapseHandler
 			{
 				public int depth;
-				public TreeViewItem firstItem;
-				public TreeViewItem lastItem;
-				public int removedProperties;
+				private TreeViewItem lastItem;
+				private int removedProperties;
 
 				private readonly TreeViewItem currentItem;
 				// we could also accumulate the GC ect data to display it
@@ -142,13 +140,13 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 
-			private class CollapseCalls : ICollapseHandler
+			private class CollapseRows : ICollapseHandler
 			{
 				private readonly Stack<int> collapsedDepth = new Stack<int>();
 				private readonly HashSet<string> itemsToCollapse;
 				internal static readonly HashSet<int> expanded = new HashSet<int>();
 
-				public CollapseCalls(HashSet<string> itemsToCollapse)
+				public CollapseRows(HashSet<string> itemsToCollapse)
 				{
 					this.itemsToCollapse = itemsToCollapse;
 				}
@@ -200,7 +198,10 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 
-			private static readonly List<ICollapseHandler> collapsed = new List<ICollapseHandler>();
+			private static readonly List<ICollapseHandler> handlers = new List<ICollapseHandler>();
+			
+			// using to keep track of which handler type was already active
+			private static readonly List<Type> activeHandlers = new List<Type>();
 
 			// TODO: make configure-able
 			private static readonly HashSet<string> _itemsToCollapse = new HashSet<string>()
@@ -221,10 +222,10 @@ namespace Needle.SelectiveProfiling
 				var settings = SelectiveProfilerSettings.instance;
 				
 				if(!settings.CollapseHierarchyNesting)
-					CollapseCalls.expanded.Clear();
+					CollapseRows.expanded.Clear();
 
 				ProfilerHelper.profilerTreeView = __instance; 
-				collapsed.Clear();
+				handlers.Clear();
 				customRowsInfo.Clear();
 
 				if (!settings.AllowCollapsing)
@@ -240,70 +241,73 @@ namespace Needle.SelectiveProfiling
 					var row = newRows[index];
 					var name = frame.GetItemName(row.id);
 					row.displayName = name;
-					// Debug.Log(row.depth + " -> " + name);
+					var prevIndex = index;
 
-					if (collapsed.Count > 0)
+					if (handlers.Count > 0)
 					{
 						// check if any of the added collapsed handlers are done and can be removed
-						for (var i = collapsed.Count - 1; i >= 0; i--)
+						for (var i = handlers.Count - 1; i >= 0; i--)
 						{
-							var c = collapsed[i];
+							var c = handlers[i];
 							if (c.TryResolve(tree, row, newRows, ref index))
 							{
-								collapsed.RemoveAt(i);
+								handlers.RemoveAt(i);
 							}
 						}
 					}
+					
+					if (index != prevIndex)
+					{
+						row = newRows[index];
+						name = frame.GetItemName(row.id);
+						row.displayName = name;
+					}
+					
+					activeHandlers.Clear();
 
-					row = newRows[index];
-					name = frame.GetItemName(row.id);
-					row.displayName = name;
-					var didCollapse = false;
-
-					bool RunShouldCollapse(ICollapseHandler handler)
+					// true if any handler of that type did already run
+					bool DidCollapseWithType(Type t)
+					{
+						return activeHandlers.Any(t.IsAssignableFrom);
+					}
+					
+					void HandleCollapsing(ICollapseHandler handler)
 					{
 						row.displayName = name;
-						if (handler.ShouldCollapse(tree, row, name, newRows, ref index))
-						{
-							newRows.RemoveAt(index);
-							index -= 1;
-							row.parent.children.Remove(row);
-							didCollapse = true;
-							return true;
-						}
-
-						return false;
+						if (!handler.ShouldCollapse(tree, row, name, newRows, ref index)) return;
+						newRows.RemoveAt(index);
+						index -= 1;
+						row.parent.children.Remove(row);
+						activeHandlers.Add(handler.GetType());
 					}
 
-					for (var i = collapsed.Count - 1; i >= 0; i--)
+					for (var i = handlers.Count - 1; i >= 0; i--)
 					{
-						var c = collapsed[i];
-						if (RunShouldCollapse(c))
-							break;
+						var c = handlers[i];
+						if (DidCollapseWithType(c.GetType())) continue;
+						HandleCollapsing(c);
 					}
-
-					if (!didCollapse)
+					
+					// check if we can/should add new handlers
+					if (name.Contains("set ") || name.Contains("get "))
 					{
-						if (name.Contains("set ") || name.Contains("get "))
+						if (settings.CollapseProperties && !DidCollapseWithType(typeof(CollapseProperties)))
 						{
-							if (settings.CollapseProperties)
-							{
-								var collapse = new CollapseProperties(row.parent);
-								collapse.depth = row.depth;
-								collapse.firstItem = row;
-								collapsed.Add(collapse);
-								// Debug.Log(row.parent.displayName + " @ " + index + ", " + row.parent.depth);
-								RunShouldCollapse(collapse);
-							}
+							var collapse = new CollapseProperties(row.parent);
+							collapse.depth = row.depth;
+							handlers.Add(collapse);
+							// Debug.Log(row.parent.displayName + " @ " + index + ", " + row.parent.depth);
+							HandleCollapsing(collapse);
 						}
-						else if (_itemsToCollapse.Contains(name))
+					}
+						
+					if (_itemsToCollapse.Contains(name) && !DidCollapseWithType(typeof(CollapseRows)))
+					{
+						if (settings.CollapseHierarchyNesting)
 						{
-							if (settings.CollapseHierarchyNesting)
-							{
-								var handler = new CollapseCalls(_itemsToCollapse);
-								collapsed.Add(handler);
-								RunShouldCollapse(handler);
-							}
+							var handler = new CollapseRows(_itemsToCollapse);
+							handlers.Add(handler);
+							HandleCollapsing(handler);
 						}
 					}
 				}
