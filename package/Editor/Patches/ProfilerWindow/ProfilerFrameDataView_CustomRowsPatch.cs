@@ -485,7 +485,7 @@ namespace Needle.SelectiveProfiling
 			{
 				if (!SelectiveProfilerSettings.instance.ColorPerformanceImpact)
 					return true;
-				
+
 				if (frame == null || !frame.valid)
 				{
 					return true;
@@ -496,7 +496,7 @@ namespace Needle.SelectiveProfiling
 
 				var impact = ms / 16f;
 				impact += alloc / 5000f;
-				impact = Mathf.Clamp01(impact);
+				// impact = Mathf.Clamp01(impact);
 				if (gradient == null)
 					gradient = new Gradient()
 					{
@@ -524,7 +524,6 @@ namespace Needle.SelectiveProfiling
 
 				var content = new GUIContent(name);
 				var indent = GetContentIdent(tree, item);
-				// var width = style.CalcSize(content).x;
 				rect.x += indent;
 				rect.width -= indent;
 				EnsureStyles();
@@ -533,8 +532,22 @@ namespace Needle.SelectiveProfiling
 				var prevColor = GUI.color;
 				GUI.color = col;
 				GUI.Label(rect, content);
-				GUI.color = prevColor;
 				style.alignment = prevAlignment;
+
+
+				if (impact >= 0.999 && !item.hasChildren)
+				{
+					var width = style.CalcSize(content).x;
+					rect.x += width + 5;
+					var padding = rect.height * .4f;
+					rect.y += padding * .5f;
+					rect.width = rect.height - padding;
+					rect.height = rect.width;
+					GUI.color *= .85f;
+					GUI.DrawTexture(rect, Textures.HotPathIcon, ScaleMode.ScaleAndCrop, true);
+				}
+				
+				GUI.color = prevColor;
 				DrawAdditionalInfo(tree, item, rect, state);
 				return false;
 			}
