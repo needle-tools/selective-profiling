@@ -37,7 +37,7 @@ namespace Needle.SelectiveProfiling
 
 		private static readonly Dictionary<int, string> customRowsInfo = new Dictionary<int, string>();
 		private const int collapsedRowIdOffset = 10_000_000;
-		private const string k_AllItemsAreCollapsedHint = "All items have been collapsed";
+		private const string k_AllItemsAreCollapsedHint = "HINT::";
 
 		/// <summary>
 		/// used to distinguish between injected item and actual item
@@ -126,7 +126,7 @@ namespace Needle.SelectiveProfiling
 
 						parent.AddChild(item);
 						if (!customRowsInfo.ContainsKey(collapsed))
-							customRowsInfo.Add(collapsed, k_AllItemsAreCollapsedHint);
+							customRowsInfo.Add(collapsed, k_AllItemsAreCollapsedHint + "All items have been collapsed");
 					}
 
 					return true;
@@ -375,7 +375,9 @@ namespace Needle.SelectiveProfiling
 				if (customRowsInfo.TryGetValue(item.id, out var info))
 				{
 					// was row collapsed completely?
-					var isHint = info == k_AllItemsAreCollapsedHint;
+					var isHint = info.StartsWith(k_AllItemsAreCollapsedHint);
+					if (isHint)
+						info = info.Substring(k_AllItemsAreCollapsedHint.Length);
 					
 					var col = GUI.color;
 					var prev = style.alignment;
