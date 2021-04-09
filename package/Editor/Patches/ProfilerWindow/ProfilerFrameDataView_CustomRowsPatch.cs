@@ -180,11 +180,13 @@ namespace Needle.SelectiveProfiling
 						// only expand on first discovery
 						// that allows users to collapse hierarchies again
 						// otherwise they would always be re-opened
-						if (!expanded.Contains(item.id)) 
+						// var key = item.id + name.GetHashCode();
+						var key = item.id; 
+						if (!expanded.Contains(key)) 
 						{
+							expanded.Add(key);
 							tree.SetExpanded(item.id, true);
-							expanded.Add(item.id);
-							RequestReload(tree);
+							RequestReload(tree); 
 						}
 					}
 
@@ -196,9 +198,9 @@ namespace Needle.SelectiveProfiling
 				private static bool requested;
 				private static async void RequestReload(TreeView tree)
 				{
-					if (requested) return;
-					requested = true;
-					await Task.Delay(1);
+					// if (requested) return;
+					// requested = true;
+					await Task.Delay(1); 
 					tree.Reload();
 					tree.SetFocusAndEnsureSelectedItem();
 					requested = false;
@@ -281,15 +283,15 @@ namespace Needle.SelectiveProfiling
 						if (!handler.ShouldCollapse(tree, row, name, newRows, ref index)) return;
 						newRows.RemoveAt(index);
 						index -= 1;
-						// if (row.hasChildren)
-						// {
-						// 	foreach (var ch in row.children)
-						// 	{
-						// 		if (ch == null) continue;
-						// 		ch.parent = row.parent;
-						// 		row.parent.AddChild(ch);
-						// 	}
-						// }
+						if (row.hasChildren)
+						{
+							foreach (var ch in row.children)
+							{
+								if (ch == null) continue;
+								ch.parent = row.parent;
+								row.parent.AddChild(ch);
+							}
+						}
 						row.parent.children.Remove(row);
 						activeHandlers.Add(handler.GetType());
 					}
