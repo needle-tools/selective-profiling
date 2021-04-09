@@ -86,7 +86,7 @@ namespace Needle.SelectiveProfiling
 
 				// add always an item to avoid having empty lists
 				// which results in ArgumentException when expanding empty items (info is still stored in profiler state)
-				if (tree.IsExpanded(parent.id) || (insert == null || insert.Invoke()))
+				if (tree.IsExpanded(parent.id) && (insert == null || insert.Invoke()))
 				{
 					// var diff = startCount - list.Count;
 					list.Insert(insertAt, item);
