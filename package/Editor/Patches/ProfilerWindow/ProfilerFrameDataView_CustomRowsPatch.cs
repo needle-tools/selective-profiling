@@ -302,11 +302,13 @@ namespace Needle.SelectiveProfiling
 				return false;
 			}
 
+			private static int previousFrameIndex;
+
 			// ReSharper disable once UnusedMember.Local
 			private static void Postfix(TreeView __instance, IList<TreeViewItem> newRows, HierarchyFrameDataView ___m_FrameDataView)
 			{
 				if (newRows == null) return;
-				var settings = SelectiveProfilerSettings.instance;
+				var settings = SelectiveProfilerSettings.instance; 
 
 				if (!settings.CollapseHierarchyNesting)
 					CollapseRows.expanded.Clear();
@@ -322,6 +324,11 @@ namespace Needle.SelectiveProfiling
 
 				var tree = __instance;
 				if (frame == null || !frame.valid) return;
+				
+				// clear cached collapsed-expanded rows when frame changes
+				if(frame.frameIndex != previousFrameIndex)
+					CollapseRows.expanded.Clear();
+				previousFrameIndex = frame.frameIndex;
 
 				for (var index = 0; index < newRows.Count; index++)
 				{
