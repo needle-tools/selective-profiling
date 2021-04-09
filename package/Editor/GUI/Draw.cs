@@ -67,13 +67,18 @@ namespace Needle.SelectiveProfiling
 					settings.UseAlwaysProfile);
 				
 				EditorGUI.BeginChangeCheck();
-				settings.HideProperties = EditorGUILayout.ToggleLeft(
-					new GUIContent("Hide Properties", ""),
-					settings.HideProperties);
+				settings.CollapseProperties = EditorGUILayout.ToggleLeft(
+					new GUIContent("Collapse Properties", ""),
+					settings.CollapseProperties);
+				settings.CollapseHierarchyNesting = EditorGUILayout.ToggleLeft(
+					new GUIContent("Collapse Nesting", ""),
+					settings.CollapseHierarchyNesting);
 				if (EditorGUI.EndChangeCheck())
 				{
 					ProfilerHelper.RepaintProfiler();
 				}
+				
+				
 
 				// if (SelectiveProfiler.DevelopmentMode)
 				// 	settings.AllowPinning = EditorGUILayout.ToggleLeft(new GUIContent("Allow Pinning", "When enabled methods can be pinned in Profiler window"),

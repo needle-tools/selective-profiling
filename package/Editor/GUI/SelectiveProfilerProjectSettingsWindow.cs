@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEngine;
 

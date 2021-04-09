@@ -87,7 +87,10 @@ namespace Needle.SelectiveProfiling
 		public bool SkipProperties => true;
 		public bool UseAlwaysProfile = false;
 		public bool ImmediateMode => false;
-		public bool HideProperties = false;
+		
+		public bool CollapseProperties = false;
+		public bool CollapseHierarchyNesting = false;
+		public bool AllowCollapsing => CollapseProperties || CollapseHierarchyNesting;
 
 		public bool DeepProfiling = false;
 		public int MaxDepth = 1;

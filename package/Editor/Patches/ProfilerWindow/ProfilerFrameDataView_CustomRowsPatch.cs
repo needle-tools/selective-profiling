@@ -2,6 +2,7 @@
 #undef DEBUG_CUSTOMROWS
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -33,11 +34,11 @@ namespace Needle.SelectiveProfiling
 			patches.Add(new Profiler_BuildRows_CollapseItems());
 		}
 
-		
-		private static readonly Dictionary<int, string> customRowsInfo = new Dictionary<int, string>(); 
+
+		private static readonly Dictionary<int, string> customRowsInfo = new Dictionary<int, string>();
 		internal const int collapsedRowIdOffset = 10_000_000;
 		internal const string k_AllItemsAreCollapsedHint = "All items have been collapsed";
-		
+
 		/// <summary>
 		/// used to distinguish between injected item and actual item
 		/// you can not query profiler frame data for injected parents because those samples dont really exist
@@ -46,11 +47,10 @@ namespace Needle.SelectiveProfiling
 		/// like in SceneHierarchyWindow.OnGUI.repaint
 		/// </summary>
 		internal const int parentIdOffset = 1_000_000;
-		
+
 
 		internal class Profiler_BuildRows_CollapseItems : EditorPatch
 		{
-			
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
@@ -59,96 +59,224 @@ namespace Needle.SelectiveProfiling
 				return Task.CompletedTask;
 			}
 
-			private class CollapseInfo
+
+			private static TreeViewItem CreateNewItem(TreeViewItem item, int newId, int depth)
 			{
-				public int depth;
-				public TreeViewItem lastItem;
-				public int removedProperties;
-				// TODO: we could also accumulate the GC ect data to display it
+				var itemType = item.GetType();
+				var typeName = itemType.FullName;
+				var assemblyName = itemType.Assembly.FullName;
+				if (string.IsNullOrEmpty(typeName)) return null;
+				// creating FrameDataTreeViewItem
+				// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
+				var newItem = Activator.CreateInstance(AppDomain.CurrentDomain, assemblyName, typeName,
+						true, AccessUtils.All,
+						null, new object[] {ProfilerFrameDataView_Patch.GetFrameDataView(item), newId, depth, item.parent}, CultureInfo.CurrentCulture,
+						null)
+					.Unwrap() as TreeViewItem;
+				return newItem;
 			}
 
-			private static readonly List<CollapseInfo> changes = new List<CollapseInfo>();
-			
+			private interface ICollapseHandler
+			{
+				bool TryResolve(TreeView tree, TreeViewItem row, IList<TreeViewItem> list, ref int index);
+				bool ShouldCollapse(TreeView tree, TreeViewItem item, string name, IList<TreeViewItem> list, ref int index);
+			}
+
+			private class CollapseProperties : ICollapseHandler
+			{
+				public int depth;
+				public TreeViewItem firstItem;
+				public TreeViewItem lastItem;
+				public int removedProperties;
+
+				private readonly TreeViewItem currentItem;
+				// we could also accumulate the GC ect data to display it
+
+				public CollapseProperties(TreeViewItem currentItem)
+				{
+					this.currentItem = currentItem;
+				}
+
+				public bool TryResolve(TreeView tree, TreeViewItem row, IList<TreeViewItem> list, ref int index)
+				{
+					// if we step out consider this to be done
+					if (depth <= row.depth) return false;
+
+					var collapsed = row.id + collapsedRowIdOffset;
+					var id = lastItem.parent.id;
+					if (!customRowsInfo.ContainsKey(id))
+					{
+						// throw new Exception("Key already exists: " + id + ": " + customRowsInfo[id] + ", " + frame.GetItemName(row.id));
+						var infoString =
+							$"{removedProperties} hidden"; // {(removedProperties <= 1 ? "property" : "properties")}";
+						customRowsInfo.Add(id, infoString);
+
+						var item = CreateNewItem(row, collapsed, depth);
+
+						// add always an item to avoid having empty lists
+						// which results in ArgumentException when expanding empty items (info is still stored in profiler state)
+						if (tree.IsExpanded(lastItem.parent.id) && (!lastItem.parent.hasChildren || lastItem.parent.children.Count <= 0))
+						{
+							list.Insert(index + 1, item);
+						}
+
+						lastItem.parent.AddChild(item);
+						if (!customRowsInfo.ContainsKey(collapsed))
+							customRowsInfo.Add(collapsed, k_AllItemsAreCollapsedHint);
+					}
+
+					return true;
+				}
+
+				public bool ShouldCollapse(TreeView tree, TreeViewItem item, string name, IList<TreeViewItem> list, ref int index)
+				{
+					// only remove on same depth level
+					if (item.depth == depth && (name.Contains("set ") || name.Contains("get ")))
+					{
+						removedProperties += 1;
+						lastItem = item;
+						return true;
+					}
+
+					return false;
+				}
+			}
+
+			private class CollapseCalls : ICollapseHandler
+			{
+				private readonly Stack<int> collapsedDepth = new Stack<int>();
+				private readonly HashSet<string> itemsToCollapse;
+
+				public CollapseCalls(HashSet<string> itemsToCollapse)
+				{
+					this.itemsToCollapse = itemsToCollapse;
+				}
+				
+				public bool TryResolve(TreeView tree, TreeViewItem row, IList<TreeViewItem> list, ref int index)
+				{
+					// Debug.Log("Test " + row.displayName + "\n" + string.Join("\n", collapsedDepth));
+					while (collapsedDepth.Count > 0 && row.depth < collapsedDepth.Peek())
+					{
+						// Debug.Log("Pop " + row.displayName + ", " + row.depth + ", " + collapsedDepth.Peek());
+						collapsedDepth.Pop();
+					}
+
+					row.depth -= collapsedDepth.Count;
+					return collapsedDepth.Count <= 0;
+				}
+
+				public bool ShouldCollapse(TreeView tree, TreeViewItem item, string name, IList<TreeViewItem> list, ref int index)
+				{
+					var collapse = itemsToCollapse.Contains(name);
+					if (collapse)
+					{
+						collapsedDepth.Push(item.depth + collapsedDepth.Count);
+						tree.SetExpanded(item.id, true);
+					}
+
+					return collapse;
+				}
+			}
+
+			private static readonly List<ICollapseHandler> collapsed = new List<ICollapseHandler>();
+
+			// TODO: make configure-able
+			private static readonly HashSet<string> _itemsToCollapse = new HashSet<string>()
+			{
+				"UIRepaint", 
+				"DrawChain", 
+				"UIR.ImmediateRenderer", 
+				"RenderChain.Draw", 
+				"UIR.DrawChain",
+				"UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.ProcessEvent()",
+				"UIElementsUtility.DoDispatch(Repaint Event)"
+			};
+
+			// ReSharper disable once UnusedMember.Local
 			private static void Postfix(TreeView __instance, IList<TreeViewItem> newRows, HierarchyFrameDataView ___m_FrameDataView)
 			{
 				if (newRows == null) return;
+				var settings = SelectiveProfilerSettings.instance;
+
 				ProfilerHelper.profilerTreeView = __instance;
-				if (!SelectiveProfilerSettings.instance.HideProperties) return;
-				var frame = ___m_FrameDataView;
-				if (frame == null || !frame.valid) return;
-				changes.Clear();
+				collapsed.Clear();
 				customRowsInfo.Clear();
 
-				bool insertInfo = true;
+				if (!settings.AllowCollapsing) return;
+				var frame = ___m_FrameDataView;
+				var tree = __instance;
+				if (frame == null || !frame.valid) return;
 
-				TreeViewItem CreateNewItem(TreeViewItem item, int newId, int depth)
-				{
-					var itemType = item.GetType();
-					var typeName = itemType.FullName;
-					var assemblyName = itemType.Assembly.FullName;
-					if (string.IsNullOrEmpty(typeName)) return null;
-					// creating FrameDataTreeViewItem
-					// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
-					var newItem = Activator.CreateInstance(AppDomain.CurrentDomain, assemblyName, typeName,
-							true, AccessUtils.All,
-							null, new object[] {ProfilerFrameDataView_Patch.GetFrameDataView(item), newId, depth, item.parent}, CultureInfo.CurrentCulture,
-							null)
-						.Unwrap() as TreeViewItem;
-					return newItem;
-				}
-				
 				for (var index = 0; index < newRows.Count; index++)
 				{
 					var row = newRows[index];
-					CollapseInfo info;
-					
-					if(changes.Count > 0)
+					var name = frame.GetItemName(row.id);
+					row.displayName = name;
+					// Debug.Log(row.depth + " -> " + name);
+
+					if (collapsed.Count > 0)
 					{
-						info = changes.LastOrDefault();
-						while (changes.Count > 0 && info?.depth > row.depth)
+						// check if any of the added collapsed handlers are done and can be removed
+						for (var i = collapsed.Count - 1; i >= 0; i--)
 						{
-							changes.RemoveAt(changes.Count - 1);
-							if (insertInfo)
+							var c = collapsed[i];
+							if (c.TryResolve(tree, row, newRows, ref index))
 							{
-								var collapsed = row.id + collapsedRowIdOffset;
-								var id = info.lastItem.parent.id;
-								if (!customRowsInfo.ContainsKey(id))
-								{
-									// throw new Exception("Key already exists: " + id + ": " + customRowsInfo[id] + ", " + frame.GetItemName(row.id));
-									var infoString =
-										$"{info.removedProperties} hidden";// {(info.removedProperties <= 1 ? "property" : "properties")}";
-									customRowsInfo.Add(id, infoString);
-									
-									var item = CreateNewItem(row, collapsed, info.depth);
-									
-									// add always an item to avoid having empty lists
-									// which results in ArgumentException when expanding empty items (info is still stored in profiler state)
-									if (__instance.IsExpanded(info.lastItem.parent.id) && (!info.lastItem.parent.hasChildren || info.lastItem.parent.children.Count <= 0)) 
-										newRows.Insert(index, item);
-									info.lastItem.parent.AddChild(item);
-									if(!customRowsInfo.ContainsKey(collapsed))
-										customRowsInfo.Add(collapsed, k_AllItemsAreCollapsedHint);
-								}	
+								collapsed.RemoveAt(i);
 							}
-							info = changes.LastOrDefault();
 						}
 					}
-					
+
 					row = newRows[index];
-					var name = frame.GetItemName(row.id);
-					if (name.Contains("set ") || name.Contains("get "))
+					name = frame.GetItemName(row.id);
+					row.displayName = name;
+					var didCollapse = false;
+
+					bool RunShouldCollapse(ICollapseHandler handler)
 					{
-						info = changes.LastOrDefault(c => c.depth == row.depth);
-						if (info == null)
+						row.displayName = name;
+						if (handler.ShouldCollapse(tree, row, name, newRows, ref index))
 						{
-							info = new CollapseInfo() {depth = row.depth};
-							changes.Add(info);
+							newRows.RemoveAt(index);
+							index -= 1;
+							row.parent.children.Remove(row);
+							didCollapse = true;
+							return true;
 						}
-						info.removedProperties += 1;
-						info.lastItem = row;
-						newRows.RemoveAt(index);
-						row.parent.children.Remove(row);
-						index -= 1;
+
+						return false;
+					}
+
+					for (var i = collapsed.Count - 1; i >= 0; i--)
+					{
+						var c = collapsed[i];
+						if (RunShouldCollapse(c))
+							break;
+					}
+
+					if (!didCollapse)
+					{
+						if (name.Contains("set ") || name.Contains("get "))
+						{
+							if (settings.CollapseProperties)
+							{
+								var collapse = new CollapseProperties(row.parent);
+								collapse.depth = row.depth;
+								collapse.firstItem = row;
+								collapsed.Add(collapse);
+								// Debug.Log(row.parent.displayName + " @ " + index + ", " + row.parent.depth);
+								RunShouldCollapse(collapse);
+							}
+						}
+						else if (_itemsToCollapse.Contains(name))
+						{
+							if (settings.CollapseHierarchyNesting)
+							{
+								var handler = new CollapseCalls(_itemsToCollapse);
+								collapsed.Add(handler);
+								RunShouldCollapse(handler);
+							}
+						}
 					}
 				}
 			}
@@ -173,14 +301,20 @@ namespace Needle.SelectiveProfiling
 				public GUIContent Content;
 			}
 
-			private static bool Prefix(TreeView __instance, ref Rect cellRect, TreeViewItem item, int column, HierarchyFrameDataView ___m_FrameDataView, 
+			// ReSharper disable once UnusedMember.Local
+			private static bool Prefix(TreeView __instance,
+				ref Rect cellRect,
+				TreeViewItem item,
+				int column,
+				HierarchyFrameDataView ___m_FrameDataView,
 				out State __state)
 			{
 				__state = null;
 				if (column != 0) return true;
+				var tree = __instance;
 				var frame = ___m_FrameDataView;
 				if (frame == null || !frame.valid) return true;
-				
+
 				if (style == null)
 				{
 					style = new GUIStyle(EditorStyles.label);
@@ -188,36 +322,35 @@ namespace Needle.SelectiveProfiling
 					style.normal.textColor = Color.white;
 					style.padding = new RectOffset(2, 0, 0, 2);
 				}
-				
-				
+
+
 				if (customRowsInfo.TryGetValue(item.id, out var info))
 				{
 					var isHint = info == k_AllItemsAreCollapsedHint;
 					var col = GUI.color;
 					var prev = style.alignment;
 					// style.alignment = TextAnchor.MiddleLeft;
-					GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
+					GUI.color = tree.IsSelected(item.id) ? Color.white : Color.gray;
 					var rect = cellRect;
 					rect.width -= 20;
 
 					if (isHint)
 					{
 						style.alignment = TextAnchor.MiddleLeft;
-						// TODO: cleanup
-						var indent = (float)__instance.GetType()
-							.GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance)
-							.Invoke(__instance, new object[]{item});
+						// TODO: remove reflection here
+						var indent = (float) tree.GetType().GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance)
+							?.Invoke(tree, new object[] {item});
 						rect.x = indent;
 					}
 
 					GUI.Label(rect, info, style);
 					GUI.color = col;
 					style.alignment = prev;
-					if(isHint)
+					if (isHint)
 						return false;
 				}
-				
-				
+
+
 				if (item.id > parentIdOffset) return true;
 				var itemName = frame.GetItemName(item.id);
 				var separatorIndex = itemName.IndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
@@ -235,14 +368,14 @@ namespace Needle.SelectiveProfiling
 						return true;
 				}
 
-				
+
 				// only show tooltip when item is presumably cut off
 				var content = new GUIContent(name, item.depth > 10 ? null : name);
-				__state = new State(){Content = content};
+				__state = new State() {Content = content};
 
 				// draw item on the right if depth < x
 				// e.g. when searching
-				if (item.depth == 0) 
+				if (item.depth == 0)
 				{
 					// draw label right
 					var col = GUI.color;
@@ -253,7 +386,7 @@ namespace Needle.SelectiveProfiling
 					__state = null;
 					return true;
 				}
-				
+
 				// indent everything
 				// if (item.depth <= 0)
 				// {
@@ -276,10 +409,11 @@ namespace Needle.SelectiveProfiling
 				return true;
 			}
 
+			// ReSharper disable once UnusedMember.Local
 			private static void Postfix(TreeView __instance, Rect cellRect, TreeViewItem item, State __state)
 			{
 				if (__state == null) return;
-				
+
 				var content = __state.Content;
 				if (content != null)
 				{
@@ -290,7 +424,7 @@ namespace Needle.SelectiveProfiling
 					var width = style.CalcSize(content).x;
 					rect.x -= width + padding;
 					rect.width = width;
-				
+
 					if (rect.x < 0)
 					{
 						// draw cut off
@@ -300,7 +434,7 @@ namespace Needle.SelectiveProfiling
 						rect.width = cellRect.x - rect.x - padding;
 						GUI.Label(rect, content, style);
 						style.alignment = prevAlignment;
-						
+
 						if (rect.Contains(Event.current.mousePosition))
 						{
 							var tt = typeof(GUIStyle).GetMethod("SetMouseTooltip", BindingFlags.NonPublic | BindingFlags.Static);
@@ -312,67 +446,8 @@ namespace Needle.SelectiveProfiling
 						// draw normally
 						GUI.Label(rect, content, style);
 					}
+
 					GUI.color = col;
-				
-
-				}
-			}
-		}
-
-
-		private class FrameDataTreeViewItem_Init : EditorPatch
-		{
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
-			{
-				var asm = typeof(FrameDataView).Assembly;
-				var t = asm.GetTypes().FirstOrDefault(_t => _t.Name == "FrameDataTreeViewItem");
-				var m = t.GetMethod("Init", BindingFlags.Public | BindingFlags.Instance);
-				targetMethods.Add(m);
-				return Task.CompletedTask;
-			}
-
-			private static void Postfix(TreeViewItem __instance, HierarchyFrameDataView ___m_FrameDataView, string[] ___m_StringProperties)
-			{
-				var frame = ___m_FrameDataView;
-
-				if (frame != null && frame.valid && __instance.id > parentIdOffset)
-				{
-					var id = __instance.id - parentIdOffset;
-					var name = frame.GetItemName(id);
-					var self = __instance;
-					var children = self.children;
-					var props = ___m_StringProperties;
-					if (children == null) return;
-					for (int i = 1; i < props.Length; i++)
-					{
-						var sum = 0f;
-						switch (i)
-						{
-							case 1: // Total
-							case 2: // Self
-								foreach (var ch in children)
-									sum += frame.GetItemColumnDataAsFloat(ch.id, i);
-								props[i] = sum.ToString("0.0") + "%";
-								break;
-							case 3: // Calls
-								foreach (var ch in children)
-									sum += (int) frame.GetItemColumnDataAsSingle(ch.id, i);
-								props[i] = sum.ToString("0");
-								break;
-							case 4: // GC alloc
-								foreach (var ch in children)
-									sum += frame.GetItemColumnDataAsFloat(ch.id, i);
-								if (sum > 1000)
-									props[i] = (sum / 1000).ToString("0.0") + " KB";
-								else props[i] = sum.ToString("0") + " B";
-								break;
-							case 5: // Time ms
-								foreach (var ch in children)
-									sum += frame.GetItemColumnDataAsFloat(ch.id, i);
-								props[i] = sum.ToString("0.00");
-								break;
-						}
-					}
 				}
 			}
 		}
@@ -389,6 +464,7 @@ namespace Needle.SelectiveProfiling
 			}
 
 
+			// ReSharper disable once UnusedMember.Local
 			private static bool Prefix(out string __result, HierarchyFrameDataView frameData, int itemId)
 			{
 				if (frameData == null || !frameData.valid)
@@ -396,9 +472,10 @@ namespace Needle.SelectiveProfiling
 					__result = null;
 					return true;
 				}
+
 				var separatorStr = ProfilerSamplePatch.TypeSampleNameSeparator;
 
-				if (itemId > 10_000_000)
+				if (itemId > collapsedRowIdOffset)
 				{
 					if (customRowsInfo.TryGetValue(itemId, out var str))
 					{
@@ -409,7 +486,7 @@ namespace Needle.SelectiveProfiling
 				// injected custom row
 				else if (itemId > parentIdOffset)
 				{
-					var name = frameData.GetItemName(itemId - 1_000_000);
+					var name = frameData.GetItemName(itemId - parentIdOffset);
 					var separator = name.LastIndexOf(separatorStr);
 					if (separator > 0 && separator < name.Length)
 					{
@@ -436,157 +513,216 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private class Profiler_BuildRows : EditorPatch
-		{
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
-			{
-				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
-				// var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
-				var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
-				targetMethods.Add(m);
-				return Task.CompletedTask;
-			}
 
-			private class ItemData
-			{
-				public int OriginalDepth;
-				public int Depth => Item?.depth ?? -1;
-				public string Key;
+		// private class FrameDataTreeViewItem_FillColumnsData : EditorPatch
+		// {
+		// 	protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+		// 	{
+		// 		var asm = typeof(FrameDataView).Assembly;
+		// 		var t = asm.GetTypes().FirstOrDefault(_t => _t.Name == "FrameDataTreeViewItem");
+		// 		var m = t.GetMethod("Init", BindingFlags.Public | BindingFlags.Instance);
+		// 		targetMethods.Add(m);
+		// 		return Task.CompletedTask;
+		// 	}
+		//
+		// 	private static void Postfix(TreeViewItem __instance, HierarchyFrameDataView ___m_FrameDataView, string[] ___m_StringProperties)
+		// 	{
+		// 		var frame = ___m_FrameDataView;
+		//
+		// 		if (frame != null && frame.valid && __instance.id > parentIdOffset)
+		// 		{
+		// 			var id = __instance.id - parentIdOffset;
+		// 			var name = frame.GetItemName(id);
+		// 			var self = __instance;
+		// 			var children = self.children;
+		// 			var props = ___m_StringProperties;
+		// 			if (children == null) return;
+		// 			for (int i = 1; i < props.Length; i++)
+		// 			{
+		// 				var sum = 0f;
+		// 				switch (i)
+		// 				{
+		// 					case 1: // Total
+		// 					case 2: // Self
+		// 						foreach (var ch in children)
+		// 							sum += frame.GetItemColumnDataAsFloat(ch.id, i);
+		// 						props[i] = sum.ToString("0.0") + "%";
+		// 						break;
+		// 					case 3: // Calls
+		// 						foreach (var ch in children)
+		// 							sum += (int) frame.GetItemColumnDataAsSingle(ch.id, i);
+		// 						props[i] = sum.ToString("0");
+		// 						break;
+		// 					case 4: // GC alloc
+		// 						foreach (var ch in children)
+		// 							sum += frame.GetItemColumnDataAsFloat(ch.id, i);
+		// 						if (sum > 1000)
+		// 							props[i] = (sum / 1000).ToString("0.0") + " KB";
+		// 						else props[i] = sum.ToString("0") + " B";
+		// 						break;
+		// 					case 5: // Time ms
+		// 						foreach (var ch in children)
+		// 							sum += frame.GetItemColumnDataAsFloat(ch.id, i);
+		// 						props[i] = sum.ToString("0.00");
+		// 						break;
+		// 				}
+		// 			}
+		// 		}
+		// 	}
 
-				public TreeViewItem Item;
-				// public List<TreeViewItem> Items = new List<TreeViewItem>(4);
-			}
+		// }
 
-			private static readonly Stack<ItemData> stack = new Stack<ItemData>();
-
-			private static void Postfix(object __instance, IList<TreeViewItem> newRows, List<int> newExpandedIds)
-			{
-				// if (!SelectiveProfilerSettings.instance.Enabled) return;
-				// if (!SelectiveProfiler.AnyEnabled) return;
-
-				var treeView = __instance as TreeView;
-				if (treeView == null) return;
-				var list = newRows;
-
-				TreeViewItem CreateNewItem(TreeViewItem item, int newId, int depth)
-				{
-					var itemType = item.GetType();
-					var typeName = itemType.FullName;
-					var assemblyName = itemType.Assembly.FullName;
-					if (string.IsNullOrEmpty(typeName)) return null;
-					// creating FrameDataTreeViewItem
-					// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
-					var newItem = Activator.CreateInstance(AppDomain.CurrentDomain, assemblyName, typeName,
-							true, AccessUtils.All,
-							null, new object[] {ProfilerFrameDataView_Patch.GetFrameDataView(item), newId, depth, item.parent}, CultureInfo.CurrentCulture,
-							null)
-						.Unwrap() as TreeViewItem;
-					return newItem;
-				}
-
-				void PopStack()
-				{
-					var e = stack.Pop();
-#if DEBUG_CUSTOMROWS
-					Debug.Log("<b>POP</b> " + e.Key + ", " + e.Depth + "\n" + PrintStack());
-#endif
-				}
-
-#if DEBUG_CUSTOMROWS
-				string PrintStack() => "stack:\n" + string.Join("\n", stack.Select(s => s.Key + " - " + s.Depth)) + "\n\n\n";
-#endif
-
-				HierarchyFrameDataView frame = null;
-				if (list != null && list.Count > 0)
-				{
-					stack.Clear();
-					for (var index = 0; index < list.Count; index++)
-					{
-						var item = list[index];
-						if (frame == null) frame = ProfilerFrameDataView_Patch.GetFrameDataView(item);
-						if (frame == null || !frame.valid) break;
-						// continue;
-
-						var name = frame.GetItemName(item.id);
-
-						// if item is leaving stack
-						var separatorIndex = name.LastIndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
-
-						while (stack.Count > 0 && (item.depth < stack.Peek().OriginalDepth))
-						{
-#if DEBUG_CUSTOMROWS
-							Debug.Log(item.depth + " = " + (item.depth + stack.Count) + " < " + stack.Peek().OriginalDepth + ", " + name);
-#endif
-							PopStack();
-						}
-
-						if (separatorIndex > 0 || stack.Count > 0)
-						{
-							// Debug.Log(item.depth + " - " + name);
-
-							var entry = stack.Count > 0 ? stack.Peek() : null;
-							if (separatorIndex > 0)
-							{
-								var key = name.Substring(0, separatorIndex);
-								// if (name == "GameObjectTreeViewGUI/DoItemGUI(Rect, int, TreeViewItem, bool, bool, bool)") continue;
-								// check an entry is already injected
-								// or current top entry prefix is different
-								if (entry == null || entry.Key != key)
-								{
-									var newId = item.id + parentIdOffset;
-									var newItem = CreateNewItem(item, newId, item.depth + stack.Count);
-
-									if (stack.All(e => treeView.IsExpanded(e.Item.id)))
-									{
-										list.Insert(index, newItem);
-										index += 1;
-									}
-
-									if (item.parent.hasChildren)
-										item.parent.children.Remove(item);
-									item.parent.AddChild(newItem);
-
-									entry = new ItemData();
-									entry.Key = key;
-									entry.OriginalDepth = item.depth;
-									entry.Item = newItem;
-									stack.Push(entry);
-#if DEBUG_CUSTOMROWS
-									Debug.Log("PUSH " + key + ", " + item.depth + " -> " + newItem.depth + ", prev: " + name + ", " + item.depth + "\n" +
-									          PrintStack());
-#endif
-									// treeView.SetExpanded(newItem.id, true);
-								}
-							}
-
-							entry = stack.Peek();
-							item.depth += stack.Count;
-							var parent = entry.Item;
-
-							// check that item should still be a child of the injected parent
-							if (item.depth <= parent.depth)
-							{
-								item.depth -= stack.Count;
-								PopStack();
-								continue;
-							}
-
-							// only add direct children (not children of children)
-							if (item.depth - parent.depth <= 1)
-							{
-								parent.AddChild(item);
-							}
-
-							// remove from list if any item in the current inject parent stack is not expanded
-							if (!stack.All(e => treeView.IsExpanded(e.Item.id)))
-							{
-								list.RemoveAt(index);
-								index -= 1;
-							}
-						}
-					}
-				}
-			}
-		}
+		// 		private class Profiler_BuildRows : EditorPatch
+// 		{
+// 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+// 			{
+// 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
+// 				// var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
+// 				var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
+// 				targetMethods.Add(m);
+// 				return Task.CompletedTask;
+// 			}
+//
+// 			private class ItemData
+// 			{
+// 				public int OriginalDepth;
+// 				public int Depth => Item?.depth ?? -1;
+// 				public string Key;
+//
+// 				public TreeViewItem Item;
+// 				// public List<TreeViewItem> Items = new List<TreeViewItem>(4);
+// 			}
+//
+// 			private static readonly Stack<ItemData> stack = new Stack<ItemData>();
+//
+// 			private static void Postfix(object __instance, IList<TreeViewItem> newRows, List<int> newExpandedIds)
+// 			{
+// 				// if (!SelectiveProfilerSettings.instance.Enabled) return;
+// 				// if (!SelectiveProfiler.AnyEnabled) return;
+//
+// 				var treeView = __instance as TreeView;
+// 				if (treeView == null) return;
+// 				var list = newRows;
+//
+// 				TreeViewItem CreateNewItem(TreeViewItem item, int newId, int depth)
+// 				{
+// 					var itemType = item.GetType();
+// 					var typeName = itemType.FullName;
+// 					var assemblyName = itemType.Assembly.FullName;
+// 					if (string.IsNullOrEmpty(typeName)) return null;
+// 					// creating FrameDataTreeViewItem
+// 					// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
+// 					var newItem = Activator.CreateInstance(AppDomain.CurrentDomain, assemblyName, typeName,
+// 							true, AccessUtils.All,
+// 							null, new object[] {ProfilerFrameDataView_Patch.GetFrameDataView(item), newId, depth, item.parent}, CultureInfo.CurrentCulture,
+// 							null)
+// 						.Unwrap() as TreeViewItem;
+// 					return newItem;
+// 				}
+//
+// 				void PopStack()
+// 				{
+// 					var e = stack.Pop();
+// #if DEBUG_CUSTOMROWS
+// 					Debug.Log("<b>POP</b> " + e.Key + ", " + e.Depth + "\n" + PrintStack());
+// #endif
+// 				}
+//
+// #if DEBUG_CUSTOMROWS
+// 				string PrintStack() => "stack:\n" + string.Join("\n", stack.Select(s => s.Key + " - " + s.Depth)) + "\n\n\n";
+// #endif
+//
+// 				HierarchyFrameDataView frame = null;
+// 				if (list != null && list.Count > 0)
+// 				{
+// 					stack.Clear();
+// 					for (var index = 0; index < list.Count; index++)
+// 					{
+// 						var item = list[index];
+// 						if (frame == null) frame = ProfilerFrameDataView_Patch.GetFrameDataView(item);
+// 						if (frame == null || !frame.valid) break;
+// 						// continue;
+//
+// 						var name = frame.GetItemName(item.id);
+//
+// 						// if item is leaving stack
+// 						var separatorIndex = name.LastIndexOf(ProfilerSamplePatch.TypeSampleNameSeparator);
+//
+// 						while (stack.Count > 0 && (item.depth < stack.Peek().OriginalDepth))
+// 						{
+// #if DEBUG_CUSTOMROWS
+// 							Debug.Log(item.depth + " = " + (item.depth + stack.Count) + " < " + stack.Peek().OriginalDepth + ", " + name);
+// #endif
+// 							PopStack();
+// 						}
+//
+// 						if (separatorIndex > 0 || stack.Count > 0)
+// 						{
+// 							// Debug.Log(item.depth + " - " + name);
+//
+// 							var entry = stack.Count > 0 ? stack.Peek() : null;
+// 							if (separatorIndex > 0)
+// 							{
+// 								var key = name.Substring(0, separatorIndex);
+// 								// if (name == "GameObjectTreeViewGUI/DoItemGUI(Rect, int, TreeViewItem, bool, bool, bool)") continue;
+// 								// check an entry is already injected
+// 								// or current top entry prefix is different
+// 								if (entry == null || entry.Key != key)
+// 								{
+// 									var newId = item.id + parentIdOffset;
+// 									var newItem = CreateNewItem(item, newId, item.depth + stack.Count);
+//
+// 									if (stack.All(e => treeView.IsExpanded(e.Item.id)))
+// 									{
+// 										list.Insert(index, newItem);
+// 										index += 1;
+// 									}
+//
+// 									if (item.parent.hasChildren)
+// 										item.parent.children.Remove(item);
+// 									item.parent.AddChild(newItem);
+//
+// 									entry = new ItemData();
+// 									entry.Key = key;
+// 									entry.OriginalDepth = item.depth;
+// 									entry.Item = newItem;
+// 									stack.Push(entry);
+// #if DEBUG_CUSTOMROWS
+// 									Debug.Log("PUSH " + key + ", " + item.depth + " -> " + newItem.depth + ", prev: " + name + ", " + item.depth + "\n" +
+// 									          PrintStack());
+// #endif
+// 									// treeView.SetExpanded(newItem.id, true);
+// 								}
+// 							}
+//
+// 							entry = stack.Peek();
+// 							item.depth += stack.Count;
+// 							var parent = entry.Item;
+//
+// 							// check that item should still be a child of the injected parent
+// 							if (item.depth <= parent.depth)
+// 							{
+// 								item.depth -= stack.Count;
+// 								PopStack();
+// 								continue;
+// 							}
+//
+// 							// only add direct children (not children of children)
+// 							if (item.depth - parent.depth <= 1)
+// 							{
+// 								parent.AddChild(item);
+// 							}
+//
+// 							// remove from list if any item in the current inject parent stack is not expanded
+// 							if (!stack.All(e => treeView.IsExpanded(e.Item.id)))
+// 							{
+// 								list.RemoveAt(index);
+// 								index -= 1;
+// 							}
+// 						}
+// 					}
+// 				}
+// 			}
+		// }
 	}
 }
