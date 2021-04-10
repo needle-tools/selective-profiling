@@ -4,3 +4,6 @@
 [submodule "projects/unity-open-project-1"]
 	path = projects/unity-open-project-1
 	url = https://github.com/UnityTechnologies/open-project-1.git
+[submodule "projects/BoatAttack"]
+	path = projects/BoatAttack
+	url = https://github.com/Unity-Technologies/BoatAttack
