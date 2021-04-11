@@ -12,12 +12,30 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 {
 	internal static class TranspilerUtils
 	{
+		internal static bool IsMarkedProperty(string name) => name.Contains(PropertyGetterMarker) || name.Contains(PropertySetterMarker);
+		internal static bool IsMarkedPossibleSlow(string name) => name.Contains(PossibleSlowMethodInvocationMarker);
+		
+		private static readonly List<string> KnownSlowMethods = new List<string>()
+		{
+			"InternalEditorUtility.RepaintAllViews"
+		};
+		
+		internal static string CheckPossibleSlowMethodInvocationAndAddMarkerIfNecessary(MethodBase method, string name)
+		{
+			if (method.DeclaringType == null || !KnownSlowMethods.Any(ks => ks.StartsWith(method.DeclaringType.Name) && ks.EndsWith(method.Name)))
+				return name;
+			return name + PossibleSlowMethodInvocationMarker;
+		}
+
 		// TODO: make this a bit nicer to support wrapping multiple markers withing [] to remove them more easily
+		internal static string RemoveInternalMarkers(string name) => name
+				.Replace(PropertyGetterMarker, string.Empty)
+				.Replace(PropertySetterMarker, string.Empty)
+				.Replace(PossibleSlowMethodInvocationMarker, string.Empty);
+
 		private const string PropertyGetterMarker = " [property_get]";
 		private const string PropertySetterMarker = " [property_set]";
-		internal static bool IsProperty(string name) => name.Contains(PropertyGetterMarker) || name.Contains(PropertySetterMarker);
-		internal static string RemoveInternalMarkers(string name) =>
-			name.Replace(PropertyGetterMarker, string.Empty).Replace(PropertySetterMarker, string.Empty);
+		private const string PossibleSlowMethodInvocationMarker = "[possible_slow]";
 		
 		
 		private const bool IncludeParameterNames = false;
@@ -33,7 +51,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			OpCodes.Ldloc_S,
 			OpCodes.Ldloca_S
 		};
-		
+
 		private static MethodInfo monoMethodFullName;
 		public static string GetSampleName(MethodBase profiledMethod, OpCode code, object operand, bool fullName)
 		{
@@ -158,9 +176,11 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				_method += GetNiceParameters(parameters);
 			}
 			
-			return !string.IsNullOrEmpty(_class) 
+			var res = !string.IsNullOrEmpty(_class) 
 				? _class + "." + _method
 				: _method;
+			res = CheckPossibleSlowMethodInvocationAndAddMarkerIfNecessary(method, res);
+			return res;
 		}
 
 		private static string GetNiceParameters(params ParameterInfo[] parameters)

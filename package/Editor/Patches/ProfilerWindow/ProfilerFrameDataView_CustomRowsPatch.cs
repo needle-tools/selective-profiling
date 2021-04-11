@@ -156,7 +156,7 @@ namespace Needle.SelectiveProfiling
 				public bool ShouldCollapse(TreeView tree, TreeViewItem item, string name, IList<TreeViewItem> list, ref int index)
 				{
 					// only remove on same depth level
-					if (item.depth == depth && TranspilerUtils.IsProperty(name))
+					if (item.depth == depth && TranspilerUtils.IsMarkedProperty(name))
 					{
 						removedProperties += 1;
 						return true;
@@ -399,7 +399,7 @@ namespace Needle.SelectiveProfiling
 					}
 
 					// check if we can/should add new handlers
-					if (TranspilerUtils.IsProperty(name))
+					if (TranspilerUtils.IsMarkedProperty(name))
 					{
 						if (settings.CollapseProperties && !DidCollapseWithType(typeof(CollapseProperties)))
 						{
@@ -448,16 +448,49 @@ namespace Needle.SelectiveProfiling
 				return (float) indentCallback.Invoke(tree, new object[] {item});
 			}
 
-			private static GUIStyle style;
+			private static GUIStyle labelStyle, possibleSlowBoxStyle;
+			private static readonly Color possibleSlowMethodColor = new Color(.8f, .6f, 0);
+
+			private static Texture2D _possibleSlowMethodTexture;
+			private static Texture2D possibleSlowMethodTexture
+			{
+				get
+				{
+					if (_possibleSlowMethodTexture == null)
+					{
+						const int dashWidth = 5;
+						const int height = 1;
+						var ddw = dashWidth * 2;
+						var tex = new Texture2D(ddw, height);
+						for (var x = 0; x < tex.width; x++)
+						{
+							if(x % ddw < dashWidth)
+								tex.SetPixel(x, 0, possibleSlowMethodColor);
+							else tex.SetPixel(x, 0, new Color(0,0,0,0));
+						}
+						tex.Apply();
+						_possibleSlowMethodTexture = tex;
+					}
+					return _possibleSlowMethodTexture;
+				}
+			}
 
 			private static void EnsureStyles()
 			{
-				if (style == null)
+				if (labelStyle == null)
 				{
-					style = new GUIStyle(EditorStyles.label);
-					style.alignment = TextAnchor.MiddleRight;
-					style.normal.textColor = Color.white;
-					style.padding = new RectOffset(2, 0, 0, 2);
+					labelStyle = new GUIStyle(EditorStyles.label);
+					labelStyle.alignment = TextAnchor.MiddleRight;
+					labelStyle.normal.textColor = Color.white;
+					labelStyle.padding = new RectOffset(2, 0, 0, 2);
+				}
+
+				if (possibleSlowBoxStyle == null)
+				{
+					possibleSlowBoxStyle = new GUIStyle();
+					possibleSlowBoxStyle.normal.textColor = Color.white;
+					possibleSlowBoxStyle.stretchWidth = false;
+					possibleSlowBoxStyle.normal.background = possibleSlowMethodTexture;
 				}
 			}
 
@@ -510,6 +543,11 @@ namespace Needle.SelectiveProfiling
 							new GradientColorKey(new Color(1f, .3f, .2f), 1f),
 						}
 					};
+				
+				
+				var possibleSlow = TranspilerUtils.IsMarkedPossibleSlow(name);
+				// if (possibleSlow)
+				// 	impact = Mathf.Max(.5f, impact);
 
 				var col = gradient.Evaluate(impact);
 
@@ -528,17 +566,29 @@ namespace Needle.SelectiveProfiling
 				rect.x += indent;
 				rect.width -= indent;
 				EnsureStyles();
-				var prevAlignment = style.alignment;
-				style.alignment = TextAnchor.MiddleLeft;
+				var prevAlignment = labelStyle.alignment;
+				labelStyle.alignment = TextAnchor.MiddleLeft;
 				var prevColor = GUI.color;
 				GUI.color = tree.IsSelected(item.id) ? Color.white : col;
 				GUI.Label(rect, content);
-				style.alignment = prevAlignment;
+				var width = labelStyle.CalcSize(content).x;
+
+				if (possibleSlow)
+				{
+					var underline = rect;
+					underline.y = rect.y + rect.height;
+					underline.height = 1;
+					underline.width = width;
+					GUI.color = Color.white;
+					GUI.DrawTextureWithTexCoords (underline, possibleSlowMethodTexture, new Rect (0, 0, underline.width/ possibleSlowMethodTexture.width, underline.height), true);
+					// GUI.Box(underline, string.Empty, possibleSlowBoxStyle);
+				}
+				
+				labelStyle.alignment = prevAlignment;
 
 
 				if (impact >= 0.999 && !item.hasChildren)
 				{
-					var width = style.CalcSize(content).x;
 					rect.x += width + 5;
 					var padding = rect.height * .4f;
 					rect.y += padding * .5f;
@@ -578,7 +628,7 @@ namespace Needle.SelectiveProfiling
 						info = info.Substring(k_AllItemsAreCollapsedHint.Length);
 
 					var col = GUI.color;
-					var prev = style.alignment;
+					var prev = labelStyle.alignment;
 					// style.alignment = TextAnchor.MiddleLeft;
 					GUI.color = tree.IsSelected(item.id) ? Color.white : Color.gray;
 					var rect = cellRect;
@@ -586,14 +636,14 @@ namespace Needle.SelectiveProfiling
 
 					if (isHint)
 					{
-						style.alignment = TextAnchor.MiddleLeft;
+						labelStyle.alignment = TextAnchor.MiddleLeft;
 						var indent = GetContentIdent(tree, item);
 						rect.x = indent;
 					}
 
-					GUI.Label(rect, info, style);
+					GUI.Label(rect, info, labelStyle);
 					GUI.color = col;
-					style.alignment = prev;
+					labelStyle.alignment = prev;
 
 					// if this row should just display some special hint
 					if (isHint) return false;
@@ -630,7 +680,7 @@ namespace Needle.SelectiveProfiling
 					var col = GUI.color;
 					GUI.color = __instance.IsSelected(item.id) ? Color.white : Color.gray;
 					content.tooltip = null;
-					GUI.Label(cellRect, content, style);
+					GUI.Label(cellRect, content, labelStyle);
 					GUI.color = col;
 					__state = null;
 					return HandleItemsThatExceedThresholds(methodName, cellRect, tree, item, frame, __state);
@@ -679,19 +729,19 @@ namespace Needle.SelectiveProfiling
 					GUI.color = tree.IsSelected(item.id) ? Color.white : Color.gray;
 					var padding = item.hasChildren ? 17 : 3;
 					var rect = cellRect;
-					var width = style.CalcSize(content).x;
+					var width = labelStyle.CalcSize(content).x;
 					rect.x -= width + padding;
 					rect.width = width;
 
 					if (rect.x < 0)
 					{
 						// draw cut off
-						var prevAlignment = style.alignment;
-						style.alignment = TextAnchor.MiddleLeft;
+						var prevAlignment = labelStyle.alignment;
+						labelStyle.alignment = TextAnchor.MiddleLeft;
 						rect.x = 5;
 						rect.width = cellRect.x - rect.x - padding;
-						GUI.Label(rect, content, style);
-						style.alignment = prevAlignment;
+						GUI.Label(rect, content, labelStyle);
+						labelStyle.alignment = prevAlignment;
 
 						if (rect.Contains(Event.current.mousePosition))
 						{
@@ -702,7 +752,7 @@ namespace Needle.SelectiveProfiling
 					else
 					{
 						// draw normally
-						GUI.Label(rect, content, style);
+						GUI.Label(rect, content, labelStyle);
 					}
 
 					GUI.color = col;
