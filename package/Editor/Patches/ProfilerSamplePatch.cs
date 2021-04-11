@@ -100,7 +100,7 @@ namespace Needle.SelectiveProfiling
 
 			internal string GetSampleName(MethodBase currentMethod, CodeInstruction instruction)
 			{
-				return prefix + TranspilerUtils.TryGetMethodName(currentMethod, instruction.opcode, instruction.operand, false) + postfix;
+				return prefix + TranspilerUtils.GetSampleName(currentMethod, instruction.opcode, instruction.operand, false) + postfix;
 			}
 
 			

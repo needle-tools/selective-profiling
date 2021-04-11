@@ -18,7 +18,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		internal static bool IsProperty(string name) => name.Contains(PropertyGetterMarker) || name.Contains(PropertySetterMarker);
 		internal static string RemoveInternalMarkers(string name) =>
 			name.Replace(PropertyGetterMarker, string.Empty).Replace(PropertySetterMarker, string.Empty);
-
+		
 		
 		private const bool IncludeParameterNames = false;
 		
@@ -35,7 +35,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		};
 		
 		private static MethodInfo monoMethodFullName;
-		public static string TryGetMethodName(MethodBase profiledMethod, OpCode code, object operand, bool fullName)
+		public static string GetSampleName(MethodBase profiledMethod, OpCode code, object operand, bool fullName)
 		{
 			if (!fullName)
 			{
