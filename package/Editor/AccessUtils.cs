@@ -510,9 +510,9 @@ namespace Needle.SelectiveProfiling.Utils
 				if (
 					fullName.StartsWith("System.")
 					|| fullName.StartsWith("UnityEditor.Profiling")
-				    || fullName.StartsWith("UnityEditorInternal.Profiling")
-				    || fullName.StartsWith("UnityEditorInternal.InternalEditorUtility")
-				    || fullName.StartsWith("UnityEditor.ProfilerWindow")
+				    // || fullName.StartsWith("UnityEditorInternal.Profiling")
+				    // || fullName.StartsWith("UnityEditorInternal.InternalEditorUtility")
+				    // || fullName.StartsWith("UnityEditor.ProfilerWindow")
 				    || fullName.StartsWith("UnityEditor.HostView")
 				    || fullName.StartsWith("UnityEngine.UIElements.UIR")
 					|| fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem")

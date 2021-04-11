@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using needle.EditorPatching;
+using Needle.SelectiveProfiling.CodeWrapper;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.Graphs;
@@ -155,7 +156,7 @@ namespace Needle.SelectiveProfiling
 				public bool ShouldCollapse(TreeView tree, TreeViewItem item, string name, IList<TreeViewItem> list, ref int index)
 				{
 					// only remove on same depth level
-					if (item.depth == depth && (name.Contains("set ") || name.Contains("get ")))
+					if (item.depth == depth && TranspilerUtils.IsProperty(name))
 					{
 						removedProperties += 1;
 						return true;
@@ -398,7 +399,7 @@ namespace Needle.SelectiveProfiling
 					}
 
 					// check if we can/should add new handlers
-					if (name.Contains("set ") || name.Contains("get "))
+					if (TranspilerUtils.IsProperty(name))
 					{
 						if (settings.CollapseProperties && !DidCollapseWithType(typeof(CollapseProperties)))
 						{
@@ -522,7 +523,7 @@ namespace Needle.SelectiveProfiling
 					}
 				}
 
-				var content = new GUIContent(name);
+				var content = new GUIContent(TranspilerUtils.RemoveInternalMarkers(name));
 				var indent = GetContentIdent(tree, item);
 				rect.x += indent;
 				rect.width -= indent;
@@ -760,7 +761,8 @@ namespace Needle.SelectiveProfiling
 					var separator = name.LastIndexOf(separatorStr);
 					if (separator > 0 && separator < name.Length)
 					{
-						__result = name.Substring(separator + 1);
+						var sub = name.Substring(separator + 1);
+						__result = TranspilerUtils.RemoveInternalMarkers(sub);
 						return false;
 					}
 				}

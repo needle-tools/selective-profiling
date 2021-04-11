@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+
 using System;
 using UnityEditor;
 using UnityEditorInternal;
@@ -9,23 +11,23 @@ public class RepaintEverythingEveryFrame : MonoBehaviour
 
 	private void OnValidate()
 	{
-		EditorApplication.update -= OnUpdate;
+		EditorApplication.update -= OnRepaintNow;
 		if (enabled)
-			EditorApplication.update += OnUpdate;
+			EditorApplication.update += OnRepaintNow;
 	}
 
 	private void OnEnable()
 	{
-		EditorApplication.update -= OnUpdate;
-		EditorApplication.update += OnUpdate;
+		EditorApplication.update -= OnRepaintNow;
+		EditorApplication.update += OnRepaintNow;
 	}
 
 	private void OnDisable()
 	{
-		EditorApplication.update -= OnUpdate;
+		EditorApplication.update -= OnRepaintNow;
 	}
 
-	private void OnUpdate()
+	private void OnRepaintNow()
 	{
 		if (ProfilerDriver.enabled)
 		{
@@ -33,3 +35,5 @@ public class RepaintEverythingEveryFrame : MonoBehaviour
 		}
 	}
 }
+
+#endif

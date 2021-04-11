@@ -98,16 +98,16 @@ namespace Needle.SelectiveProfiling
 				return instructions;
 			}
 
-			internal string GetSampleName(CodeInstruction instruction)
+			internal string GetSampleName(MethodBase currentMethod, CodeInstruction instruction)
 			{
-				return prefix + TranspilerUtils.TryGetMethodName(instruction.opcode, instruction.operand, false) + postfix;
+				return prefix + TranspilerUtils.TryGetMethodName(currentMethod, instruction.opcode, instruction.operand, false) + postfix;
 			}
 
 			
 			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index)
 			{
 				var parentType = currentMethod.DeclaringType?.Name;
-				var sampleName = GetSampleName(instruction);
+				var sampleName = GetSampleName(currentMethod, instruction);
 				
 				// when using the custom rows patch prefix the sample with the method name
 				if (!string.IsNullOrWhiteSpace(parentType) && PatchManager.IsActive(typeof(ProfilerFrameDataView_CustomRowsPatch).FullName))

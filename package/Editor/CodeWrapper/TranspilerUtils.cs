@@ -12,6 +12,14 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 {
 	internal static class TranspilerUtils
 	{
+		// TODO: make this a bit nicer to support wrapping multiple markers withing [] to remove them more easily
+		private const string PropertyGetterMarker = " [property_get]";
+		private const string PropertySetterMarker = " [property_set]";
+		internal static bool IsProperty(string name) => name.Contains(PropertyGetterMarker) || name.Contains(PropertySetterMarker);
+		internal static string RemoveInternalMarkers(string name) =>
+			name.Replace(PropertyGetterMarker, string.Empty).Replace(PropertySetterMarker, string.Empty);
+
+		
 		private const bool IncludeParameterNames = false;
 		
 		public static readonly HashSet<OpCode> LoadVarCodes = new HashSet<OpCode>()
@@ -27,7 +35,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		};
 		
 		private static MethodInfo monoMethodFullName;
-		public static string TryGetMethodName(OpCode code, object operand, bool fullName)
+		public static string TryGetMethodName(MethodBase profiledMethod, OpCode code, object operand, bool fullName)
 		{
 			if (!fullName)
 			{
@@ -52,7 +60,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				// method calls
 				if (operand is MethodInfo m)
 				{
-					return GetNiceMethodName(m, true);
+					// skip class name if the called method is in the same class than the profiled method
+					var skipBaseName = profiledMethod.DeclaringType == m.DeclaringType;
+					return GetNiceMethodName(m, skipBaseName);
 				}
 			}
 			
@@ -168,13 +178,13 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		private const string getterPrefix = "get_";
 		private const string setterPrefix = "set_";
 		private const string operationPrefix = "op_";
-		
+
 		private static string GetNicePropertyName(string propertyName)
 		{
 			if (propertyName.StartsWith(getterPrefix))
-				propertyName = "get " + propertyName.Substring(getterPrefix.Length);
+				propertyName = propertyName.Substring(getterPrefix.Length) + PropertyGetterMarker;
 			else  if (propertyName.StartsWith(setterPrefix))
-				propertyName = "set " + propertyName.Substring(setterPrefix.Length);
+				propertyName = propertyName.Substring(setterPrefix.Length) + " = value" + PropertySetterMarker;
 			else if(propertyName.StartsWith(operationPrefix))
 				propertyName = propertyName.Substring(operationPrefix.Length);
 			return propertyName;
