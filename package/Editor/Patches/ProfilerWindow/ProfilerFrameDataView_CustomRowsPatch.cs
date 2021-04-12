@@ -793,8 +793,13 @@ namespace Needle.SelectiveProfiling
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
 				var asm = typeof(EventMarker).Assembly;
+#if UNITY_2021_1_OR_NEWER
+				var t = asm.GetType("UnityEditorInternal.Profiling.CPUOrGPUProfilerModule");
+#else
 				var t = asm.GetType("UnityEditorInternal.Profiling.CPUorGPUProfilerModule");
-				var m = t.GetMethod("GetItemName", AccessUtils.AllDeclared);
+#endif
+				var m = t.GetMethod("GetItemName", AccessUtils.AllDeclared, null, CallingConventions.Any, 
+					new[]{typeof(HierarchyFrameDataView), typeof(int)}, null); 
 				targetMethods.Add(m);
 				return Task.CompletedTask;
 			}
