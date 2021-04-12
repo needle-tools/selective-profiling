@@ -558,26 +558,12 @@ namespace Needle.SelectiveProfiling
 
 				var impact = ms / 16f;
 				impact += alloc / 5000f;
-				// impact = Mathf.Clamp01(impact);
-				if (gradient == null)
-					gradient = new Gradient()
-					{
-						colorKeys = new[]
-						{
-							new GradientColorKey(Color.gray, 0.001f),
-							new GradientColorKey(Color.white, .05f),
-							new GradientColorKey(new Color(1f, .7f, .1f), .5f),
-							new GradientColorKey(new Color(1f, .7f, .1f), .999992f),
-							new GradientColorKey(new Color(1f, .3f, .2f), 1f),
-						}
-					};
-				
 				
 				var possibleSlow = TranspilerUtils.IsMarkedPossibleSlow(name);
 				// if (possibleSlow)
 				// 	impact = Mathf.Max(.5f, impact);
 
-				var col = gradient.Evaluate(impact);
+				var col = GUIColors.GetColorOnGradient(GUIColors.NaiveCalculateGradientPosition(ms, alloc));
 
 				if (!ShouldShowFullScriptingName())
 				{

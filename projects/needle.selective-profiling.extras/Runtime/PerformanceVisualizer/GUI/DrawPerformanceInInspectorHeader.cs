@@ -33,14 +33,26 @@ namespace Needle.SelectiveProfiling
 			// Draw small headers (the header above each component) after the culling above
 			// so we don't draw a component header for all the components that can't be shown.
 			// Rect DrawEditorSmallHeader(Editor[] editors, Object target, bool wasVisible)
+			// ReSharper disable once UnusedMember.Local
 			private static void Postfix(Object target, Rect __result)
 			{
 				var lastRect = __result;
 				var instanceId = target.GetInstanceID();
-				if (PerformanceVisualizer.TryGetPerformanceData(instanceId, out var data))
+				if (SelectivePerformanceData.TryGetPerformanceData(instanceId, out var data))
 				{
-					lastRect.width -= 80;
-					GUI.Label(lastRect, data.TotalMs + "ms", PerformanceVisualizer.rightAlignedStyle);
+					// lastRect.width -= 80;
+					// GUI.Label(lastRect, data.Alloc.ToString("0.0"), Styles.rightAlignedStyle);
+					
+					var circleRect = lastRect;
+					circleRect.x = lastRect.width - 77;
+					circleRect.height = 8;
+					circleRect.width = circleRect.height;
+					circleRect.y += (lastRect.height - circleRect.height) * .5f;
+
+					var t = GUIColors.NaiveCalculateGradientPosition(data.TotalMs, data.Alloc);
+					var col = GUIColors.GetColorOnGradient(t);
+					if (t < .4f) col.a *= .5f;
+					GUI.DrawTexture(circleRect, Textures.FilledCircle, ScaleMode.ScaleAndCrop, true, 1, col, 0, 0);
 				}
 			}
 		}

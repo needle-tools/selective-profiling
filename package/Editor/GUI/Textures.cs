@@ -37,6 +37,17 @@ namespace Needle.SelectiveProfiling
 				return _profiledChild;
 			}
 		}
+
+		private static Texture2D _circle;
+		public static Texture2D FilledCircle
+		{
+			get
+			{
+				if (!_circle)
+					_circle = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.needle.selective-profiling/Editor/GUI/Textures/circle.png");
+				return _circle;
+			}
+		}
 		
 		private static Texture2D _hotPath;
 		public static Texture2D HotPathIcon

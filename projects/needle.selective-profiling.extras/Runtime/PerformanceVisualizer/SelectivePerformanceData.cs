@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using needle.EditorPatching;
 using UnityEditor;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
@@ -7,29 +8,41 @@ using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
-	public static class PerformanceVisualizer
+	public static class SelectivePerformanceData
 	{
 		public static bool TryGetPerformanceData(int instanceId, out PerformanceData data)
 		{
 			return InternalTryGetPerformanceData(instanceId, out data);
 		}
 
-
 		[InitializeOnLoadMethod]
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void Init()
 		{
 			dataCache.Clear();
-			
 			ProfilerDriver.NewProfilerFrameRecorded -= OnNewFrame;
 			ProfilerDriver.NewProfilerFrameRecorded += OnNewFrame;
-			EditorApplication.hierarchyWindowItemOnGUI -= OnHierarchyGUI;
-			EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
 			EditorApplication.update -= EditorUpdate;
 			EditorApplication.update += EditorUpdate;
+			EnablePatches();
+		}
+
+		private static void EnablePatches()
+		{
+			foreach (var exp in ExpectedPatches())
+			{
+				if (!PatchManager.IsPersistentDisabled(exp))
+					PatchManager.EnablePatch(exp);
+			}
+		}
+
+		private static IEnumerable<string> ExpectedPatches()
+		{
+			yield return typeof(DrawPerformanceInInspectorHeader).FullName;
 		}
 
 		private static int _updateCounter;
+
 		private static void EditorUpdate()
 		{
 			_updateCounter += 1;
@@ -68,6 +81,7 @@ namespace Needle.SelectiveProfiling
 					data.InstanceId = instanceId;
 					data.isValid = true;
 					data.TotalMs = frame.GetItemColumnDataAsFloat(id, HierarchyFrameDataView.columnTotalTime);
+					data.Alloc = frame.GetItemColumnDataAsFloat(id, HierarchyFrameDataView.columnGcMemory);
 					// dataCache[instanceId] = data;
 					// var name = frame.GetItemName(id);
 					// var instance = EditorUtility.InstanceIDToObject(instanceId);
@@ -93,22 +107,25 @@ namespace Needle.SelectiveProfiling
 		/// called when new profiler data comes in to invalidate entries that might not be contained in new data
 		/// </summary>
 		private static event Action invalidate;
-		
+
 		/// <summary>
 		/// contains collected data per instance id
 		/// </summary>
 		private static readonly Dictionary<int, PerformanceData> dataCache = new Dictionary<int, PerformanceData>();
+
 		/// <summary>
 		/// gameObject instance id -> children (components) instance ids
 		/// </summary>
 		private static readonly Dictionary<int, List<int>> hierarchyChildrenCache = new Dictionary<int, List<int>>();
+
 		/// <summary>
 		/// contains accumulated profiler data
 		/// </summary>
 		private static readonly PerformanceData dataNonAlloc = new PerformanceData();
+
 		private static readonly List<Component> componentNonAllocCache = new List<Component>();
 
-		public static bool InternalTryGetPerformanceData(int instanceId, out PerformanceData data)
+		private static bool InternalTryGetPerformanceData(int instanceId, out PerformanceData data)
 		{
 			if (!hierarchyChildrenCache.ContainsKey(instanceId))
 			{
@@ -163,30 +180,6 @@ namespace Needle.SelectiveProfiling
 
 			data = null;
 			return false;
-		}
-
-		private static void OnHierarchyGUI(int instanceId, Rect rect)
-		{
-			if (TryGetPerformanceData(instanceId, out var data))
-				DrawData(data, rect);
-		}
-
-		internal static GUIStyle rightAlignedStyle;
-
-		private static void EnsureStyles()
-		{
-			if (rightAlignedStyle == null)
-			{
-				rightAlignedStyle = new GUIStyle(EditorStyles.label);
-				rightAlignedStyle.alignment = TextAnchor.MiddleRight;
-			}
-		}
-
-		private static void DrawData(PerformanceData data, Rect rect)
-		{
-			if (data == null || !data.isValid) return;
-			EnsureStyles();
-			GUI.Label(rect, data.TotalMs.ToString("0.00") + " ms", rightAlignedStyle);
 		}
 	}
 }
