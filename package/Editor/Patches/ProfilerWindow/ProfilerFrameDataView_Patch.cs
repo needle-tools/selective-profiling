@@ -86,7 +86,7 @@ namespace Needle.SelectiveProfiling
 
 			private static void Postfix()
 			{
-				var rect = GUILayoutUtility.GetRect(50f, 350f, 14, 14, EditorStyles.toolbarButton);
+				var rect = GUILayoutUtility.GetRect(120f, 120f, 14, 14, EditorStyles.toolbarButton);
 				if (EditorGUI.DropdownButton(rect, new GUIContent("Selective Profiler"), FocusType.Keyboard, new GUIStyle(EditorStyles.toolbarDropDown)))
 				{
 					rect.y += rect.height / 2;
@@ -98,7 +98,7 @@ namespace Needle.SelectiveProfiling
 			{
 				public override Vector2 GetWindowSize()
 				{
-					return new Vector2(400, 500);
+					return new Vector2(500, 300);
 				}
 
 				private Vector2 scroll;
@@ -193,13 +193,13 @@ namespace Needle.SelectiveProfiling
 				if (button == 0 && item.id == selectedId && Settings.ImmediateMode && selectedId != lastPatchedInImmediateMode)
 				{
 					lastPatchedInImmediateMode = selectedId;
-					var name = frameDataView?.GetItemName(item.id);
-					// TODO: test with standalone profiler
-					if (AccessUtils.TryGetMethodFromName(name, out var methods, false, item.id, frameDataView))
-					{
-						// TODO: add immediate profiling again
-						// SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
-					}
+					// var name = frameDataView?.GetItemName(item.id);
+					// // TODO: test with standalone profiler
+					// if (AccessUtils.TryGetMethodFromName(name, out var methods, false, item.id, frameDataView))
+					// {
+					// 	// TODO: add immediate profiling again
+					// 	// SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
+					// }
 				}
 
 				if (button != 1)

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -441,17 +442,37 @@ namespace Needle.SelectiveProfiling
 				return Task.CompletedTask;
 			}
 
-			private static MethodInfo indentCallback;
+			private static MethodInfo _indentCallback;
+			
+			// private static Func<TreeView, TreeViewItem, float> indentCallback;
+			// private static T CompileReflection<T>([CanBeNull] Type instance, MethodInfo method, params Type[] parameter)
+			// {
+			// 	var p = parameter.Select(Expression.Parameter);
+			// 	Debug.Log(p.Count());
+			// 	var cnstructor = instance.GetConstructors().First();
+			// 	var inst = Expression.New(cnstructor, cnstructor.GetParameters().Select(p => Expression.Parameter(p.ParameterType)));
+			// 	var exp = Expression.Lambda<T>(
+			// 		Expression.Call(inst, method, Expression.Parameter(typeof(TreeViewItem)))
+			// 	);
+			// 	return exp.Compile();
+			// }
 
 			private static float GetContentIdent(TreeView tree, TreeViewItem item)
 			{
-				if (indentCallback == null)
+				if (_indentCallback == null)
 				{
-					indentCallback = tree.GetType().GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance);
-					if (indentCallback == null) return 0;
+					_indentCallback = tree.GetType().GetMethod("GetContentIndent", BindingFlags.NonPublic | BindingFlags.Instance);
+					if (_indentCallback == null) return 0;
+					// TODO: replace with expression tree because this is called quite often
+					// if (_indentCallback != null)
+					// { 
+					// 	indentCallback = CompileReflection<Func<TreeView, TreeViewItem, float>>(typeof(TreeView), _indentCallback, typeof(TreeViewItem)); 
+					// 	// var param = Expression.Parameter(typeof(TreeViewItem));
+					// 	// var lambdaExpression = Expression.Lambda<Func<TreeViewItem, float>>(Expression.Call(indentCallback, param)).Compile();
+					// }
 				}
 
-				return (float) indentCallback.Invoke(tree, new object[] {item});
+				return (float) _indentCallback.Invoke(tree, new object[] {item});
 			}
 
 			private static GUIStyle labelStyle, possibleSlowBoxStyle;
