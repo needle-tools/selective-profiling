@@ -62,6 +62,7 @@ For injection we use [Harmony](https://github.com/pardeike/Harmony), an awesome 
 - In the Profiler window currently some methods (usually ending with brackets ``()``) can be selected for profiling. We're still looking into on how to use the Profiler API to get method information for selected rows.
 - Occasionally injections break method functionality or cause errors ([see issue](https://github.com/needle-tools/selective-profiling/issues/2)). It seems to only happen with properties though. Profiling code inside properties should seldomly be important and therefor it is disabled by default (See setting ``Skip Properties``). Otherwise it is recommended to try disabling the ``Deep Profile`` option in ``Project Settings/Needle/Selective Profiling`` or decreasing the ``Max Level``. In any case please also [open an issue](https://github.com/needle-tools/selective-profiling/issues/new) with as much information about your project and profiled method as possible to help us find and fix issues like that.
 - Injecting samples for method calls in try-catch blocks is currently prevented. This is to prevent Begin-End mismatch errors if a called method in ``try{}`` throws an exception
+- ECS samples using a combination ``unsafe partial struct`` can apparently not be patched correctly [see issue 16](https://github.com/needle-tools/selective-profiling/issues/16)
 
 ## Contact ✒️
 <b>[🌵 needle — tools for unity](https://needle.tools)</b> • 
