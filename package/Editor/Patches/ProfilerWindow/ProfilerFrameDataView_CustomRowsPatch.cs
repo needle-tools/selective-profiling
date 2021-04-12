@@ -173,7 +173,7 @@ namespace Needle.SelectiveProfiling
 				internal static readonly HashSet<int> expanded = new HashSet<int>();
 				private int collapsedCounter;
 
-				private int firstIndex = 0;
+				private int firstIndex, firstDepth;
 
 				public CollapseRows(Func<TreeView, TreeViewItem, string, bool> shouldCollapse)
 				{
@@ -197,11 +197,14 @@ namespace Needle.SelectiveProfiling
 					{
 						// NOTE: first index might change
 						// it is possible that items have been inserted in between so this is likely to break
-						CreateAndInsertNewItem(tree, list, firstIndex, ref index, row.id, row.depth, row.parent, $"Collapsed {collapsedCounter} rows");
+						var indexToInsert = firstIndex;
+						CreateAndInsertNewItem(tree, list, indexToInsert, ref index, row.id, firstDepth, row.parent, $"Collapsed {collapsedCounter} rows");
 					}
 					else
 					{
 						var offset = collapsedDepth.Count;
+						if (collapsedCounter > 0 && row.depth - firstDepth == 1)
+							row.depth += 1;
 						row.depth -= offset;
 						// row.depth += 1;
 					}
@@ -221,6 +224,7 @@ namespace Needle.SelectiveProfiling
 						if (firstIndex == 0)
 						{
 							firstIndex = index;
+							firstDepth = item.depth;
 						}
 
 						// only expand on first discovery
@@ -281,6 +285,8 @@ namespace Needle.SelectiveProfiling
 				"RenderChain.Draw",
 				"UIR.DrawChain",
 				"UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.ProcessEvent()",
+				"UIEventRegistration.ProcessEvent()",
+				"UIEventRegistration.ProcessEvent(int,IntPtr)", 
 				"UIElementsUtility.DoDispatch(Repaint Event)"
 			};
 
