@@ -422,6 +422,7 @@ namespace Needle.SelectiveProfiling.Utils
 				return false;
 			}
 			
+			
 			if (
 				method.DeclaringType == typeof(Object) ||
 				method.DeclaringType == typeof(GC) ||
@@ -520,6 +521,10 @@ namespace Needle.SelectiveProfiling.Utils
 				    // || fullName.StartsWith("UnityEditor.StyleSheets")
 				 //    || fullName.StartsWith("UnityEngine.SendMouseEvents")
 				 //    || fullName.StartsWith("UnityEditor.PlayModeView")
+					
+					// these are known types that have problems
+					// see https://github.com/marwie/EntityComponentSystemSamples/tree/harmony-dependencymanager
+					|| fullName == "Unity.Entities.ComponentDependencyManager"
 				)
 				{
 					Reason($"Profiling in {fullName} is not allowed: " + GetMethodLogName());

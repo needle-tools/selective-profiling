@@ -144,6 +144,13 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 							start = -1;
 							continue;
 						}
+
+						// skip if creating exception instance
+						// if (typeof(Exception).IsAssignableFrom(ci.DeclaringType))
+						// {
+						// 	start = -1;
+						// 	continue;
+						// }
 						
 						// skip constructors that take profiler sampler as argument
 						// this prevents cases where IDisposable implementations (as ProfilerScopes) cause mismatching samples
@@ -153,6 +160,12 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 							continue;
 						}
 					}
+
+					// if (inst.opcode == OpCodes.Newobj && inst.operand != null && inst.operand is Exception)
+					// {
+					// 	start = -1;
+					// 	continue;
+					// }
 
 					if (start > index && hasLabel) start = prevStart;
 

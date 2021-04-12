@@ -385,8 +385,9 @@ namespace Needle.SelectiveProfiling
 
 						if (row.hasChildren)
 						{
-							foreach (var ch in row.children)
+							for (var i = row.children.Count - 1; i >= 0; i--)
 							{
+								var ch = row.children[i];
 								if (ch == null) continue;
 								ch.parent = row.parent;
 								row.parent.AddChild(ch);
