@@ -7,3 +7,8 @@
 [submodule "projects/BoatAttack"]
 	path = projects/BoatAttack
 	url = https://github.com/Unity-Technologies/BoatAttack
+[submodule "projects/EntityComponentSystemSamples"]
+	path = projects/EntityComponentSystemSamples
+	url = https://github.com/Unity-Technologies/EntityComponentSystemSamples
+
+
