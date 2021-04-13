@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using needle.EditorPatching;
 using UnityEditor;
 using UnityEditor.Profiling;
@@ -19,16 +20,13 @@ namespace Needle.SelectiveProfiling
 			return InternalTryGetPerformanceData(instanceId, out data);
 		}
 
-		internal static void SelectItem(int instanceId)
+		internal static void SelectItem(IPerformanceData data)
 		{
-			if (dataCache.TryGetValue(instanceId, out var entry))
+			if (data.Ids != null)
 			{
-				if (entry.Ids != null)
-				{
-					// Debug.Log(instanceId + " -> " + ": " + string.Join(", ", entry.Ids));
-					ProfilerReveal_Patch.Reveal(entry.Ids);
-					// ProfilerDriver.enabled = false;
-				}
+				// Debug.Log(data.InstanceId + " -> " + ": " + string.Join(", ", data.Ids));
+				ProfilerReveal_Patch.Reveal(data.Ids);
+				// ProfilerDriver.enabled = false;
 			}
 		}
 
@@ -56,6 +54,7 @@ namespace Needle.SelectiveProfiling
 		private static IEnumerable<string> ExpectedPatches()
 		{
 			yield return typeof(DrawPerformanceInInspectorHeader).FullName;
+			yield return typeof(ProfilerReveal_Patch).FullName;
 		}
 
 		private static int _updateCounter;

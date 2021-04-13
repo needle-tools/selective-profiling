@@ -16,6 +16,7 @@ namespace Needle.SelectiveProfiling
 	
 	public class PerformanceData : IPerformanceData
 	{
+		public const int StartMarker = 0;
 		public List<int> Ids { get; private set; }
 		public int InstanceId { get; internal set; }
 		public float TotalMs { get; private set; }
@@ -40,6 +41,7 @@ namespace Needle.SelectiveProfiling
 			if (other.Ids != null)
 			{
 				if (Ids == null) Ids = new List<int>();
+				Ids.Add(StartMarker);
 				Ids.AddRange(other.Ids);
 			}
 		}
@@ -53,8 +55,6 @@ namespace Needle.SelectiveProfiling
 
 			if (Ids == null) Ids = new List<int>();
 			itemMarkerIdPathCache.Clear();
-			var marker = view.GetItemMarkerID(itemId);
-			Ids.Add(marker);
 			view.GetItemMarkerIDPath(itemId, itemMarkerIdPathCache);
 			foreach (var path in itemMarkerIdPathCache)
 				Ids.Add(path);
