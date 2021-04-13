@@ -16,6 +16,12 @@ namespace Needle.SelectiveProfiling
 		
 		internal static void Reveal(List<int> markerIds)
 		{
+			// TODO: add check, this is only necessary when not in live mode and paused
+			if (tree != null)
+			{
+				tree.Reload();
+			}
+			
 			requestReveal.Clear();
 			requestReveal.AddRange(markerIds);
 		}
@@ -94,7 +100,7 @@ namespace Needle.SelectiveProfiling
 			
 			if (selection != null)
 			{
-				// Debug.Log("SELECT " + string.Join(", ", selection));
+				Debug.Log("SELECT " + string.Join(", ", selection));
 				tree.SetSelection(selection, TreeViewSelectionOptions.RevealAndFrame);
 				tree.state.lastClickedID = selection.Last();
 				tree.SetFocusAndEnsureSelectedItem();

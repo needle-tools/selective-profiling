@@ -54,6 +54,15 @@ namespace Needle.SelectiveProfiling
 			private static Rect lastHoveredRect;
 			private static Object lastHoveredObject;
 
+			private static Rect ExpandRect(Rect rect, int pixel)
+			{
+				rect.width += pixel;
+				rect.height += pixel;
+				rect.x -= pixel * .5f;
+				rect.y -= pixel * .5f;
+				return rect;
+			}
+
 			// Draw small headers (the header above each component) after the culling above
 			// so we don't draw a component header for all the components that can't be shown.
 			// Rect DrawEditorSmallHeader(Editor[] editors, Object target, bool wasVisible)
@@ -77,21 +86,28 @@ namespace Needle.SelectiveProfiling
 					var t = GUIColors.NaiveCalculateGradientPosition(data.TotalMs, data.Alloc);
 					var col = GUIColors.GetColorOnGradient(t);
 					if (t < .4f) col.a *= .5f;
+					
+					var mp = __state.MousePosition;
+					var check = ExpandRect(circleRect, 6);
+					if (check.Contains(mp))
+					{
+						lastHoveredObject = target;
+						lastHoveredRect = check;
+						var back = Color.white;
+						back.a = .1f;
+						GUI.DrawTexture(check, Texture2D.whiteTexture, ScaleMode.ScaleAndCrop, false, 1, back, 0, 0);
+					}
+
 					GUI.DrawTexture(circleRect, Textures.FilledCircle, ScaleMode.ScaleAndCrop, true, 1, col, 0, 0);
 
 					// EditorGUIUtility.AddCursorRect(circleRect, MouseCursor.Zoom);
 
-					var mp = __state.MousePosition;
-					if (circleRect.Contains(mp))
-					{
-						lastHoveredObject = target;
-						lastHoveredRect = circleRect;
-					}
 
 					if (lastHoveredObject == target)
 					{
 						if (__state.EventBefore == EventType.MouseDown && Event.current.button == 0)
 						{
+							
 							if (lastHoveredRect.Contains(mp))
 							{
 								// TODO: figure out a better way to prevent inspector collapsing when clicking marker
