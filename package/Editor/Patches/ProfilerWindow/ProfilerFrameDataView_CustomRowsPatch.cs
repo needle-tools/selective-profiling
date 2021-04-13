@@ -590,7 +590,7 @@ namespace Needle.SelectiveProfiling
 					}
 				}
 
-				var content = new GUIContent(TranspilerUtils.RemoveInternalMarkers(name));// + ", " + item.id + ", " + frame.GetItemMarkerID(item.id));
+				var content = new GUIContent(TranspilerUtils.RemoveInternalMarkers(name) + ", " + item.id + ", " + frame.GetItemMarkerID(item.id));
 				var indent = GetContentIdent(tree, item);
 				rect.x += indent;
 				rect.width -= indent;
