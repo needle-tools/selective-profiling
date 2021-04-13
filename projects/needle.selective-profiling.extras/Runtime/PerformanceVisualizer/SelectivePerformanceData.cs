@@ -25,8 +25,8 @@ namespace Needle.SelectiveProfiling
 			{
 				if (entry.Ids != null)
 				{
-					Debug.Log(instanceId + " -> " + ": " + string.Join(", ", entry.Ids));
-					ProfilerFrameDataView_CustomRowsPatch.RequestSelectedIds.AddRange(entry.Ids);
+					// Debug.Log(instanceId + " -> " + ": " + string.Join(", ", entry.Ids));
+					ProfilerReveal_Patch.Reveal(entry.Ids);
 					// ProfilerDriver.enabled = false;
 				}
 			}
