@@ -10,9 +10,26 @@ namespace Needle.SelectiveProfiling
 {
 	public static class SelectivePerformanceData
 	{
-		public static bool TryGetPerformanceData(int instanceId, out PerformanceData data)
+		public static void EnableProfiling() => ProfilerDriver.enabled = true;
+		public static void DisableProfiling() => ProfilerDriver.enabled = false;
+		
+		public static bool TryGetPerformanceData(int instanceId, out IPerformanceData data)
 		{
+			// EnableProfiling();
 			return InternalTryGetPerformanceData(instanceId, out data);
+		}
+
+		internal static void SelectItem(int instanceId)
+		{
+			if (dataCache.TryGetValue(instanceId, out var entry))
+			{
+				if (entry.Ids != null)
+				{
+					Debug.Log(instanceId + " -> " + ": " + string.Join(", ", entry.Ids));
+					ProfilerFrameDataView_CustomRowsPatch.RequestSelectedIds.AddRange(entry.Ids);
+					// ProfilerDriver.enabled = false;
+				}
+			}
 		}
 
 		[InitializeOnLoadMethod]
@@ -73,20 +90,23 @@ namespace Needle.SelectiveProfiling
 					if (!dataCache.ContainsKey(instanceId))
 					{
 						var entry = new PerformanceData();
-						invalidate += () => { entry.isValid = false; };
+						invalidate += () =>
+						{
+							entry.isValid = false;
+							entry.Clear();
+						};
 						dataCache.Add(instanceId, entry);
 					}
 
 					var data = dataCache[instanceId];
 					data.InstanceId = instanceId;
-					data.isValid = true;
-					data.TotalMs = frame.GetItemColumnDataAsFloat(id, HierarchyFrameDataView.columnTotalTime);
-					data.Alloc = frame.GetItemColumnDataAsFloat(id, HierarchyFrameDataView.columnGcMemory);
+					data.Add(frame, id);
 					// dataCache[instanceId] = data;
 					// var name = frame.GetItemName(id);
 					// var instance = EditorUtility.InstanceIDToObject(instanceId);
 					// Debug.Log(name + ": " + data.TotalMs + "ms", instance);
 				}
+				// only iterate children 
 				else if (frame.HasItemChildren(id))
 				{
 					var childrenBuffer = new List<int>();
@@ -125,7 +145,7 @@ namespace Needle.SelectiveProfiling
 
 		private static readonly List<Component> componentNonAllocCache = new List<Component>();
 
-		private static bool InternalTryGetPerformanceData(int instanceId, out PerformanceData data)
+		private static bool InternalTryGetPerformanceData(int instanceId, out IPerformanceData data)
 		{
 			if (!hierarchyChildrenCache.ContainsKey(instanceId))
 			{
@@ -152,12 +172,15 @@ namespace Needle.SelectiveProfiling
 			if (dataCache.ContainsKey(instanceId))
 			{
 				var entry = dataCache[instanceId];
-				dataNonAlloc.isValid = true;
-				dataNonAlloc.InstanceId = instanceId;
-				dataNonAlloc.Clear();
-				dataNonAlloc.Add(entry);
-				data = dataNonAlloc;
-				return true;
+				if (entry.isValid)
+				{
+					dataNonAlloc.isValid = true;
+					dataNonAlloc.InstanceId = instanceId;
+					dataNonAlloc.Clear();
+					dataNonAlloc.Add(entry);
+					data = dataNonAlloc;
+					return true;
+				}
 			}
 
 			if (hierarchyChildrenCache.ContainsKey(instanceId))

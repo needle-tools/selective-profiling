@@ -8,6 +8,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using needle.EditorPatching;
@@ -38,6 +40,7 @@ namespace Needle.SelectiveProfiling
 			patches.Add(new Profiler_BuildRows_CollapseItems());
 		}
 
+		internal static List<int> RequestSelectedIds = new List<int>();
 
 		private static readonly Dictionary<int, string> customRowsInfo = new Dictionary<int, string>();
 		private const int collapsedRowIdOffset = 10_000_000;
@@ -58,7 +61,7 @@ namespace Needle.SelectiveProfiling
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
-				var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
+				var m = t.GetMethod("BuildRows", (BindingFlags) ~0);
 				targetMethods.Add(m);
 				return Task.CompletedTask;
 			}
@@ -317,8 +320,9 @@ namespace Needle.SelectiveProfiling
 			private static int previousFrameIndex;
 
 			// ReSharper disable once UnusedMember.Local
-			private static void Postfix(TreeView __instance, IList<TreeViewItem> newRows, HierarchyFrameDataView ___m_FrameDataView)
-			{
+			private static void Postfix(TreeView __instance, IList<TreeViewItem> __result, HierarchyFrameDataView ___m_FrameDataView)
+			{ 
+				var newRows = __result;
 				if (newRows == null) return;
 				var settings = SelectiveProfilerSettings.instance; 
 
@@ -337,6 +341,49 @@ namespace Needle.SelectiveProfiling
 				var tree = __instance;
 				if (frame == null || !frame.valid) return;
 				
+
+				List<int> selection = null;
+				if(RequestSelectedIds.Count > 0) Debug.Log("Check selection");
+				void HandleSelection(TreeViewItem item)
+				{
+					if (RequestSelectedIds.Count <= 0) return;
+
+					void AddToSelection(int _id, int _marker)
+					{
+						if (selection == null) selection = new List<int>();
+						Debug.Log("SELECT " + _id + ", " + frame.GetItemMarkerID(_id));
+						selection.Add(_id);
+						tree.SetExpanded(_id, true);
+						tree.state.selectedIDs.Add(_id);
+						// ___m_SelectedItemMarkerIdPath.Add(_id);
+					}
+
+					var markerId = frameDataView.GetItemMarkerID(item.id);
+					if (RequestSelectedIds.Contains(markerId))
+					{
+						AddToSelection(item.id, markerId);
+					}
+					else if (item.hasChildren)
+					{
+						foreach (var ch in item.children)
+						{
+							if (ch == null) continue;
+							markerId = frameDataView.GetItemMarkerID(ch.id);
+							if (RequestSelectedIds.Contains(markerId))
+							{
+								AddToSelection(ch.id, markerId);
+							}
+						}
+					}
+				}
+				// if (RequestSelectedIds.Count > 0)
+				// {
+				// 	tree.SetExpanded(RequestSelectedIds);
+				// 	tree.SetSelection(RequestSelectedIds);
+				// 	tree.SetFocusAndEnsureSelectedItem();
+				// 	RequestSelectedIds.Clear();
+				// }
+				
 				// clear cached collapsed-expanded rows when frame changes
 				if(frame.frameIndex != previousFrameIndex)
 					CollapseRows.expanded.Clear();
@@ -345,6 +392,9 @@ namespace Needle.SelectiveProfiling
 				for (var index = 0; index < newRows.Count; index++)
 				{
 					var row = newRows[index];
+					
+					HandleSelection(row);
+					
 					var name = frame.GetItemName(row.id);
 					row.displayName = name;
 					var prevIndex = index;
@@ -425,6 +475,13 @@ namespace Needle.SelectiveProfiling
 						HandleCollapsing(handler);
 					}
 				}
+
+				if (selection != null)
+				{
+					tree.SetSelection(selection, TreeViewSelectionOptions.RevealAndFrame);
+					tree.SetFocusAndEnsureSelectedItem();
+				}
+				RequestSelectedIds.Clear();
 			}
 		}
 
@@ -575,7 +632,7 @@ namespace Needle.SelectiveProfiling
 					}
 				}
 
-				var content = new GUIContent(TranspilerUtils.RemoveInternalMarkers(name));
+				var content = new GUIContent(TranspilerUtils.RemoveInternalMarkers(name) + ", " + item.id + ", " + frame.GetItemMarkerID(item.id));
 				var indent = GetContentIdent(tree, item);
 				rect.x += indent;
 				rect.width -= indent;

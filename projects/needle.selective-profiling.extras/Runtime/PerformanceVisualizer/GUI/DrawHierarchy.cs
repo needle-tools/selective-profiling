@@ -20,9 +20,9 @@ namespace Needle.SelectiveProfiling
 		}
 
 
-		private static void DrawData(PerformanceData data, Rect rect)
+		private static void DrawData(IPerformanceData data, Rect rect)
 		{
-			if (data == null || !data.isValid) return;
+			if (data == null) return;
 			Styles.EnsureStyles();
 
 			var col = GUIColors.GetColorOnGradient(GUIColors.NaiveCalculateGradientPosition(data.TotalMs, data.Alloc));
