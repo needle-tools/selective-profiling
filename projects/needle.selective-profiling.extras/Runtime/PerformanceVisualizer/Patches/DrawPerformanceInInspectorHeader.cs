@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Needle.SelectiveProfiling
 {
@@ -38,9 +39,15 @@ namespace Needle.SelectiveProfiling
 					EventType = Event.current.type,
 					MousePosition = Event.current.mousePosition,
 				};
+
+				var rect = new Rect(Screen.width - 77, 0, 18, EditorGUIUtility.singleLineHeight + 2);
 				
-				// if(Event.current.type != EventType.Layout && Event.current.type != EventType.Repaint)
-				// 	Event.current.Use();
+				// GUI.DrawTexture(rect, Texture2D.whiteTexture);
+				if(rect.Contains(Event.current.mousePosition))
+				{
+					if(Event.current.type != EventType.Layout && Event.current.type != EventType.Repaint)
+						Event.current.Use();
+				}
 			}
 
 			// Draw small headers (the header above each component) after the culling above
@@ -55,23 +62,6 @@ namespace Needle.SelectiveProfiling
 				rect.width -= 77;
 				__state.Rect = rect;
 				Draw.DrawIcon(target, ref __state, 9);
-
-				if (__state.Clicked)
-				{
-					var instanceId = target.GetInstanceID();
-					
-					// TODO: figure out a better way to prevent inspector collapsing when clicking marker
-					async void Expand()
-					{
-						var tracker = ActiveEditorTracker.sharedTracker;
-						await Task.Delay(100);
-						InternalEditorUtility.SetIsInspectorExpanded(target, true);
-						tracker.ForceRebuild();
-					}
-
-					Expand();
-				}
-				
 			}
 		}
 	}

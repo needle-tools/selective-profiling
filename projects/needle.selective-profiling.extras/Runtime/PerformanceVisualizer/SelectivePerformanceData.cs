@@ -146,6 +146,12 @@ namespace Needle.SelectiveProfiling
 
 		private static bool InternalTryGetPerformanceData(int instanceId, out IPerformanceData data)
 		{
+			if (dataCache.Count <= 0)
+			{
+				data = null;
+				return false;
+			}
+			
 			if (!hierarchyChildrenCache.ContainsKey(instanceId))
 			{
 				var obj = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
@@ -197,7 +203,7 @@ namespace Needle.SelectiveProfiling
 				}
 
 				data = dataNonAlloc;
-				return true;
+				return data.Ids?.Count > 0;
 			}
 
 			data = null;

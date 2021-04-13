@@ -52,7 +52,7 @@ namespace Needle.SelectiveProfiling
 
 				var t = GUIColors.NaiveCalculateGradientPosition(data.TotalMs, data.Alloc);
 				var col = GUIColors.GetColorOnGradient(t);
-				if (t < .4f) col.a *= .5f;
+				col.a = Mathf.Max(.2f, Mathf.Clamp01(t * 2));
 
 				var mp = state.MousePosition;
 				var check = ExpandRect(circleRect, 6);

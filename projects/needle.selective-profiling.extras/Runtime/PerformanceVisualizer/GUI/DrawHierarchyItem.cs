@@ -29,6 +29,8 @@ namespace Needle.SelectiveProfiling
 			rect.x += 2;
 			var state = new Draw.State(rect);
 			Draw.DrawIcon(obj, ref state, 4);
+			if(state.Clicked)
+				Event.current.Use();
 
 			// var col = GUIColors.GetColorOnGradient(GUIColors.NaiveCalculateGradientPosition(data.TotalMs, data.Alloc));
 			// var prev = GUI.color;
