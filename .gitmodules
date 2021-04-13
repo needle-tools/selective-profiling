@@ -12,3 +12,6 @@
 	url = https://github.com/Unity-Technologies/EntityComponentSystemSamples
 
 
+[submodule "modules/unity-bug-tracing"]
+	path = modules/unity-bug-tracing
+	url = https://github.com/needle-tools/unity-bug-tracing
