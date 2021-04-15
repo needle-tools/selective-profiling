@@ -27,11 +27,11 @@ namespace MyNamespace
     	{
     		for (var i = 0; i < Logs / 10; i++)
     		{
-    			Debug.Log("Log in loop");
+    			Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Log in loop");
     			var c = new SomeClass();
     			SomeClassMethod(c);
     			// var test = "123";
-    			// Debug.Log("Another log");
+    			// Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Another log");
     		}
             
             MethodWithGeneric<int>(0);
@@ -43,7 +43,7 @@ namespace MyNamespace
     			MethodWithOut(out var i, out var c);
     		}
     
-    		Debug.Log("Log at end");
+    		Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Log at end");
     	}
     
     	public class SomeClass
@@ -63,16 +63,16 @@ namespace MyNamespace
         // https://harmony.pardeike.net/articles/patching.html#commonly-unsupported-use-cases
         public void MethodWithGeneric<T>(T test)
         {
-	        Debug.Log("GENERIC " + test);
+	        Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "GENERIC " + test);
         }
     
     	// private void Update()
     	// {
     	// 	for (var i = 0; i < Logs / 10; i++)
     	// 	{
-    	// 		Debug.Log("Log in loop");
+    	// 		Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Log in loop");
     	// 		// var test = "123";
-    	// 		// Debug.Log("Another log");
+    	// 		// Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Another log");
     	// 	}
     	//
     	// 	var f = Time.frameCount;
@@ -81,17 +81,17 @@ namespace MyNamespace
     	// 		CallingAnotherMethod();
     	// 	}
     	//
-    	// 	Debug.Log("Log at end");
+    	// 	Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Log at end");
     	// }
     	// private void Update()
     	// {
     	// 	for (var i = 0; i < Logs / 10; i++)
     	// 	{
     	// 		Profiler.BeginSample("Log in Loop");
-    	// 		Debug.Log("Log in loop");
+    	// 		Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Log in loop");
     	// 		Profiler.EndSample();
     	// 		// var test = "123";
-    	// 		// Debug.Log("Another log");
+    	// 		// Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Another log");
     	// 	}
     	//
     	// 	Profiler.BeginSample("Get frame count");
@@ -105,7 +105,7 @@ namespace MyNamespace
     	// 	}
     	//
     	// 	Profiler.BeginSample("end");
-    	// 	Debug.Log("Log at end");
+    	// 	Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Log at end");
     	// 	Profiler.EndSample();
     	// }
     
@@ -113,7 +113,7 @@ namespace MyNamespace
     	{
     		for (var i = 0; i < Logs; i++)
     		{
-    			Debug.Log("Another log");
+    			Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Another log");
     		}
             TwoLevelsDeepCalledFromAnotherMethod();
     	}

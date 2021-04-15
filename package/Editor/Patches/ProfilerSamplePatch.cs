@@ -28,6 +28,7 @@ namespace Needle.SelectiveProfiling
 			this.prefix = prefix;
 			this.postfix = postfix;
 			this._id = method != null ? method.DeclaringType?.FullName + "." + method.Name : base.ID();
+			this.Group = "Selective Profiling Sampler";
 		}
 
 		private readonly string _id;

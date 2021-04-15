@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using needle.EditorPatching;
@@ -32,9 +33,19 @@ namespace Needle.SelectiveProfiling
 		public static void Save() => SelectiveProfilerSettings.instance.Save();
 	}
 
-	[FilePath("ProjectSettings/SelectiveProfiler.asset", FilePathAttribute.Location.ProjectFolder)]
+	[FilePath(SettingsRelativeFilePath, FilePathAttribute.Location.ProjectFolder)]
 	internal class SelectiveProfilerSettings : ScriptableSingleton<SelectiveProfilerSettings>
 	{
+		public const string SettingsRelativeFilePath = "ProjectSettings/SelectiveProfiler.asset";
+		
+		[MenuItem(MenuItems.ToolsMenu + "Copy settings to clipboard")]
+		public static bool CopySettingsToClipboard()
+		{
+			if (!File.Exists(SettingsRelativeFilePath)) return false;
+			GUIUtility.systemCopyBuffer = File.ReadAllText(SettingsRelativeFilePath);
+			return true;
+		}
+		
 		private static SelectiveProfilerSettings _settingsFromMainProcess;
 		internal static SelectiveProfilerSettings Instance
 		{

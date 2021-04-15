@@ -8,6 +8,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using needle.EditorPatching;
@@ -38,6 +40,7 @@ namespace Needle.SelectiveProfiling
 			patches.Add(new Profiler_BuildRows_CollapseItems());
 		}
 
+		// internal static List<int> RequestSelectedIds = new List<int>();
 
 		private static readonly Dictionary<int, string> customRowsInfo = new Dictionary<int, string>();
 		private const int collapsedRowIdOffset = 10_000_000;
@@ -58,7 +61,7 @@ namespace Needle.SelectiveProfiling
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
-				var m = t.GetMethod("AddAllChildren", (BindingFlags) ~0);
+				var m = t.GetMethod("BuildRows", (BindingFlags) ~0);
 				targetMethods.Add(m);
 				return Task.CompletedTask;
 			}
@@ -317,8 +320,9 @@ namespace Needle.SelectiveProfiling
 			private static int previousFrameIndex;
 
 			// ReSharper disable once UnusedMember.Local
-			private static void Postfix(TreeView __instance, IList<TreeViewItem> newRows, HierarchyFrameDataView ___m_FrameDataView)
-			{
+			private static void Postfix(TreeView __instance, IList<TreeViewItem> __result, HierarchyFrameDataView ___m_FrameDataView)
+			{ 
+				var newRows = __result;
 				if (newRows == null) return;
 				var settings = SelectiveProfilerSettings.instance; 
 
@@ -337,6 +341,15 @@ namespace Needle.SelectiveProfiling
 				var tree = __instance;
 				if (frame == null || !frame.valid) return;
 				
+
+				// if (RequestSelectedIds.Count > 0)
+				// {
+				// 	tree.SetExpanded(RequestSelectedIds);
+				// 	tree.SetSelection(RequestSelectedIds);
+				// 	tree.SetFocusAndEnsureSelectedItem();
+				// 	RequestSelectedIds.Clear();
+				// }
+				
 				// clear cached collapsed-expanded rows when frame changes
 				if(frame.frameIndex != previousFrameIndex)
 					CollapseRows.expanded.Clear();
@@ -345,6 +358,7 @@ namespace Needle.SelectiveProfiling
 				for (var index = 0; index < newRows.Count; index++)
 				{
 					var row = newRows[index];
+					
 					var name = frame.GetItemName(row.id);
 					row.displayName = name;
 					var prevIndex = index;
@@ -425,6 +439,7 @@ namespace Needle.SelectiveProfiling
 						HandleCollapsing(handler);
 					}
 				}
+
 			}
 		}
 
@@ -558,26 +573,12 @@ namespace Needle.SelectiveProfiling
 
 				var impact = ms / 16f;
 				impact += alloc / 5000f;
-				// impact = Mathf.Clamp01(impact);
-				if (gradient == null)
-					gradient = new Gradient()
-					{
-						colorKeys = new[]
-						{
-							new GradientColorKey(Color.gray, 0.001f),
-							new GradientColorKey(Color.white, .05f),
-							new GradientColorKey(new Color(1f, .7f, .1f), .5f),
-							new GradientColorKey(new Color(1f, .7f, .1f), .999992f),
-							new GradientColorKey(new Color(1f, .3f, .2f), 1f),
-						}
-					};
-				
 				
 				var possibleSlow = TranspilerUtils.IsMarkedPossibleSlow(name);
 				// if (possibleSlow)
 				// 	impact = Mathf.Max(.5f, impact);
 
-				var col = gradient.Evaluate(impact);
+				var col = GUIColors.GetColorOnGradient(GUIColors.NaiveCalculateGradientPosition(ms, alloc));
 
 				if (!ShouldShowFullScriptingName())
 				{
@@ -589,7 +590,11 @@ namespace Needle.SelectiveProfiling
 					}
 				}
 
-				var content = new GUIContent(TranspilerUtils.RemoveInternalMarkers(name));
+				var str = TranspilerUtils.RemoveInternalMarkers(name);
+				if (SelectiveProfiler.DrawItemDebugInformationInTreeView)
+					str += ", " + item.id + ", " + frame.GetItemMarkerID(item.id);
+
+				var content = new GUIContent(str);
 				var indent = GetContentIdent(tree, item);
 				rect.x += indent;
 				rect.width -= indent;
