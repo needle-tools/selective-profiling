@@ -14,25 +14,25 @@ namespace Needle.SelectiveProfiling
 		private const string Component = "CONTEXT/Component/" + Submenu;
 		private const string GameObject = "GameObject/" + Submenu;
 
-		[MenuItem(Component + "Enable: Profile All User Methods", true)]
-		private static bool ProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == Level.User;
-
-		[MenuItem(Component + "Enable: Profile All User Methods", false, Priority)]
-		private static void ProfileAllMethods(MenuCommand cmd)
-		{
-			foreach (var m in AccessUtils.GetMethods(cmd.context, typeof(MonoBehaviour)))
-				SelectiveProfiler.EnableProfilingAsync(m, SelectiveProfiler.ShouldSave);
-		}
-
-		[MenuItem(Component + "Disable: Profile All User Methods", true)]
-		private static bool DisableDeepProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == Level.User;
-
-		[MenuItem(Component + "Disable: Profile All User Methods", false, Priority)]
-		private static void DisableDeepProfileAllMethods(MenuCommand cmd)
-		{
-			foreach (var m in AccessUtils.GetMethods(cmd.context, typeof(MonoBehaviour)))
-				SelectiveProfiler.DisableProfiling(m);
-		}
+		// [MenuItem(Component + "Enable: Profile All User Methods", true)]
+		// private static bool ProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == Level.User;
+		//
+		// [MenuItem(Component + "Enable: Profile All User Methods", false, Priority)]
+		// private static void ProfileAllMethods(MenuCommand cmd)
+		// {
+		// 	foreach (var m in AccessUtils.GetMethods(cmd.context, typeof(MonoBehaviour)))
+		// 		SelectiveProfiler.EnableProfilingAsync(m, SelectiveProfiler.ShouldSave);
+		// }
+		//
+		// [MenuItem(Component + "Disable: Profile All User Methods", true)]
+		// private static bool DisableDeepProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == Level.User;
+		//
+		// [MenuItem(Component + "Disable: Profile All User Methods", false, Priority)]
+		// private static void DisableDeepProfileAllMethods(MenuCommand cmd)
+		// {
+		// 	foreach (var m in AccessUtils.GetMethods(cmd.context, typeof(MonoBehaviour)))
+		// 		SelectiveProfiler.DisableProfiling(m);
+		// }
 
 
 		[MenuItem(GameObject + "Enable Profiling For All User Methods in Hierarchy", false, Priority)]

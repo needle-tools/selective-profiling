@@ -9,10 +9,12 @@ namespace Needle.SelectiveProfiling
 		public bool Separator = false;
 		public bool Enabled = true;
 
-		public ContextItem(string path, Action selected)
+		public ContextItem(string path, Action selected, bool enabled = true, bool separator = false)
 		{
 			Path = path;
 			Selected = selected;
+			Enabled = enabled;
+			Separator = separator;
 		}
 	}
 }
