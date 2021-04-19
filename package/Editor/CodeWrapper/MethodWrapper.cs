@@ -117,6 +117,13 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					
 					if (inst.operand is MethodInfo mi)
 					{
+						// not sure if this is responsible for some of the profiler sample mismatches
+						if (mi.DeclaringType == typeof(GUIUtility) && mi.Name == "ExitGUI")
+						{
+							start = -1;
+							continue;
+						}
+						
 						bool MethodIsProfilerMethodOrHasProfilerMethodArgument()
 						{
 							return mi.DeclaringType == typeof(Profiler) || IsProfilerMarkerOrSampler(mi.DeclaringType);
