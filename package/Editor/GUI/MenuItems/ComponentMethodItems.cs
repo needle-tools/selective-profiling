@@ -62,7 +62,7 @@ namespace Needle.SelectiveProfiling
 						name += " ✓";
 					const int maxNameLength = 120;
 					if (name.Length > maxNameLength)
-						name = name.Substring(Mathf.Max(0, name.Length - maxNameLength));
+						name = name.Substring(0, Mathf.Max(0, maxNameLength));
 					var item = new ContextItem(basePath + name, () => OnSelected(m));
 					// ReSharper disable once ConditionIsAlwaysTrueOrFalse
 					item.Enabled = IsAllowed(m);
