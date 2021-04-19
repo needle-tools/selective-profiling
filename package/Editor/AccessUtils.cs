@@ -297,7 +297,7 @@ namespace Needle.SelectiveProfiling.Utils
 		public static BindingFlags AllDeclared => AccessTools.allDeclared;
 
 
-		public static IEnumerable<MethodInfo> GetMethods(object obj, Type maxType)
+		public static IEnumerable<MethodInfo> GetMethods(object obj, Type maxType = null)
 		{
 			if (obj == null) yield break;
 			if (obj is Object o && !o) yield break;
@@ -305,7 +305,7 @@ namespace Needle.SelectiveProfiling.Utils
 				yield return m;
 		}
 
-		public static IEnumerable<MethodInfo> GetMethods(Type type, Type maxType)
+		public static IEnumerable<MethodInfo> GetMethods(Type type, Type maxType = null)
 		{
 			return InternalGetMethods(type, maxType);
 		}
@@ -431,6 +431,7 @@ namespace Needle.SelectiveProfiling.Utils
 				typeof(ProfilerDriver).IsAssignableFrom(method.DeclaringType) ||
 				typeof(ProfilerMarker).IsAssignableFrom(method.DeclaringType) ||
 				typeof(CustomSampler).IsAssignableFrom(method.DeclaringType) ||
+				method.DeclaringType == typeof(SelectiveProfiler) ||
 				method.DeclaringType == typeof(UnityException) ||
 			    method.DeclaringType == typeof(Application) ||
 			    method.DeclaringType == typeof(StackTraceUtility) ||

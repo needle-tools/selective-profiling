@@ -1,4 +1,14 @@
-﻿using Needle.SelectiveProfiling.Utils;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Linq;
+using System.Text;
+using HarmonyLib;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Needle.SelectiveProfiling.Analysis;
+using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,6 +23,29 @@ namespace Needle.SelectiveProfiling
 		private const string Submenu = "Profiling/";
 		private const string Component = "CONTEXT/Component/" + Submenu;
 		private const string GameObject = "GameObject/" + Submenu;
+
+
+		[MenuItem("Assets/" + Submenu + "Declared Methods", true)]
+		private static bool ProfileMonoScript_Validate(MenuCommand menuCommand)
+		{
+			return Selection.activeObject is MonoScript;
+		}
+
+		[MenuItem("Assets/" + Submenu + "Declared Methods", false)]
+		private static void ProfileMonoScript(MenuCommand menuCommand)
+		{
+			var script = Selection.activeObject as MonoScript;
+			var types = new List<Type>();
+			TypeFinder.FindTypes(script, types);
+			foreach (var type in types)
+			{
+				var methods = AccessUtils.GetMethods(type, type.BaseType).Where(m => AccessUtils.AllowPatching(m, false, false)).ToArray();
+				Debug.Log("Enable profiling for " + methods.Length + " in " + type  + ":\n" + string.Join("\n", methods.Select(m => m.FullDescription())));
+				foreach (var m in methods)
+					SelectiveProfiler.EnableProfilingAsync(m, SelectiveProfiler.ShouldSave, true, true);
+			}
+		}
+
 
 		// [MenuItem(Component + "Enable: Profile All User Methods", true)]
 		// private static bool ProfileAllMethods_Validate(MenuCommand cmd) => AccessUtils.GetLevel(cmd.context.GetType()) == Level.User;
@@ -60,8 +93,8 @@ namespace Needle.SelectiveProfiling
 					SelectiveProfiler.DisableProfiling(m);
 			}
 		}
-		
-		
+
+
 		// [MenuItem("CONTEXT/MonoImporter/Profile")]
 		// private static void Profile(MenuCommand command)
 		// {
