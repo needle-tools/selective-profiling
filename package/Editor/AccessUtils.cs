@@ -15,7 +15,11 @@ using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Scripting;
+using Matrix4x4 = UnityEngine.Matrix4x4;
 using Object = UnityEngine.Object;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
+using Vector4 = UnityEngine.Vector4;
 
 namespace Needle.SelectiveProfiling.Utils
 {
@@ -31,13 +35,23 @@ namespace Needle.SelectiveProfiling.Utils
 	internal static class AccessUtils
 	{
 		private static readonly Dictionary<string, Assembly> assemblyMap = new Dictionary<string, Assembly>();
+		private static Dictionary<string, MethodInfo> foundMethodCalls = new Dictionary<string, MethodInfo>();
+
+		internal static void RegisterMethodCall(string key, MethodInfo method)
+		{
+			if (!foundMethodCalls.ContainsKey(key))
+			{
+				foundMethodCalls.Add(key, method);
+			}
+		}
 
 		public static string GetMethodIdentifier(this MethodInfo info)
 		{
 			if (info == null) return null;
 			var declaring = info.DeclaringType;
 			var assembly = declaring?.Assembly;
-			return assembly?.GetName().Name + ".dll" + ", " + declaring?.Namespace + "::" + declaring?.Name + info.Name + "(TODO:Params)";
+			return assembly?.GetName().Name + ".dll" + ", " + declaring?.Namespace + "::" + declaring?.Name + info.Name + "(" +
+			       string.Join(", ", info.GetParameters().Select(p => p.ParameterType)) + ")";
 		}
 
 		private static Assembly[] assemblies;
@@ -74,55 +88,59 @@ namespace Needle.SelectiveProfiling.Utils
 		}
 
 		private static readonly List<ulong> callstackList = new List<ulong>();
+		private static readonly HashSet<ulong> previouslyFound = new HashSet<ulong>();
 
-		private static bool TryFindMethodFromCallstack(int _itemId, HierarchyFrameDataView view, ref List<MethodInfo> methods)
+		internal static bool TryFindMethodFromCallstack(int _itemId, HierarchyFrameDataView view, ref List<MethodInfo> methods, int maxLevel = int.MaxValue, List<int> itemIds = null)
 		{
 			if (view == null || !view.valid || _itemId < 0)
 			{
 				return false;
 			}
 
-			bool FindMethodCallstackRecursive(int itemId, ref List<MethodInfo> foundMethods)
+			bool FindMethodCallstackRecursive(int itemId, ref List<MethodInfo> foundMethods, int level = 0)
 			{
-				// var callStack = view.ResolveItemCallstack(itemId);
-				// if(!string.IsNullOrEmpty(callStack))
-				// 	Debug.Log(callStack);
-
 				callstackList.Clear();
 				view.GetItemCallstack(itemId, callstackList);
 
 				if (callstackList.Count > 0)
 				{
-					// Debug.Log(name + " -> " + callstackList.Count + "\n" + 
-					//           string.Join("\n", callstackList.Select(i => (view.ResolveMethodInfo(i).methodName) ?? string.Empty).Where(s => !string.IsNullOrEmpty(s))) 
-					//           + "\n\n\n"
-					//           );
 					foreach (var addr in callstackList)
 					{
+						if (previouslyFound.Contains(addr)) continue;
+						previouslyFound.Add(addr);
 						var methodInfo = view.ResolveMethodInfo(addr);
 						if (!string.IsNullOrEmpty(methodInfo.methodName))
 						{
+							var prevCount = foundMethods?.Count ?? 0;
 							if (TryGetMethodFromFullyQualifiedName(methodInfo.methodName, ref foundMethods))
 							{
-								// var name = view.GetItemName(itemId);
-								// Debug.Log(name + ": FOUND " + methodInfo.methodName);
+								// if ambiguous method
+								var diff = foundMethods.Count - prevCount;
+								for(var i = 0 ; i < diff; i++)
+									itemIds?.Add(itemId);
 							}
 						}
 					}
 				}
-
+				
 				if (!view.HasItemChildren(itemId)) return foundMethods != null && foundMethods.Count > 0;
 				var children = new List<int>();
 				view.GetItemChildren(itemId, children);
-				foreach (var id in children)
+				var nextLevel = ++level;
+				if (nextLevel <= maxLevel)
 				{
-					FindMethodCallstackRecursive(id, ref foundMethods);
+					foreach (var id in children)
+					{
+						FindMethodCallstackRecursive(id, ref foundMethods, nextLevel);
+					}
 				}
-
 				return foundMethods != null && foundMethods.Count > 0;
 			}
 
-			return FindMethodCallstackRecursive(_itemId, ref methods);
+			previouslyFound.Clear();
+			var res = FindMethodCallstackRecursive(_itemId, ref methods);
+			previouslyFound.Clear();
+			return res;
 		}
 
 		private static bool TryFindMethodsInChildrenFromNames(int itemId, HierarchyFrameDataView frameData, ref List<MethodInfo> methods)
@@ -177,10 +195,16 @@ namespace Needle.SelectiveProfiling.Utils
 			return false;
 		}
 
-		private static bool TryGetMethodFromFullyQualifiedName(string name, ref List<MethodInfo> methodList)
+		internal static bool TryGetMethodFromFullyQualifiedName(string name, ref List<MethodInfo> methodList)
 		{
 			if (!string.IsNullOrEmpty(name))
 			{
+				if (foundMethodCalls.ContainsKey(name))
+				{
+					if (methodList == null) methodList = new List<MethodInfo>();
+					methodList.Add(foundMethodCalls[name]);
+				}
+				
 				Assembly GetAssembly(ref Assembly[] _assemblies)
 				{
 					if (assemblyMap.ContainsKey(name)) return assemblyMap[name];
@@ -255,7 +279,7 @@ namespace Needle.SelectiveProfiling.Utils
 							if (!success)
 								Debug.LogException(am);
 							if (SelectiveProfiler.DebugLog)
-								Debug.Log("Found AmbiguousMatch for <i>" + fullName + "</i>" + (success ? " but returning " + found + " matching methods" : " and could not find matching methods"));
+								Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Found AmbiguousMatch for <i>" + fullName + "</i>" + (success ? " but returning " + found + " matching methods" : " and could not find matching methods"));
 						}
 					}
 #if DEBUG_ACCESS
@@ -273,7 +297,7 @@ namespace Needle.SelectiveProfiling.Utils
 		public static BindingFlags AllDeclared => AccessTools.allDeclared;
 
 
-		public static IEnumerable<MethodInfo> GetMethods(object obj, Type maxType)
+		public static IEnumerable<MethodInfo> GetMethods(object obj, Type maxType = null)
 		{
 			if (obj == null) yield break;
 			if (obj is Object o && !o) yield break;
@@ -281,7 +305,7 @@ namespace Needle.SelectiveProfiling.Utils
 				yield return m;
 		}
 
-		public static IEnumerable<MethodInfo> GetMethods(Type type, Type maxType)
+		public static IEnumerable<MethodInfo> GetMethods(Type type, Type maxType = null)
 		{
 			return InternalGetMethods(type, maxType);
 		}
@@ -370,6 +394,7 @@ namespace Needle.SelectiveProfiling.Utils
 					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, msg);
 			}
 
+			
 			// see Harmony PatchProcessor.cs:136
 			if (method.IsDeclaredMember() is false)
 			{
@@ -383,6 +408,7 @@ namespace Needle.SelectiveProfiling.Utils
 					return false;
 				}
 			}
+			
 
 			if (!method.HasMethodBody())
 			{
@@ -390,23 +416,42 @@ namespace Needle.SelectiveProfiling.Utils
 				return false;
 			}
 
+			if (method.Name.StartsWith("op_"))
+			{
+				Reason("Operation is not allowed: " + GetMethodLogName());
+				return false;
+			}
+			
+			
 			if (
+				method.DeclaringType == typeof(Object) ||
 				method.DeclaringType == typeof(GC) ||
 				method.DeclaringType == typeof(GarbageCollector) ||
 				method.DeclaringType == typeof(Profiler) ||
 				typeof(ProfilerDriver).IsAssignableFrom(method.DeclaringType) ||
 				typeof(ProfilerMarker).IsAssignableFrom(method.DeclaringType) ||
 				typeof(CustomSampler).IsAssignableFrom(method.DeclaringType) ||
+				method.DeclaringType == typeof(SelectiveProfiler) ||
+				method.DeclaringType == typeof(UnityException) ||
 			    method.DeclaringType == typeof(Application) ||
 			    method.DeclaringType == typeof(StackTraceUtility) ||
 			    method.DeclaringType == typeof(AssetDatabase) ||
-			    method.DeclaringType == typeof(Mathf)
+				method.DeclaringType == typeof(Time) ||
+				method.DeclaringType == typeof(EditorPrefs) ||
+				method.DeclaringType == typeof(SessionState) ||
+			    method.DeclaringType == typeof(Mathf) ||
+				method.DeclaringType == typeof(Matrix4x4) ||
+				method.DeclaringType == typeof(Vector2) ||
+				method.DeclaringType == typeof(Vector3) ||
+				method.DeclaringType == typeof(Vector4) ||
+				method.DeclaringType == typeof(DragAndDrop) ||
+				method.DeclaringType == typeof(Undo)
 			)
 			{
 				Reason($"Profiling in {method.DeclaringType} is not allowed: " + GetMethodLogName());
 				return false;
 			}
-
+			
 			// Generics
 			// See https://harmony.pardeike.net/articles/patching.html#commonly-unsupported-use-cases
 			// Got various crashes when patching generics was enabled (e.g. patching generic singleton Instance.Getter caused crashes)
@@ -436,20 +481,27 @@ namespace Needle.SelectiveProfiling.Utils
 				return false;
 			}
 
+			var assembly = method.DeclaringType?.Assembly;
+			if (assembly == typeof(PatchManager).Assembly || assembly == typeof(Harmony).Assembly)
+			{
+				Reason($"Profiling method in {assembly} is not allowed: " + GetMethodLogName());
+				return false;
+			}
+
 			var assemblyName = ExtractAssemblyNameWithoutVersion(method.DeclaringType?.Assembly);
 			if (!string.IsNullOrEmpty(assemblyName))
 			{
 				switch (assemblyName)
 				{
 					case "UnityEngine.UIElementsNativeModule":
-					case "UnityEngine.IMGUIModule":
+					// case "UnityEngine.IMGUIModule":
 					// case "UnityEngine.CoreModule":
 					// case "UnityEditor.CoreModule":
-						// 		// case "UnityEditor.UIElementsModule":
-						// 		// case "UnityEngine.UIElementsModule":
-						// 		// case "UnityEngine.SharedInternalsModule":
-						// 		// case "UnityEditor.PackageManagerUIModule":
-						Reason("Profiling in " + assemblyName + " is not allowed");
+					// case "UnityEditor.UIElementsModule":
+					// case "UnityEngine.UIElementsModule":
+					// case "UnityEngine.SharedInternalsModule":
+					// case "UnityEditor.PackageManagerUIModule":
+						Reason("Profiling in " + assemblyName + " is not allowed: " + GetMethodLogName());
 						return false;
 				}
 			}
@@ -457,25 +509,29 @@ namespace Needle.SelectiveProfiling.Utils
 			var fullName = method.DeclaringType?.FullName;
 			if (!string.IsNullOrEmpty(fullName))
 			{
-				if (fullName.StartsWith("UnityEditor.Profiling") ||
-				    fullName.StartsWith("UnityEditor.HostView") ||
-				    fullName.StartsWith("UnityEngine.UIElements.UIR") ||
-				    fullName.StartsWith("UnityEditor.StyleSheets") ||
-				    fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem")
+				if (
+					fullName.StartsWith("System.")
+					|| fullName.StartsWith("UnityEditor.Profiling")
+				    // || fullName.StartsWith("UnityEditorInternal.Profiling")
+				    // || fullName.StartsWith("UnityEditorInternal.InternalEditorUtility")
+				    // || fullName.StartsWith("UnityEditor.ProfilerWindow")
+				    || fullName.StartsWith("UnityEditor.HostView")
+				    || fullName.StartsWith("UnityEngine.UIElements.UIR")
+					|| fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem")
+					// || fullName.StartsWith("UnityEditor.IMGUI.Controls.TreeViewController")
+				    // || fullName.StartsWith("UnityEditor.StyleSheets")
+				 //    || fullName.StartsWith("UnityEngine.SendMouseEvents")
+				 //    || fullName.StartsWith("UnityEditor.PlayModeView")
+					
+					// these are known types that have problems
+					// see https://github.com/marwie/EntityComponentSystemSamples/tree/harmony-dependencymanager
+					|| fullName == "Unity.Entities.ComponentDependencyManager"
 				)
 				{
-					Reason("Profiling in " + fullName + " is not allowed");
+					Reason($"Profiling in {fullName} is not allowed: " + GetMethodLogName());
 					return false;
 				}
 			}
-
-			var assembly = method.DeclaringType?.Assembly;
-			if (assembly == typeof(PatchManager).Assembly || assembly == typeof(Harmony).Assembly)
-			{
-				Reason($"Profiling method in {assembly} is not allowed");
-				return false;
-			}
-
 			// if (method.DeclaringType != null)
 			// {
 			// 	if (typeof(MonoBehaviour).IsAssignableFrom(method.DeclaringType) && method.Name == "OnValidate" && method.GetParameters().Length <= 0)
@@ -483,6 +539,21 @@ namespace Needle.SelectiveProfiling.Utils
 			// 		return false;
 			// 	}
 			// }
+			
+			
+			
+			// TODO: check if [MethodImpl(MethodImplOptions.AggressiveInlining)] makes any problems
+			foreach (var attr in method.GetCustomAttributes())
+			{
+				var attributeTypeName = attr.TypeId.ToString();
+				// dont patch methods marked with [RequiredByNativeCode]
+				if (attributeTypeName == "UnityEngine.Scripting.RequiredByNativeCodeAttribute")
+				{
+					Reason($"Profiling method with {attributeTypeName} attribute is not allowed: " + GetMethodLogName());
+					return false;
+				}
+			}
+
 
 			return true;
 		}

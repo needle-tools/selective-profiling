@@ -44,7 +44,6 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				var inst = instructions[index];
 				var prevStart = start;
 
-
 				// we dont inject samples in try{} block because we get errors when exception happens and we dont have an end sample
 				// possible solution: wrap profiler samples with "try finally" block so that "end sample" is called even if exception happens
 				exceptionBlockStack += inst.blocks.Count(b => b.blockType == ExceptionBlockType.BeginExceptionBlock);
@@ -118,6 +117,13 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					
 					if (inst.operand is MethodInfo mi)
 					{
+						// not sure if this is responsible for some of the profiler sample mismatches
+						if (mi.DeclaringType == typeof(GUIUtility) && mi.Name == "ExitGUI")
+						{
+							start = -1;
+							continue;
+						}
+						
 						bool MethodIsProfilerMethodOrHasProfilerMethodArgument()
 						{
 							return mi.DeclaringType == typeof(Profiler) || IsProfilerMarkerOrSampler(mi.DeclaringType);
@@ -134,7 +140,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 						}
 
 						if (mi.GetCustomAttribute<DontFollow>() == null)
-							SelectiveProfiler.RegisterInternalCalledMethod(mi);
+							SelectiveProfiler.RegisterInternalCalledMethod(method, mi);
 					}
 
 					if (inst.operand is ConstructorInfo ci)
@@ -145,6 +151,13 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 							start = -1;
 							continue;
 						}
+
+						// skip if creating exception instance
+						// if (typeof(Exception).IsAssignableFrom(ci.DeclaringType))
+						// {
+						// 	start = -1;
+						// 	continue;
+						// }
 						
 						// skip constructors that take profiler sampler as argument
 						// this prevents cases where IDisposable implementations (as ProfilerScopes) cause mismatching samples
@@ -154,6 +167,12 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 							continue;
 						}
 					}
+
+					// if (inst.opcode == OpCodes.Newobj && inst.operand != null && inst.operand is Exception)
+					// {
+					// 	start = -1;
+					// 	continue;
+					// }
 
 					if (start > index && hasLabel) start = prevStart;
 
@@ -180,7 +199,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 			if (ShouldSaveIL(debugLog))
 			{
-				var prefix = debugLog && method != null ? "<b>Transpiled</b> " + method.DeclaringType?.Name + "." + method.Name + "\n" : string.Empty;
+				var prefix = debugLog && method != null ? "<b>Transpiled</b> " + method.DeclaringType?.FullName + "." + method.Name + "\n" : string.Empty;
 				var IL_After = string.Join("\n", instructions);
 				if (debugLog && IL_Before?.Length + IL_After.Length > 12000)
 				{

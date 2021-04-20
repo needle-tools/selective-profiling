@@ -5,6 +5,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
+using NUnit.Framework.Internal;
+using UnityEditor;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling
@@ -17,8 +19,17 @@ namespace Needle.SelectiveProfiling
 		public MethodInformation MethodInformation;
 
 		public bool IsActive => Patch != null && PatchManager.IsActive(Patch.ID());
-		internal string Identifier => Method?.GetMethodIdentifier();
+		
+		internal string Identifier
+		{
+			get
+			{
+				if(string.IsNullOrWhiteSpace(identifier)) identifier = Method?.GetMethodIdentifier();
+				return identifier;
+			}
+		}
 
+		private string identifier;
 		private bool enabled;
 
 		public ProfilingInfo(EditorPatchProvider patch, MethodInfo info, MethodInformation mi)
@@ -33,9 +44,14 @@ namespace Needle.SelectiveProfiling
 			if (!force && !MethodInformation.Enabled)
 				return PatchManager.CompletedTaskFailed;
 			MethodInformation.Enabled = true;
-			Patch.PatchThreaded = false;
-			var ts = Patch.Enable(false);
 			
+			// some methods can only be patched on the main thread
+			// we try to patch on background thread first and if a unity exception with "Can only be executed on main thread"
+			// is thrown we call enable again but request patching on the main thread
+			Patch.SuppressUnityExceptions = !SelectiveProfiler.DebugLog;
+			Patch.PatchThreaded = true;
+			var ts = Patch.Enable(false);
+
 			if (!enabled)
 			{
 				enabled = true;
@@ -69,12 +85,6 @@ namespace Needle.SelectiveProfiling
 #endif
 			}
 			return t;
-		}
-
-		public void ToggleActive()
-		{
-			if (IsActive) Disable();
-			else Enable();
 		}
 
 		public override string ToString()
@@ -115,7 +125,7 @@ namespace Needle.SelectiveProfiling
 			{
 				callers.Add(caller);
 				if (SelectiveProfiler.DebugLog)
-					Debug.Log(Method.Name + " called by\n" + string.Join("\n", callers.Select(c => c.Method.Name)));
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, Method.Name + " called by\n" + string.Join("\n", callers.Select(c => c.Method.Name)));
 				caller.AddCallee(this);
 			}
 		}

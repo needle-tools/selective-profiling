@@ -31,22 +31,41 @@ namespace Needle.SelectiveProfiling
 				const string separator = "/";
 				var basePath = "Profiling/" + type.Name + separator;
 				var methods = type.GetMethods(AccessUtils.AllDeclared);
-				
-				// var patchAll =
+
+				bool IsAllowed(MethodInfo method) => AccessUtils.AllowPatching(method, false, false);
+
+				var count = methods.Count(IsAllowed);
+				if (count > 1)
+				{
+					var all = new ContextItem(basePath + "All in " + type.Name + " [" + count + "]", () =>
+					{
+						foreach(var m in methods) 
+							SelectiveProfiler.EnableProfilingAsync(m, SelectiveProfiler.ShouldSave, true, true);	
+					});
+					items.Add(all);
+					
+					var none = new ContextItem(basePath + "None in " + type.Name + " [" + count + "]", () =>
+					{
+						foreach (var m in methods)
+							SelectiveProfiler.DisableAndForget(m);
+					});
+					items.Add(none);
+					
+					items.Add(new ContextItem(basePath, null, false, true));
+				}
 				
 				foreach (var m in methods)
 				{
-					var allowed = AccessUtils.AllowPatching(m, false, false);
-					if (!allowed) continue;
+					if (!SelectiveProfiler.DevelopmentMode && !IsAllowed(m)) continue;
 					var name = m.ToString();
 					if(SelectiveProfiler.IsProfiling(m, true)) 
 						name += " ✓";
-					const int maxNameLength = 80;
+					const int maxNameLength = 120;
 					if (name.Length > maxNameLength)
-						name = name.Substring(Mathf.Max(0, name.Length - maxNameLength));
+						name = name.Substring(0, Mathf.Max(0, maxNameLength));
 					var item = new ContextItem(basePath + name, () => OnSelected(m));
 					// ReSharper disable once ConditionIsAlwaysTrueOrFalse
-					item.Enabled = allowed;
+					item.Enabled = IsAllowed(m);
 					items.Add(item);
 				}
 
@@ -55,7 +74,7 @@ namespace Needle.SelectiveProfiling
 
 			// var onlyUser = AccessUtils.GetLevel(ctx.GetType()) == AccessUtils.Level.User;
 			const bool _onlyUser = false;
-			AddMethods(ctx.GetType(), _onlyUser, 1);
+			AddMethods(ctx.GetType(), _onlyUser, 3);
 
 		}
 

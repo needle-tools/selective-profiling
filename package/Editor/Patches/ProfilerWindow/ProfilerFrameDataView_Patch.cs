@@ -1,6 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
@@ -8,7 +13,9 @@ using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
+using UnityEditorInternal;
 using UnityEngine;
+
 #if UNITY_2020_2_OR_NEWER
 
 #endif
@@ -25,6 +32,7 @@ namespace Needle.SelectiveProfiling
 			if (!SelectiveProfiler.AllowToBeEnabled) return;
 			patches.Add(new Profiler_SelectionChanged());
 			patches.Add(new Profiler_CellGUI());
+			patches.Add(new Profiler_Toolbar());
 		}
 
 		public override void OnEnabledPatch()
@@ -65,6 +73,46 @@ namespace Needle.SelectiveProfiling
 		}
 
 
+		private class Profiler_Toolbar : EditorPatch
+		{
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView");
+				var m = t.GetMethod("DrawDetailedViewPopup", BindingFlags.Instance | BindingFlags.NonPublic);
+				targetMethods.Add(m);
+
+				return Task.CompletedTask;
+			}
+
+			private static void Postfix()
+			{
+				var rect = GUILayoutUtility.GetRect(120f, 120f, 14, 14, EditorStyles.toolbarButton);
+				if (EditorGUI.DropdownButton(rect, new GUIContent("Selective Profiler"), FocusType.Keyboard, new GUIStyle(EditorStyles.toolbarDropDown)))
+				{
+					rect.y += rect.height / 2;
+					PopupWindow.Show(rect, new SettingsPopup());
+				}
+			}
+
+			public class SettingsPopup : PopupWindowContent
+			{
+				public override Vector2 GetWindowSize()
+				{
+					return new Vector2(500, 300);
+				}
+
+				private Vector2 scroll;
+
+				public override void OnGUI(Rect rect)
+				{
+					scroll = EditorGUILayout.BeginScrollView(scroll);
+					Draw.DefaultSelectiveProfilerUI(SelectiveProfilerSettings.Instance, true);
+					EditorGUILayout.EndScrollView();
+				}
+			}
+		}
+
+
 		private class Profiler_SelectionChanged : EditorPatch
 		{
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
@@ -101,18 +149,15 @@ namespace Needle.SelectiveProfiling
 			// 	// TreeView.DefaultStyles.label.normal.textColor = Color.gray;
 			// }
 
-			private static void Prefix(Rect cellRect, int column)
-			{
-			}
-
 			// method https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L676
 			// item: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
 			private static void Postfix(object __instance, Rect cellRect, TreeViewItem item, int column)
 			{
 				HierarchyFrameDataView frameDataView;
-				if (column <= 0)
+				if (column == 0 && Event.current.type == EventType.Repaint)
 				{
 					frameDataView = GetFrameDataView(item);
+					if (frameDataView == null || !frameDataView.valid) return;
 					var profiled = ProfilerHelper.IsProfiled(item, frameDataView);
 					if (profiled != HierarchyItem.None)
 					{
@@ -143,23 +188,26 @@ namespace Needle.SelectiveProfiling
 
 				var button = Event.current.button;
 				frameDataView = GetFrameDataView(item);
+				if (frameDataView == null || !frameDataView.valid) return;
 
 				if (button == 0 && item.id == selectedId && Settings.ImmediateMode && selectedId != lastPatchedInImmediateMode)
 				{
 					lastPatchedInImmediateMode = selectedId;
-					var name = frameDataView?.GetItemName(item.id);
-					// TODO: test with standalone profiler
-					if (AccessUtils.TryGetMethodFromName(name, out var methods, false, item.id, frameDataView))
-					{
-						// TODO: add immediate profiling again
-						// SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
-					}
+					// var name = frameDataView?.GetItemName(item.id);
+					// // TODO: test with standalone profiler
+					// if (AccessUtils.TryGetMethodFromName(name, out var methods, false, item.id, frameDataView))
+					// {
+					// 	// TODO: add immediate profiling again
+					// 	// SelectiveProfiler.SelectedForImmediateProfiling(methodInfo);
+					// }
 				}
 
 				if (button != 1)
 				{
 					return;
 				}
+
+				// TODO: check if application has focus, apparently this also triggers when unity is open in the background?!
 
 				// right click
 				if (cellRect.Contains(Event.current.mousePosition))
@@ -196,9 +244,18 @@ namespace Needle.SelectiveProfiling
 
 						var debugLog = settings.DebugLog;
 
-						var name = frameDataView?.GetItemName(item.id);
+						var id = item.id;
+						var isInjectedParent = id > ProfilerFrameDataView_CustomRowsPatch.parentIdOffset;
+						if (isInjectedParent)
+							id -= ProfilerFrameDataView_CustomRowsPatch.parentIdOffset;
+						var name = frameDataView?.GetItemName(id);
+
+						// use parent id for injected rows
+						if (isInjectedParent)
+							id = item.parent.id;
+
 						var didFind = false;
-						if (AccessUtils.TryGetMethodFromName(name, out var methodsList, false, item.id, frameDataView))
+						if (AccessUtils.TryGetMethodFromName(name, out var methodsList, false, id, frameDataView))
 						{
 							foreach (var methodInfo in methodsList)
 							{
@@ -207,42 +264,52 @@ namespace Needle.SelectiveProfiling
 									didFind = true;
 									AddMenuItem(tree, menu, methodInfo, false);
 								}
-								else if(SelectiveProfiler.DevelopmentMode) 
+								else if (SelectiveProfiler.DevelopmentMode)
 									menu.AddDisabledItem(new GUIContent(AccessUtils.AllowPatchingResultLastReason));
 							}
 						}
+						
 
-						if (AccessUtils.TryGetMethodFromName(name, out methodsList, true, item.id, frameDataView))
+						if (!didFind)//menu.GetItemCount() <= 0)
 						{
-							if(didFind)
+							// get the injected parent base name
+							if (isInjectedParent)
+								name = name?.Substring(0, name.IndexOf(ProfilerSamplePatch.TypeSampleNameSeparator));
+							// make sure we dont have slashes in path
+							else name = name?.Replace("/", " ");
+							menu.AddDisabledItem(new GUIContent("Could not find " + name));
+						}
+
+						if (AccessUtils.TryGetMethodFromName(name, out methodsList, true, id, frameDataView))
+						{
+							var allowed = methodsList.Distinct().Where(AllowPatching).ToList();
+							// ReSharper disable PossibleMultipleEnumeration
+							var count = allowed.Count;
+
+							if (didFind && count > 1)
 								menu.AddSeparator(string.Empty);
 
 							bool AllowPatching(MethodInfo _mi)
 							{
-								return AccessUtils.AllowPatching(_mi, false, debugLog); 
+								return AccessUtils.AllowPatching(_mi, false, debugLog);
 							}
 
-							var allowed = methodsList.Distinct().Where(AllowPatching);
-							var count = allowed.Count();
+							string parentMenu = null;// count < 5 ? string.Empty : "Methods in Children/";
 							
-							if (methodsList.Any(m => AccessUtils.AllowPatching(m, false, debugLog)))
+							if (count > 1)
 							{
-								menu.AddItem(new GUIContent("Enable profiling for all [" + count + "]"), false,
+								menu.AddSeparator(parentMenu + string.Empty);
+								menu.AddItem(new GUIContent(parentMenu + "Enable profiling for " + count + " Methods below"), false,
 									() => EnableProfilingFromProfilerWindow(allowed, tree));
-								menu.AddItem(new GUIContent("Disable profiling for all [" + count + "]"), false,
+								menu.AddItem(new GUIContent(parentMenu + "Disable profiling for " + count + " Methods below"), false,
 									() => DisableProfilingFromProfilerWindow(allowed, tree));
-								menu.AddSeparator(string.Empty);
 							}
 
-							foreach (var methodInfo in allowed)
+							if (count > 0)
 							{
-								AddMenuItem(tree, menu, methodInfo, true);
+								menu.AddSeparator(parentMenu + string.Empty);
+								BuildOptimalMenuItems(tree, menu, allowed, parentMenu);
 							}
-						}
-
-						if (menu.GetItemCount() <= 0)
-						{
-							menu.AddDisabledItem(new GUIContent("Nothing to profile in " + name));
 						}
 
 						if (menu.GetItemCount() > 0)
@@ -250,16 +317,89 @@ namespace Needle.SelectiveProfiling
 					}
 				}
 			}
-
-			// TODO: figure out how to use https://docs.unity3d.com/ScriptReference/Profiling.FrameDataView.ResolveMethodInfo.html
-			// https://docs.unity3d.com/ScriptReference/Profiling.HierarchyFrameDataView.GetItemCallstack.html
-			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerModules/CPUorGPUProfilerModule.cs#L194
 		}
 
-		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo, bool addTypeSubmenu)
+		private static void BuildOptimalMenuItems(TreeView tree, GenericMenu menu, IEnumerable<MethodInfo> methods, string parent = null)
+		{
+			if (parent != null && !parent.EndsWith("/")) parent += "/";
+			
+			// only put items in submenu with more than one method per declaring type
+			var lookup = methods.ToLookup(e => e.DeclaringType);
+			foreach (var kvp in lookup)
+			{
+				string GetMenuString(string prefix)
+				{
+					var str = GetTypeSubmenuName(kvp.Key) + prefix + kvp.Key;
+					if (parent != null)
+						str = parent + str;
+					return str;
+				}
+				
+				var index = 0;
+				MethodInfo lastMethod = null;
+				foreach (var method in kvp)
+				{
+					if (index <= 0)
+					{
+						lastMethod = method;
+					}
+					else
+					{
+						if (lastMethod != null)
+						{
+							// we have multiple methods
+							if (kvp.All(e => SelectiveProfiler.IsProfiling(e)))
+							{
+								menu.AddDisabledItem(new GUIContent(GetMenuString("/Enable profiling for all Methods in ")),
+									false);
+								menu.AddItem(new GUIContent(GetMenuString("/Disable profiling for all Methods in ")),
+									true,
+									() => DisableProfilingFromProfilerWindow(kvp, tree));
+							}
+							else if (kvp.Any(e => SelectiveProfiler.IsProfiling(e)))
+							{
+								menu.AddItem(new GUIContent(GetMenuString("/Enable profiling for all Methods in ")),
+									true,
+									() => EnableProfilingFromProfilerWindow(kvp, tree));
+								menu.AddItem(new GUIContent(GetMenuString("/Disable profiling for all Methods in ")),
+									true,
+									() => DisableProfilingFromProfilerWindow(kvp, tree));
+							}
+							else
+							{
+								menu.AddItem(new GUIContent(GetMenuString("/Enable profiling for all Methods in ")),
+									false,
+									() => EnableProfilingFromProfilerWindow(kvp, tree));
+								menu.AddDisabledItem(new GUIContent(GetMenuString("/Disable profiling for all Methods in ")),
+									false);
+							}
+
+							menu.AddSeparator(parent + GetTypeSubmenuName(kvp.Key));
+
+							AddMenuItem(tree, menu, lastMethod, true, parent);
+							lastMethod = null;
+						}
+
+						AddMenuItem(tree, menu, method, true, parent);
+					}
+
+					++index;
+				}
+
+				if (lastMethod != null)
+				{
+					AddMenuItem(tree, menu, lastMethod, false, parent);
+				}
+			}
+		}
+
+		private const string MenuItemPrefix = "Profile | ";
+		private static string GetTypeSubmenuName(Type type) => MenuItemPrefix + type.Name;
+
+		private static void AddMenuItem(TreeView tree, GenericMenu menu, MethodInfo methodInfo, bool addTypeSubmenu, string parent = null)
 		{
 			var active = SelectiveProfiler.IsProfiling(methodInfo);
-			
+
 			var ret = methodInfo.ReturnType.Name;
 			// remove void return types
 			if (ret == "Void") ret = string.Empty;
@@ -273,11 +413,10 @@ namespace Needle.SelectiveProfiling
 				return methodName;
 			}
 
-			const string prefix = "Profile | ";
 			const int maxLength = 180;
 			// if menu items are too long nothing is displayed anymore
-			
-			var label = prefix + TranspilerUtils.GetNiceMethodName(methodInfo, false);
+
+			var label = MenuItemPrefix + TranspilerUtils.GetNiceMethodName(methodInfo, false);
 
 			if (label.Length > maxLength)
 				label = $"Profile | {ret}{methodInfo.DeclaringType?.Name}.{GetMethodName(true)}";
@@ -287,7 +426,7 @@ namespace Needle.SelectiveProfiling
 				label = "..." + label.Substring(Mathf.Abs(maxLength - label.Length));
 
 			if (addTypeSubmenu && methodInfo.DeclaringType != null)
-				label = methodInfo.DeclaringType.Name + "/" + label;
+				label = GetTypeSubmenuName(methodInfo.DeclaringType) + "/" + label;
 
 			// need to split this into two menu items until we sync state of activated methods between standalone profiler and main process
 			// if (SelectiveProfiler.IsStandaloneProcess)
@@ -299,6 +438,11 @@ namespace Needle.SelectiveProfiling
 			// }
 			// else
 			{
+				if (parent != null)
+				{
+					if (!parent.EndsWith("/")) parent += "/";
+					label = parent + label;
+				}
 				menu.AddItem(new GUIContent(label),
 					active, () =>
 					{
@@ -315,6 +459,7 @@ namespace Needle.SelectiveProfiling
 			{
 				SelectiveProfiler.EnableProfilingAsync(method, SelectiveProfiler.ShouldSave, true, true, true);
 			}
+
 			if (tree != null)
 				ReloadDelayed(tree);
 		}

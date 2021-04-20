@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -36,8 +37,7 @@ namespace Needle.SelectiveProfiling
 
 		public static bool IsPinned(TreeViewItem item)
 		{
-			var fd = GetFrameData(item);
-			var markerId = fd.GetItemMarkerID(item.id);
+			var markerId = GetId(item);
 			return pinnedItems.Contains(markerId);
 		}
 
@@ -47,9 +47,8 @@ namespace Needle.SelectiveProfiling
 		{
 			if (item != null)
 			{
-				var fd = GetFrameData(item);
-				var markerId = fd.GetItemMarkerID(item.id);
-				InternalPin(markerId, true);
+				var markerId = GetId(item);
+				InternalPin(markerId, true, null);
 			}
 		}
 
@@ -57,9 +56,8 @@ namespace Needle.SelectiveProfiling
 		{
 			if (item == null) return;
 
-			var fd = GetFrameData(item);
-			var markerId = fd.GetItemMarkerID(item.id);
-			InternalUnpin(markerId, level <= 0);
+			var markerId = GetId(item);
+			InternalUnpin(markerId, level <= 0, null);
 
 			if (completely && item.hasChildren)
 			{
@@ -69,16 +67,46 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private static void InternalPin(int id, bool save)
+		internal static int GetId(TreeViewItem item)
+		{
+			var fd = GetFrameData(item);
+			var markerId = fd.GetItemMarkerID(item.id);
+			if (markerId == 0)
+			{
+				var name = fd.GetItemName(item.id);
+				markerId = name.GetHashCode();
+			}
+			return markerId;
+		}
+
+		internal static int GetId(string name)
+		{
+			return name.GetHashCode();
+		}
+
+		private static void InternalPin(int id, bool save, string fallback)
 		{
 			if (id < 0) return;
 			if (!pinnedItems.Contains(id))
 				pinnedItems.Add(id);
-			var frameData = GetFrameData();
-			var name = frameData.GetMarkerName(id);
-
 			if (save)
 			{
+				var frameData = GetFrameData();
+				string name;
+				try
+				{
+					name = frameData.GetMarkerName(id);
+				}
+				catch (ArgumentException)
+				{
+					name = fallback;
+				}
+
+				if (string.IsNullOrEmpty(name))
+				{
+					throw new Exception("Name is null");
+				}
+
 				var pinnedList = PinnedItems.PinnedProfilerItems;
 				if (pinnedList != null && !pinnedList.Contains(name))
 					pinnedList.Add(name);
@@ -86,7 +114,7 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private static void InternalUnpin(int id, bool save)
+		private static void InternalUnpin(int id, bool save, string fallback)
 		{
 			if (pinnedItems.Contains(id))
 				pinnedItems.Remove(id);
@@ -94,7 +122,20 @@ namespace Needle.SelectiveProfiling
 			if (save)
 			{
 				var frameData = GetFrameData();
-				var name = frameData.GetMarkerName(id);
+				string name;
+				try
+				{
+					name = frameData.GetMarkerName(id);
+				}
+				catch (ArgumentException)
+				{
+					name = fallback;
+				}
+
+				if (string.IsNullOrEmpty(name))
+				{
+					throw new Exception("Name is null");
+				}
 
 				var pinnedList = PinnedItems.PinnedProfilerItems;
 				if (pinnedList != null && pinnedList.Contains(name))
@@ -111,8 +152,7 @@ namespace Needle.SelectiveProfiling
 				return false;
 			}
 
-			var fd = GetFrameData(item);
-			var markerId = fd.GetItemMarkerID(item.id);
+			var markerId = GetId(item);
 			if (pinnedItems.Contains(markerId))
 			{
 				if (any) return true;
@@ -139,7 +179,9 @@ namespace Needle.SelectiveProfiling
 			foreach (var name in PinnedItems.PinnedProfilerItems)
 			{
 				var id = fd.GetMarkerId(name);
-				InternalPin(id, false);
+				if (id == 0)
+					id = GetId(name);
+				InternalPin(id, false, name);
 			}
 		}
 
@@ -154,6 +196,42 @@ namespace Needle.SelectiveProfiling
 				patches.Add(new Profiler_MigrateExpandedState());
 				patches.Add(new Profiler_CellGUI());
 				patches.Add(new Profiler_DoubleClick());
+				patches.Add(new Profiler_StoreExpandedState());
+			}
+
+
+			private class Profiler_StoreExpandedState : EditorPatch
+			{
+				protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+				{
+					var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
+					var m = t.GetMethod("StoreExpandedState", (BindingFlags) ~0);
+					targetMethods.Add(m);
+					return Task.CompletedTask;
+				}
+
+				private static FieldInfo dictField;
+				private static FieldInfo keyField, valueField;
+
+				private static void Postfix(object ___m_ExpandedMarkersHierarchy,   HierarchyFrameDataView ___m_FrameDataView)
+				{
+					// if (___m_FrameDataView == null || !___m_FrameDataView.valid) return;
+					//
+					// if (___m_ExpandedMarkersHierarchy == null) return;
+					// if (dictField == null)
+					// {
+					// 	dictField = ___m_ExpandedMarkersHierarchy.GetType().GetField("expandedMarkers", BindingFlags.Instance | BindingFlags.Public);
+					// 	if (dictField == null) return;
+					// }
+					
+					// var dict = (dictField.GetValue(___m_ExpandedMarkersHierarchy) as IEnumerable);
+					// foreach (var entry in dict)
+					// {
+					// 	var key = (int)entry.GetType().GetField("key", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(entry);
+					// 	var value = entry.GetType().GetField("value", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(entry);
+					// 	Debug.Log(key + ", " + value);
+					// }
+				}
 			}
 
 			private class Profiler_BuildRows : EditorPatch
@@ -306,17 +384,31 @@ namespace Needle.SelectiveProfiling
 						GUI.color = DimColor;
 				}
 
-				private static void Postfix(object __instance, Rect cellRect, TreeViewItem item, int column)
+				private static void Postfix(object __instance, Rect cellRect, TreeViewItem item, int column, HierarchyFrameDataView ___m_FrameDataView)
 				{
 					if (!AllowPinning()) return;
 					GUI.color = previousColor;
 					
-					if (column <= 0 && IsPinned(item))
+					if (column == 0 && IsPinned(item))
 					{
 						var size = cellRect.height * .6f;
 						var y = (cellRect.height - size) * .5f;
 						var rect = new Rect(cellRect.x + cellRect.width - size, cellRect.y + y, size, size);
 						GUI.DrawTexture(rect, Textures.Pin, ScaleMode.ScaleAndCrop, true);
+
+					}
+
+					if (column == 0)
+					{
+						var cr = cellRect;
+						cr.x = cr.x + cr.width - 100;
+						var markerId = ___m_FrameDataView.GetItemMarkerID(item.id);
+						if (markerId == 0)
+						{
+							var name = ___m_FrameDataView.GetItemName(item.id);
+							markerId = name.GetHashCode();
+						}
+						GUI.Label(cr, markerId.ToString());
 					}
 				}
 			}
@@ -335,10 +427,11 @@ namespace Needle.SelectiveProfiling
 				{
 					var frameData = GetFrameData();
 					if (frameData == null || !frameData.valid) return;
+					var name = frameData.GetItemName(id);
 					var markerId = frameData.GetItemMarkerID(id);
 					if (pinnedItems.Contains(markerId))
-						InternalUnpin(markerId, !Application.isPlaying);
-					else InternalPin(markerId, !Application.isPlaying);
+						InternalUnpin(markerId, !Application.isPlaying, name);
+					else InternalPin(markerId, !Application.isPlaying, name);
 
 					if (__instance is TreeView view) view.Reload();
 				}

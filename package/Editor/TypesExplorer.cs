@@ -100,7 +100,7 @@ namespace Needle.SelectiveProfiling
 						{
 							if (method == null) return;
 							var fullName = type.FullName + " " + method;
-							var name = method.DeclaringType?.Name + "." + method.Name;
+							var name = method.DeclaringType?.Name + " " + method.Name;
 							var filter = fullName + " " + name + " " + method.FullDescription();
 							filter = filter.ToLowerInvariant();
 							if (string.IsNullOrEmpty(filter)) return;

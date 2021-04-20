@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
+using Needle.SelectiveProfiling.Utils;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -28,6 +29,7 @@ namespace Needle.SelectiveProfiling
 			this.prefix = prefix;
 			this.postfix = postfix;
 			this._id = method != null ? method.DeclaringType?.FullName + "." + method.Name : base.ID();
+			this.Group = "Selective Profiling Sampler";
 		}
 
 		private readonly string _id;
@@ -39,6 +41,8 @@ namespace Needle.SelectiveProfiling
 		private readonly string prefix;
 		private readonly string postfix;
 		private readonly MethodBase method;
+		
+		internal const char TypeSampleNameSeparator = '/';
 
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
@@ -97,17 +101,28 @@ namespace Needle.SelectiveProfiling
 				}
 				return instructions;
 			}
-			
+
+			internal string GetSampleName(MethodBase currentMethod, CodeInstruction instruction)
+			{
+				return prefix + TranspilerUtils.GetSampleName(currentMethod, instruction.opcode, instruction.operand, false) + postfix;
+			}
+
 			
 			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index)
 			{
-				var methodName = TranspilerUtils.TryGetMethodName(instruction.opcode, instruction.operand, false);
-
-				var sampleName = prefix + methodName + postfix;
+				var parentType = currentMethod.DeclaringType?.Name;
+				var sampleName = GetSampleName(currentMethod, instruction);
 				
-				// for testing we need to collect sample marker names
-				try { OnSampleInjected?.Invoke(currentMethod, sampleName); }
-				catch(Exception e) {Debug.LogException(e);}
+				// when using the custom rows patch prefix the sample with the method name
+				if (!string.IsNullOrWhiteSpace(parentType) && PatchManager.IsActive(typeof(ProfilerFrameDataView_CustomRowsPatch).FullName))
+				{
+					// if (instruction.operand is MethodInfo type)
+					// 	parentType = type.DeclaringType?.Name;
+					sampleName = parentType + TypeSampleNameSeparator + sampleName;
+				}
+				
+				if(instruction.operand is MethodInfo mi)
+					AccessUtils.RegisterMethodCall(sampleName, mi);
 				
 				if (SelectiveProfiler.InjectSampleWithCallback(currentMethod))
 				{
@@ -124,7 +139,7 @@ namespace Needle.SelectiveProfiling
 			
 			private static readonly List<CodeInstruction> InsertBeforeConstant = new List<CodeInstruction>()
 			{
-				new CodeInstruction(OpCodes.Ldstr, "%MARKER%"),
+				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
 				new CodeInstruction(OpCodes.Nop),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};
@@ -132,7 +147,7 @@ namespace Needle.SelectiveProfiling
 			private static readonly List<CodeInstruction> InsertBeforeWithCallback = new List<CodeInstruction>()
 			{
 				new CodeInstruction(OpCodes.Ldarg_0), // load "this"
-				new CodeInstruction(OpCodes.Ldstr, "%MARKER%"),
+				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
 				new CodeInstruction(OpCodes.Nop), // will be replaced by load call to SelectiveProfiler.GetName
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};

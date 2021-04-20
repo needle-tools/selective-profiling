@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
 using needle.EditorPatching;
+using Needle.SelectiveProfiling.Commands;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditorInternal;
@@ -21,6 +22,7 @@ namespace Needle.SelectiveProfiling
 	public static class SelectiveProfiler
 	{
 		public static string SamplePostfix => DevelopmentMode ? "[dev]" : DebugLog ? "[debug]" : string.Empty;
+		internal static bool DrawItemDebugInformationInTreeView => DevelopmentMode;
 
 		// private static MethodInfo previouslySelectedImmediateProfilingMethod;
 
@@ -59,7 +61,8 @@ namespace Needle.SelectiveProfiling
 			}
 
 
-			return profiled.TryGetValue(method, out var pi ) && pi.IsActive;// && Patches.Any(e => e.IsActive && e.Method == method);
+			if (!profiled.TryGetValue(method, out var pi )) return false;
+			return pi.IsActive;// && Patches.Any(e => e.IsActive && e.Method == method);
 		}
 
 		public static bool EnableProfiling([NotNull] MethodInfo method,
@@ -196,9 +199,12 @@ namespace Needle.SelectiveProfiling
 				if (!muted)
 				{
 					enabled = await info.Enable();
-					
-					if(enabled)
+
+					if (enabled)
+					{
 						HandleDeepProfiling();
+					}
+					else if(DebugLog) Debug.LogError("Did not enable: " + method + ", " + info.IsActive + ", " + info.Identifier);
 				}
 			}
 			return enabled;
@@ -217,19 +223,19 @@ namespace Needle.SelectiveProfiling
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 			if (alwaysProfile.Contains(method)) return Task.CompletedTask;
-
+			
 #if UNITY_2020_2_OR_NEWER
 			if (IsStandaloneProcess)
 			{
-				var cmd = new DisableProfilingCommand(new MethodInformation(method));
-				QueueCommand(cmd);
+				var networkCommand = new DisableProfilingCommand(new MethodInformation(method));
+				QueueCommand(networkCommand);
 				return Task.CompletedTask;
 			}
 #endif
 
+			Task task = null;
 			allowSave &= ShouldSave;
 
-			Task task = null;
 			if (profiled.TryGetValue(method, out var prof))
 			{
 				task = prof.Disable();
@@ -280,6 +286,7 @@ namespace Needle.SelectiveProfiling
 		internal static IEnumerable<string> ExpectedPatches()
 		{
 			yield return typeof(ProfilerFrameDataView_Patch).FullName;
+			yield return typeof(ProfilerFrameDataView_CustomRowsPatch).FullName;
 			yield return typeof(ContextMenuPatches).FullName;
 		}
 
@@ -290,6 +297,7 @@ namespace Needle.SelectiveProfiling
 		internal static IEnumerable<MethodInfo> PatchedMethods => profiled.Keys;
 		internal static IEnumerable<MethodInformation> PatchedMethodsInfo => profiled2.Keys;
 		internal static int PatchesCount => profiled.Count;
+		internal static bool AnyEnabled => profiled.Any(kvp => kvp.Value.IsActive);
 		
 		private static readonly Dictionary<MethodInfo, ProfilingInfo> profiled = new Dictionary<MethodInfo, ProfilingInfo>();
 		private static readonly Dictionary<MethodInformation, ProfilingInfo> profiled2 = new Dictionary<MethodInformation, ProfilingInfo>();
@@ -319,8 +327,9 @@ namespace Needle.SelectiveProfiling
 			return profiled2.TryGetValue(info, out profile);
 		}
 
-		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-		private static async void InitRuntime()
+		[InitializeOnLoadMethod]
+		// [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+		private static async void InitApply()
 		{
 			if (!AllowToBeEnabled) return;
 			if (IsStandaloneProcess) return;
@@ -328,6 +337,21 @@ namespace Needle.SelectiveProfiling
 			if (!settings.Enabled) return;
 			while (!Profiler.enabled) await Task.Delay(100);
 			ApplyProfiledMethods();
+		}
+
+		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+		private static void Init()
+		{
+			if (!AllowToBeEnabled) return;
+
+			SelectiveProfilerSettings.MethodStateChanged -= OnMethodChanged;
+			SelectiveProfilerSettings.MethodStateChanged += OnMethodChanged;
+
+			SelectiveProfilerSettings.Cleared -= MethodsCleared;
+			SelectiveProfilerSettings.Cleared += MethodsCleared;
+
+			EditorApplication.update -= OnEditorUpdate;
+			EditorApplication.update += OnEditorUpdate;
 		}
 
 		private static async void ApplyProfiledMethods()
@@ -357,7 +381,7 @@ namespace Needle.SelectiveProfiling
 			}
 			
 			var ml = settings.MethodsList;
-			if (ml != null && ml.Count > 0)
+			if (ml != null && ml.Count > 0) 
 			{
 				var methodsList = Application.isPlaying ? ml.ToArray() : ml;
 				foreach (var m in methodsList)
@@ -366,21 +390,6 @@ namespace Needle.SelectiveProfiling
 						await EnableProfilingAsync(info, false);
 				}
 			}
-		}
-
-		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-		private static void Init()
-		{
-			if (!AllowToBeEnabled) return;
-
-			SelectiveProfilerSettings.MethodStateChanged -= OnMethodChanged;
-			SelectiveProfilerSettings.MethodStateChanged += OnMethodChanged;
-
-			SelectiveProfilerSettings.Cleared -= MethodsCleared;
-			SelectiveProfilerSettings.Cleared += MethodsCleared;
-
-			EditorApplication.update -= OnEditorUpdate;
-			EditorApplication.update += OnEditorUpdate;
 		}
 
 		private static readonly List<(MethodInformation method, bool state)> stateChangedList = new List<(MethodInformation, bool)>();
@@ -424,7 +433,7 @@ namespace Needle.SelectiveProfiling
 					if (handled >= 2) break;
 				}
 			}
-
+			
 			if (DeepProfileDebuggingMode)
 				UpdateDeepProfileDebug();
 		}
@@ -442,14 +451,18 @@ namespace Needle.SelectiveProfiling
 		}
 
 		private static readonly bool deepProfiling = SelectiveProfilerSettings.Instance.DeepProfiling;
-		private static readonly HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
-		private static readonly List<MethodInfo> nestedMethods = new List<MethodInfo>();
+		private static volatile HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
+		// private static volatile List<MethodInfo> nestedMethods = new List<MethodInfo>();
 
-		internal static void RegisterInternalCalledMethod(MethodInfo method)
+		internal static void RegisterInternalCalledMethod(MethodBase source, MethodInfo method)
 		{
 			if (!deepProfiling) return;
 			if (method == null) return;
 			if (callsFound.Contains(method)) return;
+			
+			var settings = SelectiveProfilerSettings.Instance;
+			if (method.DeclaringType != null && !AccessUtils.AllowedLevel(method, settings.DeepProfileMaxLevel)) return;
+			if (!AccessUtils.AllowPatching(method, true, DebugLog)) return;
 			callsFound.Add(method);
 		}
 
@@ -458,26 +471,14 @@ namespace Needle.SelectiveProfiling
 			if (!deepProfiling) return;
 			if (callsFound.Count <= 0) return;
 
-			var settings = SelectiveProfilerSettings.Instance;
-			var local = callsFound
-				.Where(c =>
-				{
-					if (c.DeclaringType != null && !AccessUtils.AllowedLevel(c, settings.DeepProfileMaxLevel)) return false;
-					if (!AccessUtils.AllowPatching(c, depth > 0, DebugLog)) return false;
-					return true;
-				});
-			nestedMethods.AddRange(local);
+			// TODO: refactor deep profiling to use editor update loop
+
+			var list = callsFound.ToArray();
 			callsFound.Clear();
-			
-			async Task InternalLoop(IList<MethodInfo> list)
+			try
 			{
-				for (var i = list.Count - 1; i >= 0; i--)
+				foreach (var method in list)
 				{
-					while (i >= list.Count) i -= 1;
-					if (i < 0) break;
-					var method = list[i];
-					if(i < list.Count)
-						list.RemoveAt(i);
 					// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
 					if (DeepProfileDebuggingMode)
 					{
@@ -489,26 +490,14 @@ namespace Needle.SelectiveProfiling
 					else if(!profiled.ContainsKey(method))
 					{
 						if(DebugLog)
-							Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, source + " calls " + method);
+							Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Handle Deep Profile: " + source + " -> " + method + ", Level: " + depth);
 						await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 					}
-					
 				}
-			}
-
-			try
-			{
-				await InternalLoop(nestedMethods);
 			}
 			catch (InvalidOperationException ex)
 			{
 				Debug.LogException(ex);
-				// var arr = local.ToArray();
-				// if (index >= 0 && index < arr.Length)
-				// {
-				// 	
-				// }
-				// await InternalLoop(local)
 			}
 		}
 

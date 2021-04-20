@@ -26,7 +26,6 @@ namespace Needle.SelectiveProfiling
 				return _profiled;
 			}
 		}
-
 		
 		private static Texture2D _profiledChild;
 		public static Texture2D ProfiledChild
@@ -36,6 +35,39 @@ namespace Needle.SelectiveProfiling
 				if (!_profiledChild)
 					_profiledChild = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.needle.selective-profiling/Editor/GUI/Textures/profiled2.png");
 				return _profiledChild;
+			}
+		}
+
+		private static Texture2D _circleFilled;
+		public static Texture2D CircleFilled
+		{
+			get
+			{
+				if (!_circleFilled)
+					_circleFilled = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.needle.selective-profiling/Editor/GUI/Textures/circle.png");
+				return _circleFilled;
+			}
+		}
+
+		private static Texture2D _circleHollow;
+		public static Texture2D CircleHollow
+		{
+			get
+			{
+				if (!_circleHollow)
+					_circleHollow = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.needle.selective-profiling/Editor/GUI/Textures/circle.png");
+				return _circleHollow;
+			}
+		}
+		
+		private static Texture2D _hotPath;
+		public static Texture2D HotPathIcon
+		{
+			get
+			{
+				if (!_hotPath)
+					_hotPath = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.needle.selective-profiling/Editor/GUI/Textures/fire.png");
+				return _hotPath;
 			}
 		}
 	}

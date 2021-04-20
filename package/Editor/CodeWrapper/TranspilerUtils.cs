@@ -12,6 +12,32 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 {
 	internal static class TranspilerUtils
 	{
+		internal static bool IsMarkedProperty(string name) => name.Contains(PropertyGetterMarker) || name.Contains(PropertySetterMarker);
+		internal static bool IsMarkedPossibleSlow(string name) => name.Contains(PossibleSlowMethodInvocationMarker);
+		
+		private static readonly List<string> KnownSlowMethods = new List<string>()
+		{
+			"InternalEditorUtility.RepaintAllViews"
+		};
+		
+		internal static string CheckPossibleSlowMethodInvocationAndAddMarkerIfNecessary(MethodBase method, string name)
+		{
+			if (method.DeclaringType == null || !KnownSlowMethods.Any(ks => ks.StartsWith(method.DeclaringType.Name) && ks.EndsWith(method.Name)))
+				return name;
+			return name + PossibleSlowMethodInvocationMarker;
+		}
+
+		// TODO: make this a bit nicer to support wrapping multiple markers withing [] to remove them more easily
+		internal static string RemoveInternalMarkers(string name) => name
+				.Replace(PropertyGetterMarker, string.Empty)
+				.Replace(PropertySetterMarker, string.Empty)
+				.Replace(PossibleSlowMethodInvocationMarker, string.Empty);
+
+		private const string PropertyGetterMarker = " [property_get]";
+		private const string PropertySetterMarker = " [property_set]";
+		private const string PossibleSlowMethodInvocationMarker = "[possible_slow]";
+		
+		
 		private const bool IncludeParameterNames = false;
 		
 		public static readonly HashSet<OpCode> LoadVarCodes = new HashSet<OpCode>()
@@ -25,9 +51,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			OpCodes.Ldloc_S,
 			OpCodes.Ldloca_S
 		};
-		
+
 		private static MethodInfo monoMethodFullName;
-		public static string TryGetMethodName(OpCode code, object operand, bool fullName)
+		public static string GetSampleName(MethodBase profiledMethod, OpCode code, object operand, bool fullName)
 		{
 			if (!fullName)
 			{
@@ -52,7 +78,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				// method calls
 				if (operand is MethodInfo m)
 				{
-					return GetNiceMethodName(m, true);
+					// skip class name if the called method is in the same class than the profiled method
+					var skipBaseName = profiledMethod.DeclaringType == m.DeclaringType;
+					return GetNiceMethodName(m, skipBaseName);
 				}
 			}
 			
@@ -148,9 +176,11 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				_method += GetNiceParameters(parameters);
 			}
 			
-			return !string.IsNullOrEmpty(_class) 
+			var res = !string.IsNullOrEmpty(_class) 
 				? _class + "." + _method
 				: _method;
+			res = CheckPossibleSlowMethodInvocationAndAddMarkerIfNecessary(method, res);
+			return res;
 		}
 
 		private static string GetNiceParameters(params ParameterInfo[] parameters)
@@ -168,13 +198,13 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		private const string getterPrefix = "get_";
 		private const string setterPrefix = "set_";
 		private const string operationPrefix = "op_";
-		
+
 		private static string GetNicePropertyName(string propertyName)
 		{
 			if (propertyName.StartsWith(getterPrefix))
-				propertyName = "get " + propertyName.Substring(getterPrefix.Length);
+				propertyName = propertyName.Substring(getterPrefix.Length) + PropertyGetterMarker;
 			else  if (propertyName.StartsWith(setterPrefix))
-				propertyName = "set " + propertyName.Substring(setterPrefix.Length);
+				propertyName = propertyName.Substring(setterPrefix.Length) + " = value" + PropertySetterMarker;
 			else if(propertyName.StartsWith(operationPrefix))
 				propertyName = propertyName.Substring(operationPrefix.Length);
 			return propertyName;

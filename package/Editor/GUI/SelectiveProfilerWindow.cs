@@ -93,12 +93,15 @@ namespace Needle.SelectiveProfiling
 					EditorGUILayout.Space(10);
 				});
 			}
-			
-			Draw.WithHeaderFoldout("Pinned", "Pinned", () =>
+
+			if (settings.AllowPinning)
 			{
-				foreach (var item in settings.PinnedMethods)
-					EditorGUILayout.LabelField(item);
-			});
+				Draw.WithHeaderFoldout("Pinned", "Pinned", () =>
+				{
+					foreach (var item in settings.PinnedMethods)
+						EditorGUILayout.LabelField(item);
+				});
+			}
 			
 			// Draw.WithHeaderFoldout("Unpinned", "Unpinned", () =>
 			// {

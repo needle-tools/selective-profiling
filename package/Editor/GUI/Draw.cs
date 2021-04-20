@@ -54,19 +54,38 @@ namespace Needle.SelectiveProfiling
 				}
 
 				settings.Enabled = EditorGUILayout.ToggleLeft(new GUIContent("Enabled", ""), settings.Enabled);
-				settings.ImmediateMode =
-					EditorGUILayout.ToggleLeft(new GUIContent("Immediate Mode", "Automatically profile selected method in Unity Profiler Window"),
-						settings.ImmediateMode);
-				settings.SkipProperties = EditorGUILayout.ToggleLeft(
-					new GUIContent("Skip Properties", "Patching property getters does fail in some cases and should generally not be necessary"),
-					settings.SkipProperties);
+				// settings.ImmediateMode =
+				// 	EditorGUILayout.ToggleLeft(new GUIContent("Immediate Mode", "Automatically profile selected method in Unity Profiler Window"),
+				// 		settings.ImmediateMode);
+				
+				// settings.SkipProperties = EditorGUILayout.ToggleLeft(
+				// 	new GUIContent("Skip Properties", "Patching property getters does fail in some cases and should generally not be necessary"),
+				// 	settings.SkipProperties);
+				
 				settings.UseAlwaysProfile = EditorGUILayout.ToggleLeft(
 					new GUIContent("Use [AlwaysProfile]", ""),
-					settings.UseAlwaysProfile); 
+					settings.UseAlwaysProfile);
+				
+				EditorGUI.BeginChangeCheck();
+				settings.CollapseProperties = EditorGUILayout.ToggleLeft(
+					new GUIContent("Collapse Properties", ""),
+					settings.CollapseProperties);
+				settings.CollapseHierarchyNesting = EditorGUILayout.ToggleLeft(
+					new GUIContent("Collapse Nesting", ""),
+					settings.CollapseHierarchyNesting);
+				settings.ColorPerformanceImpact = EditorGUILayout.ToggleLeft(
+					new GUIContent("Use Colors", ""),
+					settings.ColorPerformanceImpact);
+				if (EditorGUI.EndChangeCheck())
+				{
+					ProfilerHelper.RepaintProfiler();
+				}
+				
+				
 
-				if(SelectiveProfiler.DevelopmentMode)
-					settings.AllowPinning = EditorGUILayout.ToggleLeft(new GUIContent("Allow Pinning", "When enabled methods can be pinned in Profiler window"),
-						settings.AllowPinning);
+				// if (SelectiveProfiler.DevelopmentMode)
+				// 	settings.AllowPinning = EditorGUILayout.ToggleLeft(new GUIContent("Allow Pinning", "When enabled methods can be pinned in Profiler window"),
+				// 		settings.AllowPinning);
 
 				GUILayout.Space(5);
 				EditorGUILayout.LabelField("Deep Profiling", EditorStyles.boldLabel);
@@ -107,7 +126,10 @@ namespace Needle.SelectiveProfiling
 						m => m.Enabled,
 						l => SetStateInSettings(l, true),
 						l => SetStateInSettings(l, false),
-						l => { foreach (var m in l) settings.Remove(m); }
+						l =>
+						{
+							foreach (var m in l) settings.Remove(m);
+						}
 					);
 				}
 				else
@@ -116,13 +138,13 @@ namespace Needle.SelectiveProfiling
 					{
 						foreach (var method in list)
 						{
-							if(SelectiveProfiler.TryGet(method, out var prof))
+							if (SelectiveProfiler.TryGet(method, out var prof))
 							{
 								info?.Invoke(prof);
 							}
 						}
 					}
-					
+
 					ScopesList(SelectiveProfiler.PatchedMethodsInfo,
 						m => SelectiveProfiler.TryGet(m, out var p) && p.IsActive,
 						l => SetState(l, p => p.Enable(true)),
@@ -187,9 +209,17 @@ namespace Needle.SelectiveProfiling
 			foreach (var e in list) settings.UpdateState(e, state, false);
 		}
 
+		private const int MaxDrawCount = 30;
+
+		private static string ScopeFilter
+		{
+			get => SessionState.GetString("ScopeFilter", string.Empty);
+			set => SessionState.SetString("ScopeFilter", value);
+		}
+
 		public static void ScopesList(
 			IEnumerable<MethodInformation> methods,
-			Func<MethodInformation,bool> IsEnabled,
+			Func<MethodInformation, bool> IsEnabled,
 			Action<IList<MethodInformation>> Enable,
 			Action<IList<MethodInformation>> Disable,
 			Action<IList<MethodInformation>> Remove
@@ -236,7 +266,7 @@ namespace Needle.SelectiveProfiling
 				bool show = false;
 				using (new GUILayout.HorizontalScope())
 				{
-					show = EditorGUILayout.Foldout(GetFoldout(scope), headerLabel,true, 
+					show = EditorGUILayout.Foldout(GetFoldout(scope), headerLabel, true,
 						meta.Enabled <= 0 ? GUIStyles.BoldFoldoutDisabled : GUIStyles.Foldout
 					);
 					if (Enable != null && GUILayout.Button("All", GUILayout.Width(70)))
@@ -254,11 +284,36 @@ namespace Needle.SelectiveProfiling
 				{
 					EditorGUI.indentLevel++;
 					var list = kvp.Value;
-					foreach (var entry in list)
+					var canFilter = list.Count > 10;
+					if (canFilter)
 					{
+						GUILayout.Space(5);
+						ScopeFilter = EditorGUILayout.TextField("Filter", ScopeFilter);
+					}
+
+					var filter = ScopeFilter.ToLowerInvariant();
+					canFilter &= !string.IsNullOrWhiteSpace(filter);
+
+					for (var index = 0; index < list.Count; index++)
+					{
+						var entry = list[index];
+						var mi = entry.MethodIdentifier();
+						var label = new GUIContent(entry.ClassWithMethod(), mi);
+
+						if (canFilter)
+						{
+							if (!mi.ToLowerInvariant().Contains(filter)) continue;
+						}
+						else if (index > MaxDrawCount)
+						{
+							EditorGUILayout.LabelField("and " + (list.Count - (index + 1)) + " methods");
+							break;
+						}
+
+						// TODO: refactor to draw without using Layout or VisualElements
+
 						using (new GUILayout.HorizontalScope())
 						{
-							var label = new GUIContent(entry.ClassWithMethod(), entry.MethodIdentifier());
 							if (IsEnabled != null)
 							{
 								var state = IsEnabled.Invoke(entry);
