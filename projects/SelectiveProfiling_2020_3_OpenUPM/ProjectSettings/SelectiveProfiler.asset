@@ -14,10 +14,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   FirstInstall: 0
   Enabled: 1
-  ImmediateMode: 0
-  DeepProfiling: 1
-  MaxDepth: 3
+  UseAlwaysProfile: 0
+  CollapseProperties: 1
+  CollapseHierarchyNesting: 1
+  ColorPerformanceImpact: 1
+  DeepProfiling: 0
+  MaxDepth: 5
   DeepProfileMaxLevel: -1
-  DebugLog: 0
-  SkipProperties: 1
-  Methods: []
+  DebugLog: 1
+  Methods:
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void DoOnGUI(UnityEngine.Event, UnityEngine.Matrix4x4, UnityEngine.Rect,
+      Boolean, UnityEngine.Rect, System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean HandleIMGUIEvent(UnityEngine.Event, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean HandleIMGUIEvent(UnityEngine.Event, System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean HandleIMGUIEvent(UnityEngine.Event, UnityEngine.Matrix4x4, UnityEngine.Rect,
+      System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void DoIMGUIRepaint()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void DrawView(UnityEngine.Rect, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void OldOnGUI()
+  PinnedMethods: []
