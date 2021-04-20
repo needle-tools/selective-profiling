@@ -16,6 +16,10 @@ namespace DefaultNamespace
 		[InitializeOnLoadMethod]
 		private static void Init()
 		{
+			// using (new DisposableType())
+			// {
+			// 	
+			// }
 			try
 			{
 				try
@@ -32,6 +36,14 @@ namespace DefaultNamespace
 			catch (Exception e)
 			{
 				Debug.Log("catched " + e);
+			}
+		}
+
+		private class DisposableType : IDisposable
+		{
+			public void Dispose()
+			{
+				
 			}
 		}
 
