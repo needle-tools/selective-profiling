@@ -108,6 +108,9 @@ namespace Needle.SelectiveProfiling
 			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index)
 			{
 				var parentType = currentMethod.DeclaringType?.Name;
+				if (SelectiveProfiler.DebugLog)
+					parentType += "." + currentMethod.Name + "[" + index + "]";
+				
 				var sampleName = GetSampleName(currentMethod, instruction);
 				
 				// when using the custom rows patch prefix the sample with the method name
