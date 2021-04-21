@@ -196,18 +196,23 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			{
 				var prefix = debugLog && method != null ? "<b>Transpiled</b> " + method.FullDescription() + "\n" : string.Empty; 
 				var IL_After = string.Join("\n", instructions);
+
+				string SanitizeFormatMessage(string message)
+				{
+					return message.Replace("{", string.Empty).Replace("}", string.Empty);
+				}
 				if (debugLog && IL_Before?.Length + IL_After.Length > 12000)
 				{
 					var msg = "Before " + prefix + IL_Before;
-					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, SanitizeFormatMessage(msg));
 					msg = "After " + prefix + IL_After;
-					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, SanitizeFormatMessage(msg));
 				}
 				else if(debugLog)
 				{
 					var msg = prefix + IL_Before + "\n\n----\n\n" + IL_After;
-					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
-				}
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, SanitizeFormatMessage(msg));
+				} 
 
 				try
 				{
