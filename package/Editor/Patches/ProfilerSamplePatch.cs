@@ -140,6 +140,7 @@ namespace Needle.SelectiveProfiling
 			private static readonly List<CodeInstruction> InsertBeforeConstant = new List<CodeInstruction>()
 			{
 				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
+				// new CodeInstruction(OpCodes.Nop,null).WithBlocks(new ExceptionBlock(ExceptionBlockType.BeginExceptionBlock)),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};
 
@@ -147,13 +148,15 @@ namespace Needle.SelectiveProfiling
 			{
 				new CodeInstruction(OpCodes.Ldarg_0), // load "this"
 				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
-				new CodeInstruction(OpCodes.Nop), // will be replaced by load call to SelectiveProfiler.GetName
+				new CodeInstruction(OpCodes.Nop), // will be replaced by load call to SelectiveProfiler.GetName 
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};
 
 			private static readonly List<CodeInstruction> InsertAfter = new List<CodeInstruction>()
 			{
+				// new CodeInstruction(OpCodes.Nop,null).WithBlocks(new ExceptionBlock(ExceptionBlockType.BeginFinallyBlock)),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample)),
+				// new CodeInstruction(OpCodes.Endfinally,null).WithBlocks(new ExceptionBlock(ExceptionBlockType.EndExceptionBlock)),
 			};
 
 			// private static LocalBuilder Builder => AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("test"), AssemblyBuilderAccess.Run).DefineDynamicModule("test")

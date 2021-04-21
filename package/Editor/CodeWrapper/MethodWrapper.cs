@@ -168,12 +168,23 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					if (hasLabel) start = -1;
 					
 					beforeInject?.Invoke(method, inst, index);
-					start = index;
+					// start = index;
 
+					// if (inst.operand is MethodInfo _m && _m.ReturnType != typeof(void))
+					// {
+					// 	if (index < instructions.Count - 1)
+					// 	{
+					// 		var next = instructions[index + 1];
+					// 		if (next.IsStloc() || next.IsStarg() || next.opcode == OpCodes.Stfld)
+					// 		{
+					// 			index += 1; 
+					// 		}
+					// 	}
+					// }
 
 
 					// we arrived at the actual method call
-					wrapper.Start = start;
+					wrapper.Start = index;// start <= -1 ? index : start;
 					wrapper.MethodIndex = index;
 					wrapper.Apply(method, instructions, before, after);
 					index = wrapper.MethodIndex;
