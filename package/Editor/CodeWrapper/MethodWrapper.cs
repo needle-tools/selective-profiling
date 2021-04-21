@@ -175,7 +175,6 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// we arrived at the actual method call
 					wrapper.Start = start;
 					wrapper.MethodIndex = index;
-					beforeInject?.Invoke(method, inst, index);
 					wrapper.Apply(method, instructions, before, after);
 					index = wrapper.MethodIndex;
 					start = -1;
