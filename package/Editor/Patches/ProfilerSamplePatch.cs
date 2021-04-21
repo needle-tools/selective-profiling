@@ -137,7 +137,6 @@ namespace Needle.SelectiveProfiling
 			private static readonly List<CodeInstruction> InsertBeforeConstant = new List<CodeInstruction>()
 			{
 				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
-				new CodeInstruction(OpCodes.Nop),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};
 

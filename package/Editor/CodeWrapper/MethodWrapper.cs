@@ -187,8 +187,10 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// e.g. when a branch jumps over some load/store and we move the label to the beginning of those
 					if (hasLabel) start = -1;
 
+
+
 					// we arrived at the actual method call
-					wrapper.Start = start == -1 ? index : start;
+					wrapper.Start = index;
 					wrapper.MethodIndex = index;
 					beforeInject?.Invoke(method, inst, index);
 					wrapper.Apply(method, instructions, before, after);
@@ -199,7 +201,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 			if (ShouldSaveIL(debugLog))
 			{
-				var prefix = debugLog && method != null ? "<b>Transpiled</b> " + method.DeclaringType?.FullName + "." + method.Name + "\n" : string.Empty;
+				var prefix = debugLog && method != null ? "<b>Transpiled</b> " + method.FullDescription() + "\n" : string.Empty; 
 				var IL_After = string.Join("\n", instructions);
 				if (debugLog && IL_Before?.Length + IL_After.Length > 12000)
 				{
