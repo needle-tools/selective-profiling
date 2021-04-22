@@ -204,7 +204,10 @@ namespace Needle.SelectiveProfiling
 					{
 						HandleDeepProfiling();
 					}
-					else if(DebugLog) Debug.LogError("Did not enable: " + method + ", " + info.IsActive + ", " + info.Identifier);
+					else if (DebugLog)
+					{
+						Debug.LogError("Did not enable: " + method + ", " + info.IsActive + ", " + info.Identifier + ", hasBody: " + method.HasMethodBody());
+					}
 				}
 			}
 			return enabled;
