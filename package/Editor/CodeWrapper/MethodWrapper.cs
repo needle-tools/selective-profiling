@@ -58,30 +58,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				{
 					if (start < 0)
 						start = index;
-
-
-					// search currently loaded stack variables, if any matches
-					// var found = false;
-					// var loaded = new StackVariable(inst, index);
-					// for (var i = 0; i < currentLoadedVars.Count; i++)
-					// {
-					// 	var lv = currentLoadedVars[i];
-					// 	if (!lv.Equals(inst)) continue;
-					// 	currentLoadedVars[i] = loaded;
-					// 	found = true;
-					// }
-					// if (!found) currentLoadedVars.Add(loaded);
 				}
-				// else if (inst.IsStarg() || inst.IsStloc())
-				// {
-				// 	// for (var i = currentLoadedVars.Count - 1; i >= 0; i--)
-				// 	// {
-				// 	// 	var loaded = currentLoadedVars[i];
-				// 	// 	if (loaded.Equals(inst))
-				// 	// 	{
-				// 	// 	}
-				// 	// }
-				// }
 
 				var hasBranch = inst.Branches(out var branch);
 				// if (branch != null)
@@ -106,8 +83,11 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					start = index + 1;
 				}
 
-				var isMethodCall = inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt;
-				if (isMethodCall || inst.opcode == OpCodes.Newobj || inst.opcode == OpCodes.Newarr)
+				bool IsMethodCall(CodeInstruction instruction) => instruction.opcode == OpCodes.Call || instruction.opcode == OpCodes.Callvirt;
+				bool IsAllocation(CodeInstruction instruction) => instruction.opcode == OpCodes.Newobj || instruction.opcode == OpCodes.Newarr;
+				bool ShouldCapture(CodeInstruction instruction) => IsMethodCall(instruction) || IsAllocation(instruction);
+
+				if (ShouldCapture(inst))
 				{
 					bool IsProfilerMarkerOrSampler(Type type)
 					{
@@ -176,7 +156,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 					if (start > index && hasLabel) start = prevStart;
 
-					if (isMethodCall && exceptionBlockStack > 0)
+					if (IsMethodCall(inst) && exceptionBlockStack > 0)
 					{
 						start = -1;
 						continue;
@@ -186,13 +166,28 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// if we move the label to the beginning of the loads we might cause wrong branching 
 					// e.g. when a branch jumps over some load/store and we move the label to the beginning of those
 					if (hasLabel) start = -1;
+					
+					beforeInject?.Invoke(method, inst, index);
+					// start = index;
 
+					// void LookAheadPotentiallyWrappingStoreResultAndConstrained()
+					// {
+					// 	for(var k = 1; index+k <= instructions.Count; k++)
+					// 	{
+					// 		var i = index + k;
+					// 		if (i >= instructions.Count || ShouldCapture(instructions[i]))
+					// 		{
+					// 			index = i - 1;
+					// 			break;
+					// 		}
+					// 	}
+					// }
+					// LookAheadPotentiallyWrappingStoreResultAndConstrained();
 
 
 					// we arrived at the actual method call
-					wrapper.Start = index;
+					wrapper.Start = index;// start <= -1 ? index : start;
 					wrapper.MethodIndex = index;
-					beforeInject?.Invoke(method, inst, index);
 					wrapper.Apply(method, instructions, before, after);
 					index = wrapper.MethodIndex;
 					start = -1;
@@ -203,18 +198,23 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			{
 				var prefix = debugLog && method != null ? "<b>Transpiled</b> " + method.FullDescription() + "\n" : string.Empty; 
 				var IL_After = string.Join("\n", instructions);
+
+				string SanitizeFormatMessage(string message)
+				{
+					return message.Replace("{", string.Empty).Replace("}", string.Empty);
+				}
 				if (debugLog && IL_Before?.Length + IL_After.Length > 12000)
 				{
 					var msg = "Before " + prefix + IL_Before;
-					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, SanitizeFormatMessage(msg));
 					msg = "After " + prefix + IL_After;
-					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, SanitizeFormatMessage(msg));
 				}
 				else if(debugLog)
 				{
 					var msg = prefix + IL_Before + "\n\n----\n\n" + IL_After;
-					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg);
-				}
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, SanitizeFormatMessage(msg));
+				} 
 
 				try
 				{

@@ -108,6 +108,9 @@ namespace Needle.SelectiveProfiling
 			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index)
 			{
 				var parentType = currentMethod.DeclaringType?.Name;
+				if (SelectiveProfiler.DebugLog)
+					parentType += "." + currentMethod.Name + "[" + index + "]";
+				
 				var sampleName = GetSampleName(currentMethod, instruction);
 				
 				// when using the custom rows patch prefix the sample with the method name
@@ -136,6 +139,7 @@ namespace Needle.SelectiveProfiling
 			
 			private static readonly List<CodeInstruction> InsertBeforeConstant = new List<CodeInstruction>()
 			{
+				// new CodeInstruction(OpCodes.Nop,null).WithBlocks(new ExceptionBlock(ExceptionBlockType.BeginExceptionBlock)),
 				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};
@@ -144,13 +148,13 @@ namespace Needle.SelectiveProfiling
 			{
 				new CodeInstruction(OpCodes.Ldarg_0), // load "this"
 				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
-				new CodeInstruction(OpCodes.Nop), // will be replaced by load call to SelectiveProfiler.GetName
+				new CodeInstruction(OpCodes.Nop), // will be replaced by load call to SelectiveProfiler.GetName 
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};
 
 			private static readonly List<CodeInstruction> InsertAfter = new List<CodeInstruction>()
 			{
-				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample)),
+				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample))//.WithBlocks(new ExceptionBlock(ExceptionBlockType.BeginFaultBlock), new ExceptionBlock(ExceptionBlockType.EndExceptionBlock)),
 			};
 
 			// private static LocalBuilder Builder => AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("test"), AssemblyBuilderAccess.Run).DefineDynamicModule("test")
