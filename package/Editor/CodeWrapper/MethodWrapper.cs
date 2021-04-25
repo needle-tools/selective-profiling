@@ -170,17 +170,19 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					beforeInject?.Invoke(method, inst, index);
 					// start = index;
 
-					// if (inst.operand is MethodInfo _m && _m.ReturnType != typeof(void))
+					// void LookAheadPotentiallyWrappingStoreResultAndConstrained()
 					// {
-					// 	if (index < instructions.Count - 1)
+					// 	for(var k = 1; index+k <= instructions.Count; k++)
 					// 	{
-					// 		var next = instructions[index + 1];
-					// 		if (next.IsStloc() || next.IsStarg() || next.opcode == OpCodes.Stfld)
+					// 		var i = index + k;
+					// 		if (i >= instructions.Count || ShouldCapture(instructions[i]))
 					// 		{
-					// 			index += 1; 
+					// 			index = i - 1;
+					// 			break;
 					// 		}
 					// 	}
 					// }
+					// LookAheadPotentiallyWrappingStoreResultAndConstrained();
 
 
 					// we arrived at the actual method call
