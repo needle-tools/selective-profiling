@@ -389,7 +389,7 @@ namespace Needle.SelectiveProfiling
 				var methodsList = Application.isPlaying ? ml.ToArray() : ml;
 				foreach (var m in methodsList)
 				{
-					if (m.TryResolveMethod(out var info))
+					if (m.Enabled && m.TryResolveMethod(out var info))
 						await EnableProfilingAsync(info, false);
 				}
 			}
