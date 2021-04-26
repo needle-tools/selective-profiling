@@ -395,7 +395,7 @@ namespace Needle.SelectiveProfiling.Utils
 			{
 				AllowPatchingResultLastReason = msg;
 				if (debugLog)
-					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, msg);
+					Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, null, $"{msg}: {GetMethodLogName()}");
 			}
 
 			
@@ -408,7 +408,7 @@ namespace Needle.SelectiveProfiling.Utils
 				}
 				else
 				{
-					Reason("Method is not declared or null: " + GetMethodLogName());
+					Reason("Method is not declared or null");
 					return false;
 				}
 			}
@@ -416,13 +416,13 @@ namespace Needle.SelectiveProfiling.Utils
 
 			if (!method.HasMethodBody())
 			{
-				Reason("Method has no body: " + GetMethodLogName());
+				Reason("Method has no body");
 				return false;
 			}
 
 			if (method.Name.StartsWith("op_"))
 			{
-				Reason("Operation is not allowed: " + GetMethodLogName());
+				Reason("Operation is not allowed");
 				return false;
 			}
 			
@@ -430,15 +430,16 @@ namespace Needle.SelectiveProfiling.Utils
 			if (
 				method.DeclaringType == typeof(Object) ||
 				method.DeclaringType == typeof(GC) ||
-				method.DeclaringType == typeof(GarbageCollector) ||
+				// method.DeclaringType == typeof(GarbageCollector) ||
 				method.DeclaringType == typeof(Profiler) ||
 				typeof(ProfilerDriver).IsAssignableFrom(method.DeclaringType) ||
 				typeof(ProfilerMarker).IsAssignableFrom(method.DeclaringType) ||
 				typeof(CustomSampler).IsAssignableFrom(method.DeclaringType) ||
-				method.DeclaringType == typeof(SelectiveProfiler) ||
+				method.DeclaringType == typeof(TypeCache) ||
+				// method.DeclaringType == typeof(SelectiveProfiler) ||
 				method.DeclaringType == typeof(UnityException) ||
 			    method.DeclaringType == typeof(Application) ||
-			    method.DeclaringType == typeof(StackTraceUtility) ||
+			    // method.DeclaringType == typeof(StackTraceUtility) ||
 			    method.DeclaringType == typeof(AssetDatabase) ||
 				method.DeclaringType == typeof(Time) ||
 				method.DeclaringType == typeof(EditorPrefs) ||
@@ -452,7 +453,7 @@ namespace Needle.SelectiveProfiling.Utils
 				method.DeclaringType == typeof(Undo)
 			)
 			{
-				Reason($"Profiling in {method.DeclaringType} is not allowed: " + GetMethodLogName());
+				Reason($"Profiling in {method.DeclaringType} is not allowed");
 				return false;
 			}
 			
@@ -462,8 +463,7 @@ namespace Needle.SelectiveProfiling.Utils
 			if ((method.DeclaringType?.IsGenericType ?? false) ||
 			    method.IsGenericMethod) // && (method.ReturnType.IsGenericType || method.IsGenericMethod || method.ContainsGenericParameters))
 			{
-				Reason("Profiling generic types is not supported: " + GetMethodLogName() +
-				       "\nSee issue: https://github.com/needle-tools/selective-profiling/issues/6");
+				Reason("Profiling generic types is not supported. See issue: https://github.com/needle-tools/selective-profiling/issues/6");
 				return false;
 			}
 
@@ -473,22 +473,21 @@ namespace Needle.SelectiveProfiling.Utils
 			{
 				if (IsProperty(method))
 				{
-					Reason("Profiling properties is disabled in settings: " + GetMethodLogName() +
-					       "\nFor more information please refer to https://github.com/needle-tools/selective-profiling/issues/2");
+					Reason("Profiling properties is disabled in settings. For more information please refer to https://github.com/needle-tools/selective-profiling/issues/2");
 					return false;
 				}
 			}
 
 			if (GetLevel(method.DeclaringType) == Level.System)
 			{
-				Reason("Profiling system level types is not allowed: " + GetMethodLogName());
+				Reason("Profiling system level types is not allowed");
 				return false;
 			}
 
 			var assembly = method.DeclaringType?.Assembly;
 			if (assembly == typeof(PatchManager).Assembly || assembly == typeof(Harmony).Assembly)
 			{
-				Reason($"Profiling method in {assembly} is not allowed: " + GetMethodLogName());
+				Reason($"Profiling method in {assembly} is not allowed");
 				return false;
 			}
 
@@ -505,7 +504,7 @@ namespace Needle.SelectiveProfiling.Utils
 					// case "UnityEngine.UIElementsModule":
 					case "UnityEngine.SharedInternalsModule":
 					// case "UnityEditor.PackageManagerUIModule":
-						Reason("Profiling in " + assemblyName + " is not allowed: " + GetMethodLogName());
+						Reason("Profiling in " + assemblyName + " is not allowed");
 						return false;
 				}
 			}
@@ -532,7 +531,7 @@ namespace Needle.SelectiveProfiling.Utils
 					|| fullName == "Unity.Entities.ComponentDependencyManager"
 				)
 				{
-					Reason($"Profiling in {fullName} is not allowed: " + GetMethodLogName());
+					Reason($"Profiling in {fullName} is not allowed");
 					return false; 
 				}
 			}
@@ -560,7 +559,7 @@ namespace Needle.SelectiveProfiling.Utils
 				// dont patch methods marked with [RequiredByNativeCode]
 				if (attributeTypeName == "UnityEngine.Scripting.RequiredByNativeCodeAttribute")
 				{
-					Reason($"Profiling method with {attributeTypeName} attribute is not allowed: " + GetMethodLogName());
+					Reason($"Profiling method with {attributeTypeName} attribute is not allowed");
 					return false;
 				}
 			}
