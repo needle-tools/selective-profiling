@@ -25,13 +25,18 @@ public class ComponentWithTryCatch : MonoBehaviour
     private void OtherMethod(bool t)
     {
         if (t) throw new Exception("Test throw");
-        else Nested();
+        Nested();
 
         void Nested()
         {
             
         }
-        
-        
+
+        void AnotherNested(int i)
+        {
+            void SecondaryNesting(){}
+            SecondaryNesting();
+        }
+        AnotherNested(12);
     }
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
+using UnityEditor;
 
 // always true/false + disable compiler warning
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
@@ -151,6 +153,8 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			return "<" + string.Join(", ", genericArguments.Select(arg => GetNiceTypeName(arg, true))) + ">";
 		}
 
+		private static Regex captureLocalMethodName = new Regex(@".*?<(?<method>.*)>g__(?<localName>.*)\|.+", RegexOptions.Compiled);
+		
 		internal static string GetNiceMethodName(MethodBase method, bool skipRootDeclaringType)
 		{
 			string _class = null;
@@ -164,8 +168,20 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			}
 			
 			var _method = method.Name;
+			var localMethodMatch = captureLocalMethodName.Match(_method);
+			if (localMethodMatch.Success)
+			{
+				if (localMethodMatch.Groups["localName"].Success)
+				{
+					_method = localMethodMatch.Groups["localName"].Value;
+					if (localMethodMatch.Groups["method"].Success) 
+						_method = localMethodMatch.Groups["method"].Value + "." + _method;
+				}
+			}
+			
 			var _isProperty = _method.StartsWith(getterPrefix) || _method.StartsWith(setterPrefix);
-			if (method.IsSpecialName) _method = GetNicePropertyName(_method);
+			if (method.IsSpecialName) 
+				_method = GetNicePropertyName(_method);
 
 			if (method.IsGenericMethod) 
 				_method += GetNiceGenericArguments(method.GetGenericArguments());
