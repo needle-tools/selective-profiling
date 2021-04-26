@@ -148,11 +148,11 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 					if (start > index && hasLabel) start = prevStart;
 
-					if (isMethodCall && exceptionBlockStack > 0)
-					{
-						start = -1;
-						continue;
-					}
+					// if (isMethodCall && exceptionBlockStack > 0)
+					// {
+					// 	start = -1;
+					// 	continue;
+					// }
 
 					// when a method has a label we assume that we dont have to (or must) include the preceding stack loads
 					// if we move the label to the beginning of the loads we might cause wrong branching 

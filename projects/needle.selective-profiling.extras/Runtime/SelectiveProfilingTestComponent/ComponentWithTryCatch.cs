@@ -11,7 +11,10 @@ public class ComponentWithTryCatch : MonoBehaviour
         {
             OtherMethod(true);
         }
-        catch{}
+        catch(Exception e)
+        {
+            Debug.Log("Captured exception");
+        }
         finally
         {
             OtherMethod(false);
