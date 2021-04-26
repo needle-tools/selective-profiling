@@ -34,55 +34,55 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		{
 			var IL_Before = ShouldSaveIL(debugLog) || SelectiveProfiler.DevelopmentMode ? string.Join("\n", instructions) : null;
 
-			var start = -1;
-			var exceptionBlockStack = 0;
-			var injectCounter = 0;
+			// var start = -1;
+			// var exceptionBlockStack = 0;
+			// var injectCounter = 0;
 			// var currentBranches = new List<Label>();
 			// var currentLoadedVars = new List<LoadedVariable>();
 
 			for (var index = 0; index < instructions.Count; index++)
 			{
 				var inst = instructions[index];
-				var prevStart = start;
-
-				// we dont inject samples in try{} block because we get errors when exception happens and we dont have an end sample
-				// possible solution: wrap profiler samples with "try finally" block so that "end sample" is called even if exception happens
-				exceptionBlockStack += inst.blocks.Count(b => b.blockType == ExceptionBlockType.BeginExceptionBlock);
-				exceptionBlockStack -= inst.blocks.Count(b => b.blockType == ExceptionBlockType.EndExceptionBlock);
-				if (exceptionBlockStack < 0) Debug.LogError(
-						$"Found more end exception blocks than begin exception blocks in {method.FullDescription()}, " +
-						$"please report this as a bug at {Constants.GithubIssuesUrl} including this message\n\n{IL_Before}\n\n");
-
-				// if a method call loads variables make sure to insert code before variable loading
-				if (TranspilerUtils.LoadVarCodes.Contains(inst.opcode) || inst.opcode == OpCodes.Ldnull || inst.opcode == OpCodes.Ldstr ||
-				    inst.opcode == OpCodes.Ldobj || inst.IsLdarg() || inst.IsLdarga())
-				{
-					if (start < 0)
-						start = index;
-				}
-
-				var hasBranch = inst.Branches(out var branch);
-				// if (branch != null)
-				// 	currentBranches.Add(branch.Value);
-
-				var hasLabel = inst.labels != null && inst.labels.Count > 0;
-				// if (hasLabel)
-				// 	currentBranches.RemoveAll(b => inst.labels.Contains(b));
-
-				if (hasLabel || hasBranch)
-				{
-					// make sure to insert sample after branching labels
-					start = index + 1;
-				}
-				// make sure to insert sample after end exception block
-				else if (inst.blocks.Any(b =>
-					b.blockType == ExceptionBlockType.BeginExceptionBlock
-					|| b.blockType == ExceptionBlockType.EndExceptionBlock
-					|| b.blockType == ExceptionBlockType.BeginFinallyBlock
-				))
-				{
-					start = index + 1;
-				}
+				// var prevStart = start;
+				//
+				// // we dont inject samples in try{} block because we get errors when exception happens and we dont have an end sample
+				// // possible solution: wrap profiler samples with "try finally" block so that "end sample" is called even if exception happens
+				// exceptionBlockStack += inst.blocks.Count(b => b.blockType == ExceptionBlockType.BeginExceptionBlock);
+				// exceptionBlockStack -= inst.blocks.Count(b => b.blockType == ExceptionBlockType.EndExceptionBlock);
+				// if (exceptionBlockStack < 0) Debug.LogError(
+				// 		$"Found more end exception blocks than begin exception blocks in {method.FullDescription()}, " +
+				// 		$"please report this as a bug at {Constants.GithubIssuesUrl} including this message\n\n{IL_Before}\n\n");
+				//
+				// // if a method call loads variables make sure to insert code before variable loading
+				// if (TranspilerUtils.LoadVarCodes.Contains(inst.opcode) || inst.opcode == OpCodes.Ldnull || inst.opcode == OpCodes.Ldstr ||
+				//     inst.opcode == OpCodes.Ldobj || inst.IsLdarg() || inst.IsLdarga())
+				// {
+				// 	if (start < 0)
+				// 		start = index;
+				// }
+				//
+				// var hasBranch = inst.Branches(out var branch);
+				// // if (branch != null)
+				// // 	currentBranches.Add(branch.Value);
+				//
+				// var hasLabel = inst.labels != null && inst.labels.Count > 0;
+				// // if (hasLabel)
+				// // 	currentBranches.RemoveAll(b => inst.labels.Contains(b));
+				//
+				// if (hasLabel || hasBranch)
+				// {
+				// 	// make sure to insert sample after branching labels
+				// 	start = index + 1;
+				// }
+				// // make sure to insert sample after end exception block
+				// else if (inst.blocks.Any(b =>
+				// 	b.blockType == ExceptionBlockType.BeginExceptionBlock
+				// 	|| b.blockType == ExceptionBlockType.EndExceptionBlock
+				// 	|| b.blockType == ExceptionBlockType.BeginFinallyBlock
+				// ))
+				// {
+				// 	start = index + 1;
+				// }
 
 				var isMethodCall = inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt;
 				var isAllocation = inst.opcode == OpCodes.Newobj || inst.opcode == OpCodes.Newarr;
@@ -107,7 +107,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 						
 						if (skipProfilerMethods && MethodIsProfilerMethodOrHasProfilerMethodArgument())
 						{
-							start = -1;
+							// start = -1;
 							continue;
 						}
 
@@ -120,7 +120,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 						// TODO: for now dont profile ``UnityEngine.Rendering.ProfilingScope`` until we find a better way to handle cases where using(disposable) is called with custom profiler markers/sample implementation like in ScriptableRenderer.InternalStartRendering
 						if (ci.DeclaringType?.FullName == "UnityEngine.Rendering.ProfilingScope")
 						{
-							start = -1;
+							// start = -1;
 							continue;
 						}
 
@@ -135,7 +135,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 						// this prevents cases where IDisposable implementations (as ProfilerScopes) cause mismatching samples
 						if (skipProfilerMethods && ci.GetParameters().Any(p => IsProfilerMarkerOrSampler(p.ParameterType)))
 						{
-							start = -1;
+							// start = -1;
 							continue;
 						}
 					}
@@ -146,7 +146,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// 	continue;
 					// }
 
-					if (start > index && hasLabel) start = prevStart;
+					// if (start > index && hasLabel) start = prevStart;
 
 					// if (isMethodCall && exceptionBlockStack > 0)
 					// {
@@ -157,7 +157,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// when a method has a label we assume that we dont have to (or must) include the preceding stack loads
 					// if we move the label to the beginning of the loads we might cause wrong branching 
 					// e.g. when a branch jumps over some load/store and we move the label to the beginning of those
-					if (hasLabel) start = -1;
+					// if (hasLabel) start = -1;
 
 					var data = beforeInject?.Invoke(method, inst, index, il);
 					if (!data.HasValue) throw new Exception("SelectiveProfiler did not return instructions");
@@ -169,7 +169,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					wrapper.After = data.Value.after;
 					wrapper.Apply(method, instructions, il);
 					index = wrapper.MethodIndex;
-					start = -1;
+					// start = -1;
 				}
 			}
 
