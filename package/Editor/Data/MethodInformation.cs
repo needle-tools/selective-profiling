@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -223,11 +224,11 @@ namespace Needle.SelectiveProfiling
 					}
 					catch (TypeLoadException typeLoadException)
 					{
-						var types = assembly.GetTypes();
+						var types = assembly.GetLoadableTypes();
 						type = types.FirstOrDefault(t => t.Name == pm.Type);
 						requireUpdateIfSuccessfullyResolved |= type != null;
 						if (type == null) 
-							Debug.LogException(typeLoadException);
+							Debug.LogError(nameof(TypeLoadException) + " in " + assembly.FullName + "when trying to resolve " + pm.Type + ": " + typeLoadException);
 					}
 				}
 

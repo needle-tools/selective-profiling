@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using HarmonyLib;
+using needle.EditorPatching;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling
@@ -94,7 +95,7 @@ namespace Needle.SelectiveProfiling
 			{
 				foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().AsParallel())
 				{
-					foreach (var type in assembly.GetTypes().AsParallel())
+					foreach (var type in assembly.GetLoadableTypes().AsParallel())
 					{
 						void RegisterMethodInfo(MethodInfo method)
 						{
