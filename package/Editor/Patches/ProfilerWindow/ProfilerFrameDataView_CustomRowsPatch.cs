@@ -173,14 +173,17 @@ namespace Needle.SelectiveProfiling
 
 			private class CollapseRows : ICollapseHandler
 			{
+				public delegate bool ShouldCollapseCallback(TreeView tree, TreeViewItem currentItem, string name, out bool requestInjectedRow);
+				
 				private readonly Stack<int> collapsedDepth = new Stack<int>();
-				private readonly Func<TreeView, TreeViewItem, string, bool> shouldCollapse;
+				private readonly ShouldCollapseCallback shouldCollapse;
 				internal static readonly HashSet<int> expanded = new HashSet<int>();
 				private int collapsedCounter;
 
 				private int firstIndex, firstDepth;
+				private bool requestInsertRow;
 
-				public CollapseRows(Func<TreeView, TreeViewItem, string, bool> shouldCollapse)
+				public CollapseRows(ShouldCollapseCallback shouldCollapse)
 				{
 					this.shouldCollapse = shouldCollapse;
 				}
@@ -202,8 +205,12 @@ namespace Needle.SelectiveProfiling
 					{
 						// NOTE: first index might change
 						// it is possible that items have been inserted in between so this is likely to break
-						// var indexToInsert = firstIndex;
-						// CreateAndInsertNewItem(tree, list, indexToInsert, ref index, row.id, firstDepth, row.parent, $"Collapsed {collapsedCounter} rows");
+						if (requestInsertRow)
+						{
+							var indexToInsert = firstIndex;
+							requestInsertRow = false;
+							CreateAndInsertNewItem(tree, list, indexToInsert, ref index, row.id, firstDepth, row.parent, $"Collapsed {collapsedCounter} rows");
+						}
 					}
 					else
 					{
@@ -219,9 +226,10 @@ namespace Needle.SelectiveProfiling
 
 				public bool ShouldCollapse(TreeView tree, TreeViewItem item, string name, IList<TreeViewItem> list, ref int index)
 				{
-					var collapse = shouldCollapse.Invoke(tree, item, name);
+					var collapse = shouldCollapse.Invoke(tree, item, name, out var requestInjectedRow);
 					if (collapse)
 					{
+						requestInsertRow |= requestInjectedRow;
 						collapsedCounter += 1;
 						collapsedDepth.Push(item.depth + collapsedDepth.Count);
 						currentDepthOffset += 1;
@@ -295,14 +303,21 @@ namespace Needle.SelectiveProfiling
 				"UIElementsUtility.DoDispatch(Repaint Event)"
 			};
 
-			private static bool ShouldCollapseRow(TreeView tree, TreeViewItem item, string name)
+			private static bool ShouldCollapseRow(TreeView tree, TreeViewItem item, string name, out bool requestInfo)
 			{
-				if (_itemsToCollapse.Contains(name))
+				var settings = SelectiveProfilerSettings.instance;
+
+				if (settings.CollapseHierarchyNesting && _itemsToCollapse.Contains(name))
+				{
+					requestInfo = true;
 					return true;
+				}
 
 				// TODO: support for collapsing items that have no impact
-				if (frameDataView != null && frameDataView.valid)
+				if (settings.CollapseNoImpactSamples && frameDataView != null && frameDataView.valid)
 				{
+					requestInfo = false;
+					
 					if (item.id < parentIdOffset)
 					{
 						bool HasImpact(int id)
@@ -331,6 +346,7 @@ namespace Needle.SelectiveProfiling
 					}
 				}
 
+				requestInfo = false;
 				return false;
 			}
 
@@ -343,7 +359,7 @@ namespace Needle.SelectiveProfiling
 				if (newRows == null) return;
 				var settings = SelectiveProfilerSettings.instance; 
 
-				if (!settings.CollapseHierarchyNesting)
+				if (!settings.CollapseHierarchyNesting && !settings.CollapseNoImpactSamples)
 					CollapseRows.expanded.Clear();
 
 				ProfilerHelper.profilerTreeView = __instance;
@@ -449,7 +465,7 @@ namespace Needle.SelectiveProfiling
 						}
 					}
 
-					if (settings.CollapseHierarchyNesting && !DidCollapseWithType(typeof(CollapseRows)) && ShouldCollapseRow(tree, row, name))
+					if ((settings.CollapseHierarchyNesting || settings.CollapseNoImpactSamples) && (!DidCollapseWithType(typeof(CollapseRows)) && ShouldCollapseRow(tree, row, name, out _)))
 					{
 						var handler = new CollapseRows(ShouldCollapseRow);
 						handlers.Add(handler);

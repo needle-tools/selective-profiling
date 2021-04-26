@@ -67,6 +67,9 @@ namespace Needle.SelectiveProfiling
 					settings.UseAlwaysProfile);
 				
 				EditorGUI.BeginChangeCheck();
+				settings.CollapseNoImpactSamples = EditorGUILayout.ToggleLeft(
+					new GUIContent("Focus Mode", ""),
+					settings.CollapseNoImpactSamples);
 				settings.CollapseProperties = EditorGUILayout.ToggleLeft(
 					new GUIContent("Collapse Properties", ""),
 					settings.CollapseProperties);
