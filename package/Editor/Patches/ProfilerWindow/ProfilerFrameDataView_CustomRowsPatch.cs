@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using needle.EditorPatching;
@@ -201,8 +202,8 @@ namespace Needle.SelectiveProfiling
 					{
 						// NOTE: first index might change
 						// it is possible that items have been inserted in between so this is likely to break
-						var indexToInsert = firstIndex;
-						CreateAndInsertNewItem(tree, list, indexToInsert, ref index, row.id, firstDepth, row.parent, $"Collapsed {collapsedCounter} rows");
+						// var indexToInsert = firstIndex;
+						// CreateAndInsertNewItem(tree, list, indexToInsert, ref index, row.id, firstDepth, row.parent, $"Collapsed {collapsedCounter} rows");
 					}
 					else
 					{
@@ -300,19 +301,35 @@ namespace Needle.SelectiveProfiling
 					return true;
 
 				// TODO: support for collapsing items that have no impact
-				// if (frameDataView != null && frameDataView.valid)
-				// {
-				// 	if (item.id < parentIdOffset && !item.hasChildren)
-				// 	{
-				// 		var total = frameDataView.GetItemColumnDataAsFloat(item.id, 1);
-				// 		var alloc = frameDataView.GetItemColumnDataAsFloat(item.id, 4);
-				// 		if (total < 0.01f && alloc < 1)
-				// 		{
-				// 			Debug.Log(name + " - " + total + ", " + alloc + ", id=" + item.id);
-				// 			return true;
-				// 		}
-				// 	}
-				// }
+				if (frameDataView != null && frameDataView.valid)
+				{
+					if (item.id < parentIdOffset)
+					{
+						bool HasImpact(int id)
+						{
+							var alloc = frameDataView.GetItemColumnDataAsFloat(id, 4);
+							var ms = frameDataView.GetItemColumnDataAsFloat(id, 5);
+							var ms_self = frameDataView.GetItemColumnDataAsFloat(id, 6);
+							const float k_MinMillis = 0.05f;
+							const int k_MinBytes = 1;
+							return ms >= k_MinMillis || alloc >= k_MinBytes || ms_self >= k_MinMillis;
+						}
+
+						if (item.depth > 1 && item.parent != null)
+						{
+							if(!HasImpact(item.parent.id))
+								return true;
+						}
+						
+						var collapse = !HasImpact(item.id);
+						if (collapse)
+							return true;
+						
+						// else 
+						// 	return true;
+						
+					}
+				}
 
 				return false;
 			}
