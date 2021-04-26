@@ -14,4 +14,4 @@
 	url = https://github.com/needle-tools/unity-bug-tracing
 [submodule "projects/open-project-1"]
 	path = projects/open-project-1
-	url = https://github.com/UnityTechnologies/open-project-1.git
+	url = https://github.com/marwie/open-project-1.git
