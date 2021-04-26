@@ -109,8 +109,10 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					if (inst.opcode == OpCodes.Constrained)
 					{
 						start = index;
+						
 						// when unity uses Unity.Profiling.ProfilerMarker+AutoScope in finally/dispose the virtual dispose call is constrained to ProfilerMarker.Dispose
 						// this causes mismatching end samples and we dont want to profile profiler methods
+						// look into IL of UnityEngine.UIElements.UIElementsUtility.DoDispatch
 						if (inst.operand is MemberInfo mi && IsProfilerMethod(mi))
 						{
 							skipNextCall = true; 
