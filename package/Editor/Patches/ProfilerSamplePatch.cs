@@ -82,7 +82,7 @@ namespace Needle.SelectiveProfiling
 			}
 
 			// ReSharper disable once UnusedMember.Local
-			private static IEnumerable<CodeInstruction> Transpiler(MethodBase method, IEnumerable<CodeInstruction> _inst)
+			private static IEnumerable<CodeInstruction> Transpiler(MethodBase method, IEnumerable<CodeInstruction> _inst, ILGenerator il)
 			{
 				if (_inst == null) return null;
 				
@@ -90,11 +90,11 @@ namespace Needle.SelectiveProfiling
 				var instructions = _inst as List<CodeInstruction> ?? _inst.ToList();
 				if (SelectiveProfiler.InjectSampleWithCallback(method))
 				{
-					wrapper.Apply(method, instructions, InsertBeforeWithCallback, InsertAfter);
+					wrapper.Apply(method, instructions,  il, InsertBeforeWithCallback, InsertAfter);
 				}
 				else
 				{
-					wrapper.Apply(method, instructions, InsertBeforeConstant, InsertAfter);
+					wrapper.Apply(method, instructions, il, InsertBeforeConstant, InsertAfter);
 				}
 				return instructions;
 			}
@@ -104,14 +104,14 @@ namespace Needle.SelectiveProfiling
 				return prefix + TranspilerUtils.GetSampleName(currentMethod, instruction.opcode, instruction.operand, false) + postfix;
 			}
 
-			
-			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index)
+			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index, ILGenerator il)
 			{
 				var parentType = currentMethod.DeclaringType?.Name;
 				if (SelectiveProfiler.DebugLog)
 					parentType += "." + currentMethod.Name + "[" + index + "]";
 				
 				var sampleName = GetSampleName(currentMethod, instruction);
+				var label = il.DefineLabel();
 				
 				// when using the custom rows patch prefix the sample with the method name
 				if (!string.IsNullOrWhiteSpace(parentType) && PatchManager.IsActive(typeof(ProfilerFrameDataView_CustomRowsPatch).FullName))
@@ -133,7 +133,10 @@ namespace Needle.SelectiveProfiling
 				}
 				else
 				{
-					InsertBeforeConstant[1] = new CodeInstruction(OpCodes.Ldstr, sampleName);
+					InsertBeforeConstant[1].operand = sampleName;
+
+					InsertAfter[1].operand = label;
+					InsertAfter[InsertAfter.Count-1].labels = new List<Label> {label};
 				}
 			}
 			
@@ -154,10 +157,14 @@ namespace Needle.SelectiveProfiling
  
 			private static readonly List<CodeInstruction> InsertAfter = new List<CodeInstruction>()
 			{
+				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample)),
+				new CodeInstruction(OpCodes.Br /* operand is target label */),
+				
 				new CodeInstruction(OpCodes.Nop).WithBlocks(new ExceptionBlock(ExceptionBlockType.BeginFinallyBlock)),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample)),
 				new CodeInstruction(OpCodes.Endfinally),
 				new CodeInstruction(OpCodes.Nop).WithBlocks(new ExceptionBlock(ExceptionBlockType.EndExceptionBlock)), 
+				new CodeInstruction(OpCodes.Nop),
 			};
 
 			// private static LocalBuilder Builder => AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("test"), AssemblyBuilderAccess.Run).DefineDynamicModule("test")

@@ -30,7 +30,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			this.skipProfilerMethods = skipProfilerMethods;
 		}
 
-		public void Apply(MethodBase method, IList<CodeInstruction> instructions, IList<CodeInstruction> before, IList<CodeInstruction> after)
+		public void Apply(MethodBase method, IList<CodeInstruction> instructions, ILGenerator il, IList<CodeInstruction> before, IList<CodeInstruction> after)
 		{
 			var IL_Before = ShouldSaveIL(debugLog) || SelectiveProfiler.DevelopmentMode ? string.Join("\n", instructions) : null;
 
@@ -84,9 +84,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					start = index + 1;
 				}
 
-				bool IsMethodCall(CodeInstruction instruction) => instruction.opcode == OpCodes.Call;// || instruction.opcode == OpCodes.Callvirt;
+				bool IsMethodCall(CodeInstruction instruction) => instruction.opcode == OpCodes.Call || instruction.opcode == OpCodes.Callvirt;
 				bool IsAllocation(CodeInstruction instruction) => instruction.opcode == OpCodes.Newobj || instruction.opcode == OpCodes.Newarr;
-				bool ShouldCapture(CodeInstruction instruction) => IsMethodCall(instruction);// || IsAllocation(instruction);
+				bool ShouldCapture(CodeInstruction instruction) => IsMethodCall(instruction) || IsAllocation(instruction);
 
 				if (ShouldCapture(inst))
 				{
@@ -168,7 +168,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// e.g. when a branch jumps over some load/store and we move the label to the beginning of those
 					if (hasLabel) start = -1;
 					
-					beforeInject?.Invoke(method, inst, index);
+					beforeInject?.Invoke(method, inst, index, il);
 					// start = index;
 
 					// void LookAheadPotentiallyWrappingStoreResultAndConstrained()
@@ -189,11 +189,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// we arrived at the actual method call
 					wrapper.Start = index;// start <= -1 ? index : start;
 					wrapper.MethodIndex = index;   
-					wrapper.Apply(method, instructions, before, after);
+					wrapper.Apply(method, instructions, il, before, after);
 					index = wrapper.MethodIndex;
 					start = -1;
-					++injectCounter;
-					if (injectCounter > 0) break;
 				}
 			}
 

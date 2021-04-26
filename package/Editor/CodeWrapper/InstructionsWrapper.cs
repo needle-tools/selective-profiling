@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Emit;
 using HarmonyLib;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		public int Start;
 		public int MethodIndex;
 		
-		public void Apply(MethodBase method, IList<CodeInstruction> instructions, IList<CodeInstruction> before, IList<CodeInstruction> after)
+		public void Apply(MethodBase method, IList<CodeInstruction> instructions, ILGenerator il, IList<CodeInstruction> before, IList<CodeInstruction> after)
 		{
 			int offset = 0;
 			CodeInstruction branchTarget = null;
