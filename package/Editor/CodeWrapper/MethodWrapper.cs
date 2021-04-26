@@ -36,6 +36,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 			var start = -1;
 			var exceptionBlockStack = 0;
+			var injectCounter = 0;
 			// var currentBranches = new List<Label>();
 			// var currentLoadedVars = new List<LoadedVariable>();
 
@@ -83,9 +84,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					start = index + 1;
 				}
 
-				bool IsMethodCall(CodeInstruction instruction) => instruction.opcode == OpCodes.Call || instruction.opcode == OpCodes.Callvirt;
+				bool IsMethodCall(CodeInstruction instruction) => instruction.opcode == OpCodes.Call;// || instruction.opcode == OpCodes.Callvirt;
 				bool IsAllocation(CodeInstruction instruction) => instruction.opcode == OpCodes.Newobj || instruction.opcode == OpCodes.Newarr;
-				bool ShouldCapture(CodeInstruction instruction) => IsMethodCall(instruction) || IsAllocation(instruction);
+				bool ShouldCapture(CodeInstruction instruction) => IsMethodCall(instruction);// || IsAllocation(instruction);
 
 				if (ShouldCapture(inst))
 				{
@@ -187,10 +188,12 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 					// we arrived at the actual method call
 					wrapper.Start = index;// start <= -1 ? index : start;
-					wrapper.MethodIndex = index;
+					wrapper.MethodIndex = index;   
 					wrapper.Apply(method, instructions, before, after);
 					index = wrapper.MethodIndex;
 					start = -1;
+					++injectCounter;
+					if (injectCounter > 0) break;
 				}
 			}
 
