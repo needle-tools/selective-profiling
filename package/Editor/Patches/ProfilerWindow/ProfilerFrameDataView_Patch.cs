@@ -347,31 +347,37 @@ namespace Needle.SelectiveProfiling
 					{
 						if (lastMethod != null)
 						{
+							const string enableItem = "/Enable | All Methods in ";
+							const string disableItem = "/Disable | All Methods in ";
+							// menu.AddItem(new GUIContent(GetTypeSubmenuName(kvp.Key) + "/"), true, ()=>{});
 							// we have multiple methods
 							if (kvp.All(e => SelectiveProfiler.IsProfiling(e)))
 							{
-								menu.AddDisabledItem(new GUIContent(GetMenuString("/Enable profiling for all Methods in ")),
-									false);
-								menu.AddItem(new GUIContent(GetMenuString("/Disable profiling for all Methods in ")),
+								menu.AddDisabledItem(new GUIContent(GetMenuString(enableItem)),
+									true);
+								menu.AddItem(new GUIContent(GetMenuString(disableItem)),
 									true,
 									() => DisableProfilingFromProfilerWindow(kvp, tree));
+								menu.AddSeparator(GetTypeSubmenuName(kvp.Key) + "/");
 							}
 							else if (kvp.Any(e => SelectiveProfiler.IsProfiling(e)))
 							{
-								menu.AddItem(new GUIContent(GetMenuString("/Enable profiling for all Methods in ")),
+								menu.AddItem(new GUIContent(GetMenuString(enableItem)),
 									true,
 									() => EnableProfilingFromProfilerWindow(kvp, tree));
-								menu.AddItem(new GUIContent(GetMenuString("/Disable profiling for all Methods in ")),
+								menu.AddItem(new GUIContent(GetMenuString(disableItem)),
 									true,
 									() => DisableProfilingFromProfilerWindow(kvp, tree));
+								menu.AddSeparator(GetTypeSubmenuName(kvp.Key) + "/");
 							}
 							else
 							{
-								menu.AddItem(new GUIContent(GetMenuString("/Enable profiling for all Methods in ")),
+								menu.AddItem(new GUIContent(GetMenuString(enableItem)),
 									false,
 									() => EnableProfilingFromProfilerWindow(kvp, tree));
-								menu.AddDisabledItem(new GUIContent(GetMenuString("/Disable profiling for all Methods in ")),
+								menu.AddDisabledItem(new GUIContent(GetMenuString(disableItem)),
 									false);
+								menu.AddSeparator(GetTypeSubmenuName(kvp.Key) + "/");
 							}
 
 							menu.AddSeparator(parent + GetTypeSubmenuName(kvp.Key));
