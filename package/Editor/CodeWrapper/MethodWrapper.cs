@@ -35,6 +35,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			var IL_Before = ShouldSaveIL(debugLog) || SelectiveProfiler.DevelopmentMode ? string.Join("\n", instructions) : null;
 
 			var start = -1;
+			var skipNextCall = false;
 			// var exceptionBlockStack = 0;
 			// var injectCounter = 0;
 			// var currentBranches = new List<Label>();
@@ -83,35 +84,50 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				// {
 				// 	start = index + 1;
 				// }
-
-				if (start <= -1) 
+				
+				bool IsProfilerMarkerOrSampler(Type type)
 				{
-					if(inst.opcode == OpCodes.Constrained)
-						start = index;
+					return typeof(ProfilerMarker).IsAssignableFrom(type) ||
+					       typeof(CustomSampler).IsAssignableFrom(type);
+				}
+				
+				bool IsProfilerMethod(MemberInfo mi)
+				{
+					return mi.DeclaringType == typeof(Profiler) || IsProfilerMarkerOrSampler(mi.DeclaringType);
 				}
 
 				var isMethodCall = inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt;
+				if (isMethodCall && skipNextCall)
+				{
+					skipNextCall = false;
+					start = -1;
+					continue;
+				}
+
+				if (start <= -1) 
+				{
+					if (inst.opcode == OpCodes.Constrained)
+					{
+						start = index;
+						// when unity uses Unity.Profiling.ProfilerMarker+AutoScope in finally/dispose the virtual dispose call is constrained to ProfilerMarker.Dispose
+						// this causes mismatching end samples and we dont want to profile profiler methods
+						if (inst.operand is MemberInfo mi && IsProfilerMethod(mi))
+						{
+							skipNextCall = true; 
+						}
+					}
+				}
+				
 				var isAllocation = inst.opcode == OpCodes.Newobj || inst.opcode == OpCodes.Newarr;
 				if (isAllocation || isMethodCall)
 				{
-					bool IsProfilerMarkerOrSampler(Type type)
-					{
-						return typeof(ProfilerMarker).IsAssignableFrom(type) ||
-						       typeof(CustomSampler).IsAssignableFrom(type);
-					}
-					
 					if (inst.operand is MethodInfo mi)
 					{
-						bool MethodIsProfilerMethodOrHasProfilerMethodArgument()
-						{
-							return mi.DeclaringType == typeof(Profiler) || IsProfilerMarkerOrSampler(mi.DeclaringType);
-						}
-						
 						// I think we dont have to skip methods that take Profiler.Samplers as arguments as below when in dispose scope
 						// we can probably profile constructors below once we handle dispose scopes correctly?!
 						// but maybe it is a special case as well. According to SRP comment: "Currently there's an issue which results in mismatched markers."
 						
-						if (skipProfilerMethods && MethodIsProfilerMethodOrHasProfilerMethodArgument())
+						if (skipProfilerMethods && IsProfilerMethod(mi))
 						{
 							// start = -1;
 							continue;
@@ -156,7 +172,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 					// if (isMethodCall && exceptionBlockStack > 0)
 					// {
-					// 	start = -1;
+					// 	start = -1; 
 					// 	continue;
 					// }
 
@@ -167,7 +183,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 					var data = beforeInject?.Invoke(method, inst, index, il);
 					if (!data.HasValue) throw new Exception("SelectiveProfiler did not return instructions");
-
+					
 					// we arrived at the actual method call
 					wrapper.Start = start <= -1 ? index : start;
 					wrapper.MethodIndex = index;
