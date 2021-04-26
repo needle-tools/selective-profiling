@@ -88,14 +88,7 @@ namespace Needle.SelectiveProfiling
 				
 				if (!wrappers.TryGetValue(method, out var wrapper)) return _inst;
 				var instructions = _inst as List<CodeInstruction> ?? _inst.ToList();
-				if (SelectiveProfiler.InjectSampleWithCallback(method))
-				{
-					wrapper.Apply(method, instructions,  il, InsertBeforeWithCallback, InsertAfter);
-				}
-				else
-				{
-					wrapper.Apply(method, instructions, il, InsertBeforeConstant, InsertAfter);
-				}
+				wrapper.Apply(method, instructions, il);
 				return instructions;
 			}
 
@@ -104,7 +97,7 @@ namespace Needle.SelectiveProfiling
 				return prefix + TranspilerUtils.GetSampleName(currentMethod, instruction.opcode, instruction.operand, false) + postfix;
 			}
 
-			private void OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index, ILGenerator il)
+			private (IList<CodeInstruction> before, IList<CodeInstruction> after) OnBeforeInjectBeginSample(MethodBase currentMethod, CodeInstruction instruction, int index, ILGenerator il)
 			{
 				var parentType = currentMethod.DeclaringType?.Name;
 				if (SelectiveProfiler.DebugLog)
@@ -123,39 +116,28 @@ namespace Needle.SelectiveProfiling
 				
 				if(instruction.operand is MethodInfo mi)
 					AccessUtils.RegisterMethodCall(sampleName, mi);
-				
-				if (SelectiveProfiler.InjectSampleWithCallback(currentMethod))
-				{
-					// load reference or null if static
-					InsertBeforeWithCallback[0] = new CodeInstruction(currentMethod == null || currentMethod.IsStatic ? OpCodes.Ldnull : OpCodes.Ldarg_0);
-					InsertBeforeWithCallback[1] = new CodeInstruction(OpCodes.Ldstr, sampleName);
-					InsertBeforeWithCallback[2] = CodeInstruction.Call(typeof(SelectiveProfiler), nameof(SelectiveProfiler.OnSampleCallback), new []{typeof(object), typeof(string)});
-				}
-				else
-				{
-					InsertBeforeConstant[1].operand = sampleName;
 
-					InsertAfter[1].operand = label;
-					InsertAfter[InsertAfter.Count-1].labels = new List<Label> {label};
+				// only insert try catch blocks for calls
+				if (instruction.opcode == OpCodes.Call || instruction.opcode == OpCodes.Callvirt)
+				{
+					InsertBeforeWithExceptionBlock[1].operand = sampleName;
+					InsertAfterWithExceptionBlock[1].operand = label;
+					InsertAfterWithExceptionBlock[InsertAfterWithExceptionBlock.Count-1].labels = new List<Label> {label};
+					return (InsertBeforeWithExceptionBlock, InsertAfterWithExceptionBlock);
 				}
+				
+				InsertBefore[0].operand = sampleName;
+				return (InsertBefore, InsertAfter);
 			}
 			
-			private static readonly List<CodeInstruction> InsertBeforeConstant = new List<CodeInstruction>()
+			private static readonly List<CodeInstruction> InsertBeforeWithExceptionBlock = new List<CodeInstruction>()
 			{
 				new CodeInstruction(OpCodes.Nop,null).WithBlocks(new ExceptionBlock(ExceptionBlockType.BeginExceptionBlock)),
-				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
-				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
-			};
-
-			private static readonly List<CodeInstruction> InsertBeforeWithCallback = new List<CodeInstruction>()
-			{
-				new CodeInstruction(OpCodes.Ldarg_0), // load "this"
-				new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
-				new CodeInstruction(OpCodes.Nop), // will be replaced by load call to SelectiveProfiler.GetName 
+				new CodeInstruction(OpCodes.Ldstr, "<ReplacedWithProfilerSampleName>"),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
 			};
  
-			private static readonly List<CodeInstruction> InsertAfter = new List<CodeInstruction>()
+			private static readonly List<CodeInstruction> InsertAfterWithExceptionBlock = new List<CodeInstruction>()
 			{
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample)),
 				new CodeInstruction(OpCodes.Br /* operand is target label */),
@@ -166,6 +148,27 @@ namespace Needle.SelectiveProfiling
 				// add label to this instruction to jump to if no exception
 				new CodeInstruction(OpCodes.Nop),
 			};
+			
+			
+			private static readonly List<CodeInstruction> InsertBefore = new List<CodeInstruction>()
+			{
+				new CodeInstruction(OpCodes.Ldstr, "<ReplacedWithProfilerSampleName>"),
+				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
+			};
+ 
+			private static readonly List<CodeInstruction> InsertAfter = new List<CodeInstruction>()
+			{
+				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample)),
+			};
+			
+			
+			// private static readonly List<CodeInstruction> InsertBeforeWithCallback = new List<CodeInstruction>()
+			// {
+			// 	new CodeInstruction(OpCodes.Ldarg_0), // load "this"
+			// 	new CodeInstruction(OpCodes.Ldstr, "ReplacedWithProfilerSampleName"),
+			// 	new CodeInstruction(OpCodes.Nop), // will be replaced by load call to SelectiveProfiler.GetName 
+			// 	CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}),
+			// };
 
 			// private static LocalBuilder Builder => AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("test"), AssemblyBuilderAccess.Run).DefineDynamicModule("test")
 			// 	.DefineType("test").DefineMethod("test", MethodAttributes.Private).GetILGenerator().DeclareLocal(typeof(ProfilerMarker));

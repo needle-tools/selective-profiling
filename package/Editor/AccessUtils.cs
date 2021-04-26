@@ -37,6 +37,9 @@ namespace Needle.SelectiveProfiling.Utils
 		private static readonly Dictionary<string, Assembly> assemblyMap = new Dictionary<string, Assembly>();
 		private static Dictionary<string, MethodInfo> foundMethodCalls = new Dictionary<string, MethodInfo>();
 
+		/// <summary>
+		/// register call to select method from profiler for stepping into it
+		/// </summary>
 		internal static void RegisterMethodCall(string key, MethodInfo method)
 		{
 			if (!foundMethodCalls.ContainsKey(key))

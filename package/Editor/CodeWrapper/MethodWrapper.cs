@@ -30,7 +30,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 			this.skipProfilerMethods = skipProfilerMethods;
 		}
 
-		public void Apply(MethodBase method, IList<CodeInstruction> instructions, ILGenerator il, IList<CodeInstruction> before, IList<CodeInstruction> after)
+		public void Apply(MethodBase method, IList<CodeInstruction> instructions, ILGenerator il)
 		{
 			var IL_Before = ShouldSaveIL(debugLog) || SelectiveProfiler.DevelopmentMode ? string.Join("\n", instructions) : null;
 
@@ -84,11 +84,9 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					start = index + 1;
 				}
 
-				bool IsMethodCall(CodeInstruction instruction) => instruction.opcode == OpCodes.Call || instruction.opcode == OpCodes.Callvirt;
-				bool IsAllocation(CodeInstruction instruction) => instruction.opcode == OpCodes.Newobj || instruction.opcode == OpCodes.Newarr;
-				bool ShouldCapture(CodeInstruction instruction) => IsMethodCall(instruction) || IsAllocation(instruction);
-
-				if (ShouldCapture(inst))
+				var isMethodCall = inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt;
+				var isAllocation = inst.opcode == OpCodes.Newobj || inst.opcode == OpCodes.Newarr;
+				if (isAllocation || isMethodCall)
 				{
 					bool IsProfilerMarkerOrSampler(Type type)
 					{
@@ -98,13 +96,6 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					
 					if (inst.operand is MethodInfo mi)
 					{
-						// not sure if this is responsible for some of the profiler sample mismatches
-						if (mi.DeclaringType == typeof(GUIUtility) && mi.Name == "ExitGUI")
-						{
-							start = -1;
-							continue;
-						}
-						
 						bool MethodIsProfilerMethodOrHasProfilerMethodArgument()
 						{
 							return mi.DeclaringType == typeof(Profiler) || IsProfilerMarkerOrSampler(mi.DeclaringType);
@@ -157,7 +148,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 
 					if (start > index && hasLabel) start = prevStart;
 
-					if (IsMethodCall(inst) && exceptionBlockStack > 0)
+					if (isMethodCall && exceptionBlockStack > 0)
 					{
 						start = -1;
 						continue;
@@ -167,29 +158,16 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// if we move the label to the beginning of the loads we might cause wrong branching 
 					// e.g. when a branch jumps over some load/store and we move the label to the beginning of those
 					if (hasLabel) start = -1;
-					
-					beforeInject?.Invoke(method, inst, index, il);
-					// start = index;
 
-					// void LookAheadPotentiallyWrappingStoreResultAndConstrained()
-					// {
-					// 	for(var k = 1; index+k <= instructions.Count; k++)
-					// 	{
-					// 		var i = index + k;
-					// 		if (i >= instructions.Count || ShouldCapture(instructions[i]))
-					// 		{
-					// 			index = i - 1;
-					// 			break;
-					// 		}
-					// 	}
-					// }
-					// LookAheadPotentiallyWrappingStoreResultAndConstrained();
-
+					var data = beforeInject?.Invoke(method, inst, index, il);
+					if (!data.HasValue) throw new Exception("SelectiveProfiler did not return instructions");
 
 					// we arrived at the actual method call
-					wrapper.Start = index;// start <= -1 ? index : start;
-					wrapper.MethodIndex = index;   
-					wrapper.Apply(method, instructions, il, before, after);
+					wrapper.Start = index;
+					wrapper.MethodIndex = index;
+					wrapper.Before = data.Value.before;
+					wrapper.After = data.Value.after;
+					wrapper.Apply(method, instructions, il);
 					index = wrapper.MethodIndex;
 					start = -1;
 				}
