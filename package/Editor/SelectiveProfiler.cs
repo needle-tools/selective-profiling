@@ -386,7 +386,7 @@ namespace Needle.SelectiveProfiling
 			var ml = settings.MethodsList;
 			if (ml != null && ml.Count > 0) 
 			{
-				var methodsList = Application.isPlaying ? ml.ToArray() : ml;
+				var methodsList = ml.ToArray();
 				foreach (var m in methodsList)
 				{
 					if (m.Enabled && m.TryResolveMethod(out var info))
