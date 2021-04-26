@@ -159,11 +159,11 @@ namespace Needle.SelectiveProfiling
 			{
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample)),
 				new CodeInstruction(OpCodes.Br /* operand is target label */),
-				
+				// finally block
 				new CodeInstruction(OpCodes.Nop).WithBlocks(new ExceptionBlock(ExceptionBlockType.BeginFinallyBlock)),
 				CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample)),
-				new CodeInstruction(OpCodes.Endfinally),
-				new CodeInstruction(OpCodes.Nop).WithBlocks(new ExceptionBlock(ExceptionBlockType.EndExceptionBlock)), 
+				new CodeInstruction(OpCodes.Endfinally).WithBlocks(new ExceptionBlock(ExceptionBlockType.EndExceptionBlock)), 
+				// add label to this instruction to jump to if no exception
 				new CodeInstruction(OpCodes.Nop),
 			};
 
