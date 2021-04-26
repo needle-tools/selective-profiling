@@ -10,6 +10,7 @@ using JetBrains.Annotations;
 using needle.EditorPatching;
 using Unity.Profiling;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
 using UnityEngine;
@@ -532,9 +533,16 @@ namespace Needle.SelectiveProfiling.Utils
 				)
 				{
 					Reason($"Profiling in {fullName} is not allowed: " + GetMethodLogName());
-					return false;
+					return false; 
 				}
 			}
+
+			if (method.DeclaringType.FullName == "UnityEditor.IMGUI.Controls.TreeView+RowGUIArgs")
+			{
+				Reason($"Patching TreeView+RowGUIArgs causes issues. See https://github.com/pardeike/Harmony/issues/399");
+				return false;
+			}
+			
 			// if (method.DeclaringType != null)
 			// {
 			// 	if (typeof(MonoBehaviour).IsAssignableFrom(method.DeclaringType) && method.Name == "OnValidate" && method.GetParameters().Length <= 0)
