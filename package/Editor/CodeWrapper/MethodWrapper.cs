@@ -34,7 +34,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		{
 			var IL_Before = ShouldSaveIL(debugLog) || SelectiveProfiler.DevelopmentMode ? string.Join("\n", instructions) : null;
 
-			// var start = -1;
+			var start = -1;
 			// var exceptionBlockStack = 0;
 			// var injectCounter = 0;
 			// var currentBranches = new List<Label>();
@@ -83,6 +83,12 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 				// {
 				// 	start = index + 1;
 				// }
+
+				if (start <= -1) 
+				{
+					if(inst.opcode == OpCodes.Constrained)
+						start = index;
+				}
 
 				var isMethodCall = inst.opcode == OpCodes.Call || inst.opcode == OpCodes.Callvirt;
 				var isAllocation = inst.opcode == OpCodes.Newobj || inst.opcode == OpCodes.Newarr;
@@ -163,13 +169,13 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					if (!data.HasValue) throw new Exception("SelectiveProfiler did not return instructions");
 
 					// we arrived at the actual method call
-					wrapper.Start = index;
+					wrapper.Start = start <= -1 ? index : start;
 					wrapper.MethodIndex = index;
 					wrapper.Before = data.Value.before;
 					wrapper.After = data.Value.after;
 					wrapper.Apply(method, instructions, il);
 					index = wrapper.MethodIndex;
-					// start = -1;
+					start = -1;  
 				}
 			}
 
