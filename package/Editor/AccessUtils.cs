@@ -497,12 +497,12 @@ namespace Needle.SelectiveProfiling.Utils
 				switch (assemblyName)
 				{
 					case "UnityEngine.UIElementsNativeModule":
-					// case "UnityEngine.IMGUIModule":
+					case "UnityEngine.IMGUIModule":
 					// case "UnityEngine.CoreModule":
 					// case "UnityEditor.CoreModule":
 					// case "UnityEditor.UIElementsModule":
 					// case "UnityEngine.UIElementsModule":
-					// case "UnityEngine.SharedInternalsModule":
+					case "UnityEngine.SharedInternalsModule":
 					// case "UnityEditor.PackageManagerUIModule":
 						Reason("Profiling in " + assemblyName + " is not allowed: " + GetMethodLogName());
 						return false;
@@ -521,8 +521,8 @@ namespace Needle.SelectiveProfiling.Utils
 				    || fullName.StartsWith("UnityEditor.HostView")
 				    || fullName.StartsWith("UnityEngine.UIElements.UIR")
 					|| fullName.StartsWith("UnityEngineInternal.Input.NativeInputSystem")
-					// || fullName.StartsWith("UnityEditor.IMGUI.Controls.TreeViewController")
-				    // || fullName.StartsWith("UnityEditor.StyleSheets")
+					|| fullName.StartsWith("UnityEditor.IMGUI.Controls.TreeViewController")
+				    || fullName.StartsWith("UnityEditor.StyleSheets")
 				 //    || fullName.StartsWith("UnityEngine.SendMouseEvents")
 				 //    || fullName.StartsWith("UnityEditor.PlayModeView")
 					
