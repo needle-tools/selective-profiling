@@ -40,10 +40,13 @@ namespace Needle.SelectiveProfiling
 				var id = frameData.GetMarkerId("MySpecialSample");
 				for (var i = 0; i < frameData.sampleCount; i++)
 				{
-					if (id != frameData.GetSampleMarkerId(i)) continue;
+					var markerId = frameData.GetSampleMarkerId(i);
 					var name = frameData.GetSampleName(i);
-					// Debug.Log(i + ": "+ name);
-					captures.Add((frame, name));
+					// var gcAllocSize = frameData.GetSampleMetadataAsFloat(i, 0);
+					// if (id != frameData.GetSampleMarkerId(i) || name.ToLowerInvariant().Contains("mouse")) continue;
+					if(name.ToLowerInvariant().Contains("mouse") && frameData.HasCounterValue(markerId))
+						Debug.Log(i + ": "+ name);
+					// captures.Add((frame, name));
 				}
 			}
 			// ProfilerDriver.enabled = false;
@@ -105,10 +108,9 @@ namespace Needle.SelectiveProfiling
 				// if (___m_Area != ProfilerArea.CPU) return;
 				// GUI.Label(rect, "TEST " + r + ", " + selectedFrame);
 
-				DrawMarker(r, "Frame: " + selectedFrame, selectedFrame, cdata, Color.cyan);
-
-				var other = cdata.firstSelectableFrame + 20;
-				DrawMarker(r, "Frame: " + other, other, cdata, Color.yellow);
+				// DrawMarker(r, "Frame: " + selectedFrame, selectedFrame, cdata, Color.cyan);
+				// var other = cdata.firstSelectableFrame + 20;
+				// DrawMarker(r, "Frame: " + other, other, cdata, Color.yellow);
 
 				for (var index = ProfilerMarkerStore.captures.Count - 1; index >= 0; index--)
 				{
@@ -122,6 +124,7 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 
+			// click on marker https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerWindow.cs#L1235
 			private static void DrawMarker(Rect r, string label, int frame, ChartViewData cdata, Color color)
 			{
 				var rect = r;
@@ -129,8 +132,8 @@ namespace Needle.SelectiveProfiling
 				rect.y += r.height;
 				var top = DrawVerticalLine(frame, cdata, rect, color, 1);
 				rect.x = top.x + 5;
-				rect.y = top.y;
 				rect.height = EditorGUIUtility.singleLineHeight;
+				rect.y = top.y - rect.height * .5f;
 				var prev = GUI.color;
 				GUI.color = color;
 				GUI.Label(rect, label);
