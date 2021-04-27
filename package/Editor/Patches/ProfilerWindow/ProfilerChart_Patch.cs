@@ -40,14 +40,14 @@ namespace Needle.SelectiveProfiling
 				rect.y += r.height - rect.height;
 				GUI.Label(rect, "TEST " + r + ", " + selectedFrame);
 
-				DrawVerticalLine(selectedFrame + 20 , cdata, r, Color.red, 3);
+				DrawVerticalLine(selectedFrame , cdata, r, Color.red, 1);
 			}
 
 
 			internal static void DrawVerticalLine(int frame, ChartViewData cdata, Rect r, Color color, float minWidth, float maxWidth = 0)
 			{
-				if (Event.current.type != EventType.Repaint)
-					return;
+				// if (Event.current.type != EventType.Repaint)
+				// 	return;
 
 				frame -= cdata.chartDomainOffset;
 				if (frame < 0)
@@ -55,19 +55,20 @@ namespace Needle.SelectiveProfiling
 
 
 				float domainSize = cdata.GetDataDomainLength();
-				float lineWidth = Mathf.Max(minWidth, r.width / domainSize);
-				if (maxWidth > 0)
-					lineWidth = Mathf.Min(maxWidth, lineWidth);
+				float lineWidth = minWidth;
+				var x = r.x + frame;// r.x + r.width / domainSize * frame;
+				var count = r.width / cdata.series[0].numDataPoints;
 
 				// HandleUtility.ApplyWireMaterial();
 				typeof(HandleUtility).GetMethod("ApplyWireMaterial", BindingFlags.Static | BindingFlags.NonPublic, null, new Type[0], null).Invoke(null, null);
 				GL.Begin(GL.QUADS);
 				GL.Color(color);
-				GL.Vertex3(r.x + r.width / domainSize * frame, r.y + 1, 0);
-				GL.Vertex3(r.x + r.width / domainSize * frame + lineWidth, r.y + 1, 0);
+				Debug.Log(x + ", " + domainSize + ", " + r.width + ", " + cdata.firstSelectableFrame + ", " + cdata.series[0].numDataPoints); 
+				GL.Vertex3(x, r.y + 1, 0);
+				GL.Vertex3(x + lineWidth, r.y + 1, 0);
 
-				GL.Vertex3(r.x + r.width / domainSize * frame + lineWidth, r.yMax, 0);
-				GL.Vertex3(r.x + r.width / domainSize * frame, r.yMax, 0);
+				GL.Vertex3(x + lineWidth, r.yMax, 0);
+				GL.Vertex3(x, r.yMax, 0);
 				GL.End();
 			}
 			
