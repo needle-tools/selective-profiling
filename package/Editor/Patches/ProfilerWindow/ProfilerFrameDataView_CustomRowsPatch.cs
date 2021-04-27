@@ -320,34 +320,34 @@ namespace Needle.SelectiveProfiling
 					
 					if (item.id < parentIdOffset)
 					{
-						bool HasImpact(int id, int depth)
+						bool HasImpact(int id, int depth, float factor = 1)
 						{
 							var alloc = frameDataView.GetItemColumnDataAsFloat(id, 4);
 							var ms = frameDataView.GetItemColumnDataAsFloat(id, 5);
 							var ms_self = frameDataView.GetItemColumnDataAsFloat(id, 6);
 							var warnings = frameDataView.GetItemColumnDataAsFloat(id, 7);
 							// if (depth > 2 && ms > 0.005) return true;
-							float k_MinMillis = 0.05f / (depth*depth);
-							int k_MinBytes = 1;
-							return ms >= k_MinMillis || alloc >= k_MinBytes || ms_self >= k_MinMillis || warnings > 0;
+							float k_MinMillis = 0.01f * factor;// / (depth*depth);
+							float k_MinBytes = 1 * factor;
+							return ms > k_MinMillis || alloc > k_MinBytes || ms_self > k_MinMillis || warnings > 0;
 						}
 
-						// bool ParentIsSelected(TreeViewItem _item)
-						// {
-						// 	if (_item == null) return false;
-						// 	if (_item.depth < 1) return false;
-						// 	if (tree.IsSelected(_item.id))
-						// 		return true;
-						// 	return ParentIsSelected(_item.parent);
-						// }
-						//
-						// if (ParentIsSelected(item)) return false;
-						
-						if (item.depth > 1 && item.parent != null)
+						bool ParentIsSelected(TreeViewItem _item)
 						{
-							if(!HasImpact(item.parent.id, item.parent.depth))
+							if (_item == null) return false;
+							if (_item.depth < 1) return false;
+							if (tree.IsSelected(_item.id))
 								return true;
+							return ParentIsSelected(_item.parent);
 						}
+						//
+						if (ParentIsSelected(item) && HasImpact(item.id, item.depth, 0)) return false;
+						
+						// if (item.depth > 1 && item.parent != null)
+						// {
+						// 	if(HasImpact(item.parent.id, item.parent.depth))
+						// 		return false;
+						// }
 						
 						var collapse = !HasImpact(item.id, item.depth);
 						if (collapse)
