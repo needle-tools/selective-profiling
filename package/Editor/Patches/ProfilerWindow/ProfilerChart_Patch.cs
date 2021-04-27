@@ -1,14 +1,82 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using needle.EditorPatching;
+using Unity.Profiling.LowLevel;
 using UnityEditor;
+using UnityEditor.Profiling;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Profiling;
 
 namespace Needle.SelectiveProfiling
 {
+	public static class ProfilerMarkerStore
+	{
+		[InitializeOnLoadMethod]
+		private static void Init()
+		{
+			ProfilerDriver.NewProfilerFrameRecorded -= OnNewFrame;
+			ProfilerDriver.NewProfilerFrameRecorded += OnNewFrame;
+		}
+
+		private static readonly List<FrameDataView.MarkerInfo> markers = new List<FrameDataView.MarkerInfo>();
+
+		public static readonly List<(int, string)> captures = new List<(int, string)>();
+
+		private static void OnNewFrame(int thread, int frame)
+		{
+			// ProfilerDriver.SetMarkerFiltering("Drawing");
+			// var raw = ProfilerDriver.GetRawFrameDataView(frame, thread);
+			// if (!raw.valid) return;
+
+
+			using (var frameData = ProfilerDriver.GetRawFrameDataView(frame, 0))
+			{
+				if (!frameData.valid)
+					return;
+				var id = frameData.GetMarkerId("MySpecialSample");
+				for (var i = 0; i < frameData.sampleCount; i++)
+				{
+					if (id != frameData.GetSampleMarkerId(i)) continue;
+					var name = frameData.GetSampleName(i);
+					// Debug.Log(i + ": "+ name);
+					captures.Add((frame, name));
+				}
+			}
+			// ProfilerDriver.enabled = false;
+
+
+			// // ProfilerDriver.SetMarkerFiltering("TEST");
+			// markers.Clear();
+			// raw.GetMarkers(markers);
+			// foreach(var m in markers)
+			// 	Debug.Log(m.name);
+			// var view = ProfilerDriver.GetHierarchyFrameDataView(frame, 0, HierarchyFrameDataView.ViewModes.Default, 0, false);
+			// if (!view.valid)
+			// {
+			// 	// Debug.Log("View is not valid");
+			// 	return;
+			// }
+			//
+			// markers.Clear();
+			// // ProfilerDriver.SetMarkerFiltering("TEST");
+			// view.GetMarkers(markers);
+			// foreach (var m in markers)
+			// {
+			// 	if (m.name.ToLower().Contains("mouse"))
+			// 	{
+			// 		Debug.Log(m.name);
+			// 	}
+			// }
+
+			// ProfilerDriver.SetMarkerFiltering(null);
+		}
+	}
+
+
 	public class ProfilerChart_Patch : EditorPatchProvider
 	{
 		// Profiler Window create chart https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerWindow.cs#L352
@@ -35,43 +103,72 @@ namespace Needle.SelectiveProfiling
 			private static void Postfix(Rect r, int selectedFrame, ChartViewData cdata)
 			{
 				// if (___m_Area != ProfilerArea.CPU) return;
-				var rect = r;
-				rect.height = EditorGUIUtility.singleLineHeight;
-				rect.y += r.height - rect.height;
-				GUI.Label(rect, "TEST " + r + ", " + selectedFrame);
+				// GUI.Label(rect, "TEST " + r + ", " + selectedFrame);
 
-				DrawVerticalLine(selectedFrame , cdata, r, Color.red, 1);
+				DrawMarker(r, "Frame: " + selectedFrame, selectedFrame, cdata, Color.cyan);
+
+				var other = cdata.firstSelectableFrame + 20;
+				DrawMarker(r, "Frame: " + other, other, cdata, Color.yellow);
+
+				for (var index = ProfilerMarkerStore.captures.Count - 1; index >= 0; index--)
+				{
+					var cap = ProfilerMarkerStore.captures[index];
+					if (cap.Item1 < cdata.firstSelectableFrame)
+					{
+						ProfilerMarkerStore.captures.RemoveAt(index);
+						continue;
+					}
+					DrawMarker(r, cap.Item2 + ": " + cap.Item1, cap.Item1, cdata, Color.green);
+				}
 			}
 
+			private static void DrawMarker(Rect r, string label, int frame, ChartViewData cdata, Color color)
+			{
+				var rect = r;
+				rect.height = 0;
+				rect.y += r.height;
+				var top = DrawVerticalLine(frame, cdata, rect, color, 1);
+				rect.x = top.x + 5;
+				rect.y = top.y;
+				rect.height = EditorGUIUtility.singleLineHeight;
+				var prev = GUI.color;
+				GUI.color = color;
+				GUI.Label(rect, label);
+				GUI.color = prev;
+			}
 
-			internal static void DrawVerticalLine(int frame, ChartViewData cdata, Rect r, Color color, float minWidth, float maxWidth = 0)
+			private static Vector2 DrawVerticalLine(int frame, ChartViewData cdata, Rect r, Color color, float minWidth, float maxWidth = 0)
 			{
 				// if (Event.current.type != EventType.Repaint)
 				// 	return;
 
 				frame -= cdata.chartDomainOffset;
 				if (frame < 0)
-					return;
+					return Vector2.zero;
 
 
-				float domainSize = cdata.GetDataDomainLength();
+				// float domainSize = cdata.GetDataDomainLength();
 				float lineWidth = minWidth;
-				var x = r.x + frame;// r.x + r.width / domainSize * frame;
 				var count = r.width / cdata.series[0].numDataPoints;
+				var x = r.x + frame * count; // r.x + r.width / domainSize * frame;
+				var bottom = r.y + 1;
+				var top = r.yMax * .5f;
+				// Debug.Log(x + ", " + domainSize + ", " + r.width + ", " + cdata.firstSelectableFrame + ", " + cdata.series[0].numDataPoints); 
 
 				// HandleUtility.ApplyWireMaterial();
 				typeof(HandleUtility).GetMethod("ApplyWireMaterial", BindingFlags.Static | BindingFlags.NonPublic, null, new Type[0], null).Invoke(null, null);
+
 				GL.Begin(GL.QUADS);
 				GL.Color(color);
-				Debug.Log(x + ", " + domainSize + ", " + r.width + ", " + cdata.firstSelectableFrame + ", " + cdata.series[0].numDataPoints); 
-				GL.Vertex3(x, r.y + 1, 0);
-				GL.Vertex3(x + lineWidth, r.y + 1, 0);
+				GL.Vertex3(x, bottom, 0);
+				GL.Vertex3(x + lineWidth, bottom, 0);
 
-				GL.Vertex3(x + lineWidth, r.yMax, 0);
-				GL.Vertex3(x, r.yMax, 0);
+				GL.Vertex3(x + lineWidth, top, 0);
+				GL.Vertex3(x, top, 0);
 				GL.End();
+				return new Vector2(x, top);
 			}
-			
+
 			internal class ChartSeriesViewData
 			{
 				public string name { get; private set; }
@@ -110,8 +207,8 @@ namespace Needle.SelectiveProfiling
 				public float maxValue { get; set; }
 				public int numSeries { get; private set; }
 				public int chartDomainOffset { get; private set; }
-				
-				
+
+
 				public Vector2 GetDataDomain()
 				{
 					// TODO: this currently assumes data points are in order and first series has at least one data point
@@ -125,6 +222,7 @@ namespace Needle.SelectiveProfiling
 						result.x = Mathf.Min(result.x, series[i].xValues[0]);
 						result.y = Mathf.Max(result.y, series[i].xValues[series[i].numDataPoints - 1]);
 					}
+
 					return result;
 				}
 
@@ -132,7 +230,7 @@ namespace Needle.SelectiveProfiling
 				{
 					var domain = GetDataDomain();
 					// the domain is a range of indices, logically starting at 0. The Length is therefore the (lastIndex - firstIndex + 1)
-					return (int)(domain.y - domain.x) + 1;
+					return (int) (domain.y - domain.x) + 1;
 				}
 			}
 		}
