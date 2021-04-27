@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
 using needle.EditorPatching;
 using Unity.Profiling.LowLevel;
@@ -23,6 +24,7 @@ namespace Needle.SelectiveProfiling
 		}
 
 		private static readonly List<FrameDataView.MarkerInfo> markers = new List<FrameDataView.MarkerInfo>();
+		private static int stopFrame;
 
 		public static readonly List<(int, string)> captures = new List<(int, string)>();
 
@@ -32,21 +34,31 @@ namespace Needle.SelectiveProfiling
 			// var raw = ProfilerDriver.GetRawFrameDataView(frame, thread);
 			// if (!raw.valid) return;
 
+			var length = ProfilerDriver.lastFrameIndex - ProfilerDriver.firstFrameIndex;
+
+			if (stopFrame != 0 && frame == stopFrame + (int)(length*.7f))
+				ProfilerDriver.enabled = false;
+
 
 			using (var frameData = ProfilerDriver.GetRawFrameDataView(frame, 0))
 			{
 				if (!frameData.valid)
 					return;
 				var id = frameData.GetMarkerId("MySpecialSample");
+				var id2 = frameData.GetMarkerId("MyOtherSample");
 				for (var i = 0; i < frameData.sampleCount; i++)
 				{
 					var markerId = frameData.GetSampleMarkerId(i);
 					var name = frameData.GetSampleName(i);
 					// var gcAllocSize = frameData.GetSampleMetadataAsFloat(i, 0);
-					// if (id != frameData.GetSampleMarkerId(i) || name.ToLowerInvariant().Contains("mouse")) continue;
-					if(name.ToLowerInvariant().Contains("mouse") && frameData.HasCounterValue(markerId))
-						Debug.Log(i + ": "+ name);
-					// captures.Add((frame, name));
+					if (id == markerId || markerId == id2)
+						captures.Add((frame, name));
+
+					if (markerId == id2)
+						stopFrame = frame;
+
+					// if(frameData.HasCounterValue(markerId))
+					// 	Debug.Log(name);
 				}
 			}
 			// ProfilerDriver.enabled = false;
@@ -120,7 +132,7 @@ namespace Needle.SelectiveProfiling
 						ProfilerMarkerStore.captures.RemoveAt(index);
 						continue;
 					}
-					DrawMarker(r, cap.Item2 + ": " + cap.Item1, cap.Item1, cdata, Color.green);
+					DrawMarker(r, cap.Item2, cap.Item1, cdata, Color.green);
 				}
 			}
 
