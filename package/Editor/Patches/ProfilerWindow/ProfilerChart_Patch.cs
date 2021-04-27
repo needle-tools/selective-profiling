@@ -1,19 +1,57 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
+using System.Reflection.Emit;
 using System.Threading.Tasks;
+using HarmonyLib;
 using needle.EditorPatching;
-using Unity.Profiling.LowLevel;
+using Needle.SelectiveProfiling.CodeWrapper;
 using UnityEditor;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Profiling;
 
 namespace Needle.SelectiveProfiling
 {
+	internal class InputEventsMarker : EditorPatchProvider
+	{
+		protected override void OnGetPatches(List<EditorPatch> patches)
+		{
+			patches.Add(new Patch());
+		}
+
+		private class Patch : EditorPatch
+		{
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var t = typeof(ExecuteEvents);
+				var methods = t.GetMethods(BindingFlags.NonPublic | BindingFlags.Static);
+				foreach (var m in methods)
+				{
+					if (m.Name != "Execute") continue;
+					targetMethods.Add(m);
+				}
+				// var m = typeof(ExecuteEvents).GetMethod("Execute", BindingFlags.Static | BindingFlags.NonPublic, null,
+				// 	new[] {typeof(IPointerClickHandler), typeof(BaseEventData)}, null);
+				return Task.CompletedTask;
+			}
+
+			// ReSharper disable once UnusedMember.Local
+			private static IEnumerable<CodeInstruction> Transpiler(MethodBase method, IEnumerable<CodeInstruction> inst)
+			{
+				var marker = TranspilerUtils.GetNiceMethodName(method, false);
+				ProfilerMarkerStore.AddExpectedMarker(marker);
+				
+				yield return new CodeInstruction(OpCodes.Ldstr, marker);
+				yield return CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new []{typeof(string)});
+				yield return CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample));
+				foreach (var i in inst) yield return i;
+			}
+		}
+	}
+	
 	public static class ProfilerMarkerStore
 	{
 		[InitializeOnLoadMethod]
@@ -24,70 +62,42 @@ namespace Needle.SelectiveProfiling
 		}
 
 		private static readonly List<FrameDataView.MarkerInfo> markers = new List<FrameDataView.MarkerInfo>();
-		private static int stopFrame;
 
-		public static readonly List<(int, string)> captures = new List<(int, string)>();
+		private static readonly HashSet<string> expectedMarkers = new HashSet<string>();
+		private static readonly HashSet<int> expectedMarkerIds = new HashSet<int>();
+
+		internal static void AddExpectedMarker(string name)
+		{
+			if (expectedMarkers.Contains(name)) return;
+			Debug.Log("Expect " + name);
+			expectedMarkers.Add(name);
+			expectedMarkerIds.Clear();
+		}
+
+		internal static readonly List<(int, string)> captures = new List<(int, string)>();
 
 		private static void OnNewFrame(int thread, int frame)
 		{
-			// ProfilerDriver.SetMarkerFiltering("Drawing");
-			// var raw = ProfilerDriver.GetRawFrameDataView(frame, thread);
-			// if (!raw.valid) return;
-
-			var length = ProfilerDriver.lastFrameIndex - ProfilerDriver.firstFrameIndex;
-
-			if (stopFrame != 0 && frame == stopFrame + (int)(length*.7f))
-				ProfilerDriver.enabled = false;
-
-
 			using (var frameData = ProfilerDriver.GetRawFrameDataView(frame, 0))
 			{
 				if (!frameData.valid)
 					return;
-				var id = frameData.GetMarkerId("MySpecialSample");
-				var id2 = frameData.GetMarkerId("MyOtherSample");
+				
+				expectedMarkerIds.Clear();
+				foreach (var marker in expectedMarkers)
+				{
+					var id = frameData.GetMarkerId(marker);
+					if (FrameDataView.invalidMarkerId == id) continue;
+					expectedMarkerIds.Add(id);
+				}
+				
 				for (var i = 0; i < frameData.sampleCount; i++)
 				{
 					var markerId = frameData.GetSampleMarkerId(i);
-					var name = frameData.GetSampleName(i);
-					// var gcAllocSize = frameData.GetSampleMetadataAsFloat(i, 0);
-					if (id == markerId || markerId == id2)
-						captures.Add((frame, name));
-
-					if (markerId == id2)
-						stopFrame = frame;
-
-					// if(frameData.HasCounterValue(markerId))
-					// 	Debug.Log(name);
+					if(expectedMarkerIds.Contains(markerId))
+						captures.Add((frame, frameData.GetSampleName(i)));
 				}
 			}
-			// ProfilerDriver.enabled = false;
-
-
-			// // ProfilerDriver.SetMarkerFiltering("TEST");
-			// markers.Clear();
-			// raw.GetMarkers(markers);
-			// foreach(var m in markers)
-			// 	Debug.Log(m.name);
-			// var view = ProfilerDriver.GetHierarchyFrameDataView(frame, 0, HierarchyFrameDataView.ViewModes.Default, 0, false);
-			// if (!view.valid)
-			// {
-			// 	// Debug.Log("View is not valid");
-			// 	return;
-			// }
-			//
-			// markers.Clear();
-			// // ProfilerDriver.SetMarkerFiltering("TEST");
-			// view.GetMarkers(markers);
-			// foreach (var m in markers)
-			// {
-			// 	if (m.name.ToLower().Contains("mouse"))
-			// 	{
-			// 		Debug.Log(m.name);
-			// 	}
-			// }
-
-			// ProfilerDriver.SetMarkerFiltering(null);
 		}
 	}
 
@@ -104,7 +114,7 @@ namespace Needle.SelectiveProfiling
 		{
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
-				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.Chart");
+				var t = typeof(ProfilerDriver).Assembly.GetType("UnityEditorInternal.Chart");
 				var m = t.GetMethod("DrawChartStacked", (BindingFlags) ~0);
 				targetMethods.Add(m);
 				return Task.CompletedTask;
@@ -132,7 +142,7 @@ namespace Needle.SelectiveProfiling
 						ProfilerMarkerStore.captures.RemoveAt(index);
 						continue;
 					}
-					DrawMarker(r, cap.Item2, cap.Item1, cdata, Color.green);
+					DrawMarker(r, cap.Item2, cap.Item1, cdata, Color.magenta);
 				}
 			}
 
@@ -146,6 +156,7 @@ namespace Needle.SelectiveProfiling
 				rect.x = top.x + 5;
 				rect.height = EditorGUIUtility.singleLineHeight;
 				rect.y = top.y - rect.height * .5f;
+				rect.y += Mathf.Sin(frame) * 50;
 				var prev = GUI.color;
 				GUI.color = color;
 				GUI.Label(rect, label);
