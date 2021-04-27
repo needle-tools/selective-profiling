@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
@@ -19,20 +20,60 @@ namespace Needle.SelectiveProfiling
 	{
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
-			patches.Add(new Patch());
+			patches.Add(new Patch("Click",  AccessTools.Method(typeof(ExecuteEvents),"Execute", new []{typeof(IPointerClickHandler), typeof(BaseEventData)})));
 		}
 
 		private class Patch : EditorPatch
 		{
+			private static readonly Dictionary<MethodBase, string> Labels = new Dictionary<MethodBase, string>();
+			
+			private readonly string label;
+			private readonly MethodBase method;
+			private readonly IEnumerable<MethodBase> additional = null;
+
+			public Patch(string label, MethodBase method, IEnumerable<MethodBase> additional = null)
+			{
+				this.label = label;
+				System.Diagnostics.Debug.Assert(method != null, nameof(this.method) + " != null");
+				this.method = method;
+				this.additional = additional;
+			}
+			
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
-				var t = typeof(ExecuteEvents);
-				var methods = t.GetMethods(BindingFlags.NonPublic | BindingFlags.Static);
-				foreach (var m in methods)
+				void Add(MethodBase _method)
 				{
-					if (m.Name != "Execute") continue;
-					targetMethods.Add(m);
+					targetMethods.Add(_method);
+					if (Labels.ContainsKey(method))
+					{
+						var existing = Labels[method];
+						if (existing != label)
+						{
+							Debug.Log("Label is already registered " + Labels[method] + ", will override with " + label);
+							Labels[method] = label;
+						}
+					}
+					else
+						Labels.Add(_method, label);
 				}
+
+				Add(method);
+				if (additional != null)
+				{
+					foreach (var ad in additional)
+					{
+						if (ad == method) continue;
+						Add(ad);
+					}
+				}
+				
+				// var t = typeof(ExecuteEvents);
+				// var methods = t.GetMethods(BindingFlags.NonPublic | BindingFlags.Static);
+				// foreach (var m in methods)
+				// {
+				// 	if (m.Name != "Execute") continue;
+				// 	targetMethods.Add(m);
+				// }
 				// var m = typeof(ExecuteEvents).GetMethod("Execute", BindingFlags.Static | BindingFlags.NonPublic, null,
 				// 	new[] {typeof(IPointerClickHandler), typeof(BaseEventData)}, null);
 				return Task.CompletedTask;
@@ -41,7 +82,7 @@ namespace Needle.SelectiveProfiling
 			// ReSharper disable once UnusedMember.Local
 			private static IEnumerable<CodeInstruction> Transpiler(MethodBase method, IEnumerable<CodeInstruction> inst)
 			{
-				var marker = TranspilerUtils.GetNiceMethodName(method, false);
+				var marker = Labels[method];
 				ProfilerMarkerStore.AddExpectedMarker(marker);
 				
 				yield return new CodeInstruction(OpCodes.Ldstr, marker);
@@ -69,7 +110,6 @@ namespace Needle.SelectiveProfiling
 		internal static void AddExpectedMarker(string name)
 		{
 			if (expectedMarkers.Contains(name)) return;
-			Debug.Log("Expect " + name);
 			expectedMarkers.Add(name);
 			expectedMarkerIds.Clear();
 		}
@@ -142,7 +182,7 @@ namespace Needle.SelectiveProfiling
 						ProfilerMarkerStore.captures.RemoveAt(index);
 						continue;
 					}
-					DrawMarker(r, cap.Item2, cap.Item1, cdata, Color.magenta);
+					DrawMarker(r, cap.Item2, cap.Item1, cdata, new Color(1f, .7f, 0, 1));
 				}
 			}
 
@@ -152,18 +192,19 @@ namespace Needle.SelectiveProfiling
 				var rect = r;
 				rect.height = 0;
 				rect.y += r.height;
+				rect.yMax *= 0.2f;
 				var top = DrawVerticalLine(frame, cdata, rect, color, 1);
 				rect.x = top.x + 5;
 				rect.height = EditorGUIUtility.singleLineHeight;
 				rect.y = top.y - rect.height * .5f;
-				rect.y += Mathf.Sin(frame) * 50;
+				// rect.y += Mathf.Sin(frame) * 50;
 				var prev = GUI.color;
 				GUI.color = color;
 				GUI.Label(rect, label);
 				GUI.color = prev;
 			}
 
-			private static Vector2 DrawVerticalLine(int frame, ChartViewData cdata, Rect r, Color color, float minWidth, float maxWidth = 0)
+			private static Vector2 DrawVerticalLine(int frame, ChartViewData cdata, Rect rect, Color color, float minWidth)
 			{
 				// if (Event.current.type != EventType.Repaint)
 				// 	return;
@@ -175,10 +216,10 @@ namespace Needle.SelectiveProfiling
 
 				// float domainSize = cdata.GetDataDomainLength();
 				float lineWidth = minWidth;
-				var count = r.width / cdata.series[0].numDataPoints;
-				var x = r.x + frame * count; // r.x + r.width / domainSize * frame;
-				var bottom = r.y + 1;
-				var top = r.yMax * .5f;
+				var count = rect.width / cdata.series[0].numDataPoints;
+				var x = rect.x + frame * count; // r.x + r.width / domainSize * frame;
+				var bottom = rect.y + 1;
+				var top = rect.yMax;
 				// Debug.Log(x + ", " + domainSize + ", " + r.width + ", " + cdata.firstSelectableFrame + ", " + cdata.series[0].numDataPoints); 
 
 				// HandleUtility.ApplyWireMaterial();
