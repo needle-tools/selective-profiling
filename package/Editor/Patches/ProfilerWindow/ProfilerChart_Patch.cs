@@ -161,9 +161,42 @@ namespace Needle.SelectiveProfiling
 			patches.Add(new DrawMarkerLabels());
 			patches.Add(new MarkerLabelClick());
 		}
+
+		// [InitializeOnLoadMethod]
+		// private static void Init()
+		// {
+		// 	EditorApplication.update += () =>
+		// 	{
+		// 		if (GUIMarkerLabels.Count > 0)
+		// 		{
+		// 			var marker = GUIMarkerLabels.Last();
+		// 			GUIMarkerLabels.Clear();
+		// 			StopProfilingAndSetFrame(marker.frame);
+		// 		}
+		// 	};
+		// }
 		
 		private static readonly Type ProfilerWindowType = typeof(ProfilerDriver).Assembly.GetType("UnityEditor.ProfilerWindow");
 		private static readonly List<(Rect rect, int frame)> GUIMarkerLabels = new List<(Rect rect, int frame)>();
+		
+		public static void StopProfilingAndSetFrame(int frame)
+		{
+			var window = EditorWindow.GetWindow(ProfilerWindowType);
+			if (window)
+			{
+				window.Repaint();
+				ProfilerWindowType.GetMethod("SetCurrentFrame", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(window, new object[] {frame});
+				// ProfilerDriver.enabled = false;
+				if (Event.current == null)
+				{
+					return;
+				}
+				Event.current.Use();
+				Debug.Break();
+				GUIUtility.ExitGUI();
+			}
+		}
+
 
 		private class MarkerLabelClick : EditorPatch
 		{
@@ -184,16 +217,8 @@ namespace Needle.SelectiveProfiling
 						var rect = marker.rect;
 						if (rect.Contains(Event.current.mousePosition))
 						{
-							var window = EditorWindow.GetWindow(ProfilerWindowType);
-							if (window)
-							{
-								ProfilerWindowType.GetMethod("SetCurrentFrame", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(window, new object[] {marker.frame});
-								// ProfilerDriver.enabled = false;
-								Event.current.Use();
-								window.Repaint();
-								Debug.Break();
-								GUIUtility.ExitGUI();
-							}
+							StopProfilingAndSetFrame(marker.frame);
+							break;
 						}
 					}
 				}
@@ -246,6 +271,7 @@ namespace Needle.SelectiveProfiling
 					}
 					DrawMarker(r, cap.Item2, cap.Item1, cdata, new Color(.7f, .7f, 0, 1));
 				}
+				
 			}
 
 			static class Styles
