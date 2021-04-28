@@ -26,7 +26,7 @@ public class ThreadSleep : MonoBehaviour
 	public void Sleep100()
 	{
 		// Profiler.BeginSample("MyOtherSample");
-		Thread.Sleep(100);
+		Thread.Sleep((int)(Random.value * 10f));
 		// Profiler.EndSample();
 	}
 
@@ -38,7 +38,7 @@ public class ThreadSleep : MonoBehaviour
 	[ContextMenu(nameof(CallThrow))]
 	public void CallThrow()
 	{
-		Thread.Sleep(200);
+		Thread.Sleep((int)(Random.value * 5f));
 		Throw();
 	}
 }
