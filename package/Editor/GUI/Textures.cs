@@ -70,5 +70,16 @@ namespace Needle.SelectiveProfiling
 				return _hotPath;
 			}
 		}
+		
+		private static Texture2D _whiteLabel;
+		public static Texture2D WhiteLabel
+		{
+			get
+			{
+				if (!_whiteLabel)
+					_whiteLabel = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.needle.selective-profiling/Editor/GUI/Textures/white_label.png");
+				return _whiteLabel;
+			}
+		}
 	}
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -8,6 +10,7 @@ using HarmonyLib;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
 using UnityEditor;
+using UnityEditor.Graphs;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
 using UnityEngine;
@@ -160,11 +163,13 @@ namespace Needle.SelectiveProfiling
 				return Task.CompletedTask;
 			}
 
+
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerChart.cs#L120
 			// base https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/Chart.cs#L185
 			// draw chart stacked https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/Chart.cs#L374
 			// DrawVerticalLine https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/Chart.cs#L244
 			// ChartViewData https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/Chart.cs#L1111
+
 			private static void Postfix(Rect r, int selectedFrame, ChartViewData cdata)
 			{
 				// if (___m_Area != ProfilerArea.CPU) return;
@@ -173,6 +178,7 @@ namespace Needle.SelectiveProfiling
 				// DrawMarker(r, "Frame: " + selectedFrame, selectedFrame, cdata, Color.cyan);
 				// var other = cdata.firstSelectableFrame + 20;
 				// DrawMarker(r, "Frame: " + other, other, cdata, Color.yellow);
+				// ProfilerDriver.lastFrameIndex
 
 				for (var index = ProfilerMarkerStore.captures.Count - 1; index >= 0; index--)
 				{
@@ -182,8 +188,13 @@ namespace Needle.SelectiveProfiling
 						ProfilerMarkerStore.captures.RemoveAt(index);
 						continue;
 					}
-					DrawMarker(r, cap.Item2, cap.Item1, cdata, new Color(1f, .7f, 0, 1));
+					DrawMarker(r, cap.Item2, cap.Item1, cdata, new Color(.7f, .7f, 0, 1));
 				}
+			}
+
+			static class Styles
+			{
+				public static readonly GUIStyle whiteLabel = new GUIStyle("ProfilerBadge");
 			}
 
 			// click on marker https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerWindow.cs#L1235
@@ -194,13 +205,24 @@ namespace Needle.SelectiveProfiling
 				rect.y += r.height;
 				rect.yMax *= 0.2f;
 				var top = DrawVerticalLine(frame, cdata, rect, color, 1);
-				rect.x = top.x + 5;
+				rect.x = top.x;
 				rect.height = EditorGUIUtility.singleLineHeight;
-				rect.y = top.y - rect.height * .5f;
+				rect.y = top.y - 2;// - rect.height * .5f;
 				// rect.y += Mathf.Sin(frame) * 50;
 				var prev = GUI.color;
 				GUI.color = color;
-				GUI.Label(rect, label);
+				var content = new GUIContent(label);
+				var size = Styles.whiteLabel.CalcSize(content);
+				rect.size = size;
+				// rect.x -= 5;
+				// rect.x -= size.x * .5f;
+				Styles.whiteLabel.normal.background = Textures.WhiteLabel;
+				Styles.whiteLabel.normal.textColor = Color.black;
+				EditorGUI.DropShadowLabel(
+					rect,
+					content,
+					Styles.whiteLabel
+				);
 				GUI.color = prev;
 			}
 
