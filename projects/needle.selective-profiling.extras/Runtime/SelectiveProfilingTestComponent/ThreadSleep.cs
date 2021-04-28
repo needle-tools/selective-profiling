@@ -1,23 +1,44 @@
+using System;
+using System.Reflection;
 using System.Threading;
+using Needle.SelectiveProfiling;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Profiling;
+using Random = UnityEngine.Random;
 
 public class ThreadSleep : MonoBehaviour
 {
-    // private void Update()
-    // {
-    //     if (Random.value < .0001f) 
-    //     {
-    //         Profiler.BeginSample("MySpecialSample");
-    //         Thread.Sleep(1);
-    //         Profiler.EndSample();
-    //     }
-    // }
+	private void Start()
+	{
+		ChartMarker.Add("Slow Method", GetType().GetMethod(nameof(Sleep100), BindingFlags.Instance | BindingFlags.Public));
+	}
 
-    public void Sleep100()
-    {
-        // Profiler.BeginSample("MyOtherSample");
-        Thread.Sleep(100);
-        // Profiler.EndSample();
-    }
+	private void Update()
+	{
+		Thread.Sleep(10);
+		if (Random.value < .02f)
+		{
+			Sleep100();
+		}
+	}
+
+	public void Sleep100()
+	{
+		// Profiler.BeginSample("MyOtherSample");
+		Thread.Sleep(100);
+		// Profiler.EndSample();
+	}
+
+	public void Throw()
+	{
+		throw new Exception("Expected exception");
+	}
+
+	[ContextMenu(nameof(CallThrow))]
+	public void CallThrow()
+	{
+		Thread.Sleep(200);
+		Throw();
+	}
 }
