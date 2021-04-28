@@ -226,8 +226,14 @@ namespace Needle.SelectiveProfiling
 				// GUI.Label(rect, "TEST " + r + ", " + selectedFrame);
 
 				// DrawMarker(r, "Frame: " + selectedFrame, selectedFrame, cdata, Color.cyan);
-				// var other = cdata.firstSelectableFrame + 20;
-				// DrawMarker(r, "Frame: " + other, other, cdata, Color.yellow);
+				if (!Application.isPlaying && !ProfilerDriver.enabled)
+				{
+					var other = cdata.firstSelectableFrame + 20;
+					DrawMarker(r, "Frame: " + other, other, cdata, Color.yellow);
+				}
+				
+				// var other1 = cdata.firstSelectableFrame + 30;
+				// DrawMarker(r, "Frame: " + other, other1, cdata, Color.yellow, true);
 				// ProfilerDriver.lastFrameIndex
 
 				for (var index = ProfilerMarkerStore.captures.Count - 1; index >= 0; index--)
@@ -248,17 +254,26 @@ namespace Needle.SelectiveProfiling
 			}
 
 			// click on marker https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerWindow.cs#L1235
-			private static void DrawMarker(Rect r, string label, int frame, ChartViewData cdata, Color color)
+			private static void DrawMarker(Rect r, string label, int frame, ChartViewData cdata, Color color, bool drawLine = false)
 			{
 				var rect = r;
 				rect.height = 0;
 				rect.y += r.height;
 				rect.yMax *= 0.2f;
-				var top = DrawVerticalLine(frame, cdata, rect, color, 1);
-				rect.x = top.x;
+				if (drawLine)
+				{
+					var top = DrawVerticalLine(frame, cdata, rect, color, 1);
+					rect.x = top.x;
+					rect.y = top.y;
+				}
+				else
+				{
+					rect.x = GetFrameX(frame, cdata, rect);
+					rect.y = rect.yMax;
+				}
+				rect.y -= 2;
 				rect.height = EditorGUIUtility.singleLineHeight;
-				rect.y = top.y - 2;// - rect.height * .5f;
-				// rect.y += Mathf.Sin(frame) * 50;
+				
 				var prev = GUI.color;
 				GUI.color = color;
 				var content = new GUIContent(label);
@@ -277,20 +292,25 @@ namespace Needle.SelectiveProfiling
 				GUI.color = prev;
 			}
 
+			private static float GetFrameX(int frame, ChartViewData cdata, Rect rect)
+			{
+				frame -= cdata.chartDomainOffset;
+				var count = rect.width / cdata.series[0].numDataPoints;
+				return rect.x + frame * count;;
+			}
+
 			private static Vector2 DrawVerticalLine(int frame, ChartViewData cdata, Rect rect, Color color, float minWidth)
 			{
 				// if (Event.current.type != EventType.Repaint)
 				// 	return;
 
-				frame -= cdata.chartDomainOffset;
 				if (frame < 0)
 					return Vector2.zero;
 
 
 				// float domainSize = cdata.GetDataDomainLength();
-				float lineWidth = minWidth;
-				var count = rect.width / cdata.series[0].numDataPoints;
-				var x = rect.x + frame * count; // r.x + r.width / domainSize * frame;
+				var x = GetFrameX(frame, cdata, rect);
+				var lineWidth = minWidth;
 				var bottom = rect.y + 1;
 				var top = rect.yMax;
 				// Debug.Log(x + ", " + domainSize + ", " + r.width + ", " + cdata.firstSelectableFrame + ", " + cdata.series[0].numDataPoints); 
