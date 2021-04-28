@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using HarmonyLib;
 using needle.EditorPatching;
@@ -133,6 +134,11 @@ namespace Needle.SelectiveProfiling
 					if (FrameDataView.invalidMarkerId == id) continue;
 					expectedMarkerIds.Add(id);
 				}
+
+				// var names = new string[ProfilerDriver.GetUISystemEventMarkersCount(frame, 1)];
+				// var eventMarker = new EventMarker[ProfilerDriver.GetUISystemEventMarkersCount(frame, 1)];
+				// ProfilerDriver.GetUISystemEventMarkersBatch(frame, 1, eventMarker, names);
+				// Debug.Log(names.Length);
 				
 				for (var i = 0; i < frameData.sampleCount; i++)
 				{
@@ -147,14 +153,56 @@ namespace Needle.SelectiveProfiling
 
 	public class ProfilerChart_Patch : EditorPatchProvider
 	{
+		// TODO: TEST ProfilerDriver.GetUISystemEventMarkersBatch
+		
 		// Profiler Window create chart https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerWindow.cs#L352
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
-			patches.Add(new Patch());
+			patches.Add(new DrawMarkerLabels());
+			patches.Add(new MarkerLabelClick());
+		}
+		
+		private static readonly Type ProfilerWindowType = typeof(ProfilerDriver).Assembly.GetType("UnityEditor.ProfilerWindow");
+		private static readonly List<(Rect rect, int frame)> GUIMarkerLabels = new List<(Rect rect, int frame)>();
+
+		private class MarkerLabelClick : EditorPatch
+		{
+			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			{
+				var t = typeof(ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerChart");
+				var m = t.GetMethod("DoChartGUI", (BindingFlags) ~0);
+				targetMethods.Add(m);
+				return Task.CompletedTask;
+			}
+
+			private static void Prefix()
+			{
+				if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
+				{
+					foreach (var marker in GUIMarkerLabels)
+					{
+						var rect = marker.rect;
+						if (rect.Contains(Event.current.mousePosition))
+						{
+							var window = EditorWindow.GetWindow(ProfilerWindowType);
+							if (window)
+							{
+								ProfilerWindowType.GetMethod("SetCurrentFrame", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(window, new object[] {marker.frame});
+								// ProfilerDriver.enabled = false;
+								Event.current.Use();
+								window.Repaint();
+								Debug.Break();
+								GUIUtility.ExitGUI();
+							}
+						}
+					}
+				}
+			}
 		}
 
-		private class Patch : EditorPatch
+		private class DrawMarkerLabels : EditorPatch
 		{
+			
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
 				var t = typeof(ProfilerDriver).Assembly.GetType("UnityEditorInternal.Chart");
@@ -172,6 +220,8 @@ namespace Needle.SelectiveProfiling
 
 			private static void Postfix(Rect r, int selectedFrame, ChartViewData cdata)
 			{
+				GUIMarkerLabels.Clear(); 
+				
 				// if (___m_Area != ProfilerArea.CPU) return;
 				// GUI.Label(rect, "TEST " + r + ", " + selectedFrame);
 
@@ -218,6 +268,7 @@ namespace Needle.SelectiveProfiling
 				// rect.x -= size.x * .5f;
 				Styles.whiteLabel.normal.background = Textures.WhiteLabel;
 				Styles.whiteLabel.normal.textColor = Color.black;
+				GUIMarkerLabels.Add((rect, frame));
 				EditorGUI.DropShadowLabel(
 					rect,
 					content,
