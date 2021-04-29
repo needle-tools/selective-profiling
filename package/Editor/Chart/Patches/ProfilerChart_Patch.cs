@@ -1,344 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
-using HarmonyLib;
-using JetBrains.Annotations;
 using needle.EditorPatching;
-using Needle.SelectiveProfiling.CodeWrapper;
 using UnityEditor;
-using UnityEditor.Graphs;
-using UnityEditor.Profiling;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.Profiling;
 using Debug = UnityEngine.Debug;
 
 namespace Needle.SelectiveProfiling
 {
-	public struct SelectiveMarker
-	{
-		[NotNull] public string label;
-		[NotNull] public MethodBase method;
-	}
-	
-	public static class ChartMarker
-	{
-		[InitializeOnLoadMethod]
-		private static void Init()
-		{
-			Add(new SelectiveMarker(){label = "Click", method = AccessTools.Method(typeof(ExecuteEvents), "Execute", new[] {typeof(IPointerClickHandler), typeof(BaseEventData)})});
-		}
-
-		public static void Add(string label, MethodBase method)
-		{
-			Add(new SelectiveMarker()
-			{
-				label = label,
-				method = method
-			});
-		}
-
-		public static void Add(SelectiveMarker marker)
-		{
-			if (string.IsNullOrEmpty(marker.label)) throw new Exception("Missing label");
-			if (marker.method == null) throw new Exception("Missing methods");
-			Debug.Log("Register " + marker.label + ", " + marker.method);
-			var prov = new ChartMarkerProvider(marker.label + "@" + marker.method.Name);
-			var patch = new ChartMarkerProvider.AddProfilerMarker(marker.label, marker.method);
-			prov.Patches.Add(patch);
-			PatchManager.RegisterPatch(prov);
-			prov.EnablePatch();
-		}
-	}
-	
-	[NoAutoDiscover]
-	internal class ChartMarkerProvider : EditorPatchProvider
-	{
-		internal List<AddProfilerMarker> Patches = new List<AddProfilerMarker>();
-
-		private readonly string id;
-		public override string ID() => id;
-
-		public ChartMarkerProvider(string id)
-		{
-			this.id = id;
-		}
-
-		public override bool OnWillEnablePatch()
-		{
-			if (Patches.Count <= 0) return false;
-			return base.OnWillEnablePatch();
-		}
-
-		protected override void OnGetPatches(List<EditorPatch> patches)
-		{
-			patches.AddRange(Patches);
-		}
-
-		public class AddProfilerMarker : EditorPatch
-		{
-			private static readonly Dictionary<MethodBase, string> Labels = new Dictionary<MethodBase, string>();
-
-			private readonly string label;
-			private readonly MethodBase method;
-			[CanBeNull] public IEnumerable<MethodBase> additional;
-
-			public AddProfilerMarker(string label, MethodBase method)
-			{
-				this.label = label;
-				System.Diagnostics.Debug.Assert(method != null, nameof(this.method) + " != null");
-				this.method = method;
-			}
-
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
-			{
-				void Add(MethodBase _method)
-				{
-					targetMethods.Add(_method);
-					if (Labels.ContainsKey(method))
-					{
-						var existing = Labels[method];
-						if (existing != label)
-						{
-							Debug.Log("Label is already registered " + Labels[method] + ", will override with " + label);
-							Labels[method] = label;
-						}
-					}
-					else
-						Labels.Add(_method, label);
-				}
-
-				Add(method);
-				if (additional != null)
-				{
-					foreach (var ad in additional)
-					{
-						if (ad == method) continue;
-						Add(ad);
-					}
-				}
-
-				return Task.CompletedTask;
-			}
-
-			// ReSharper disable once UnusedMember.Local
-			private static IEnumerable<CodeInstruction> Transpiler(MethodBase method, IEnumerable<CodeInstruction> inst)
-			{
-				var marker = Labels[method];
-				ProfilerMarkerStore.AddExpectedMarker(marker);
-
-				void Log(object msg)
-				{
-					if (SelectiveProfiler.DebugLog == false) return;
-					if(msg != null)
-						Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg.ToString());
-				}
-				
-				Log("-----------------------------");
-				Log("Patch " + marker + " in " + method);
-
-				CodeInstruction Emit(CodeInstruction i)
-				{
-					Log(i);
-					return i;
-				}
-
-				yield return Emit(new CodeInstruction(OpCodes.Ldstr, marker));
-				yield return Emit(CodeInstruction.Call(typeof(Profiler), nameof(Profiler.BeginSample), new[] {typeof(string)}));
-				
-				// var end = CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample));
-				// yield return Emit(end);
-				
-				foreach (var i in inst)
-				{
-					if (i.opcode == OpCodes.Ret || i.opcode == OpCodes.Throw)
-					{
-						var end = CodeInstruction.Call(typeof(Profiler), nameof(Profiler.EndSample));
-						i.MoveLabelsTo(end);
-						yield return Emit(end);
-					}
-					
-					yield return Emit(i);
-				}
-				Log("-----------------------------");
-			}
-		}
-	}
-
-	internal struct ChartMarkerData
-	{
-		public int frame;
-		public string label;
-		public string tooltip;
-		public int chartMarkerId;
-		public float millis;
-
-		public ChartMarkerData(int frame, string label, string tooltip, int chartMarkerId, float millis)
-		{
-			this.frame = frame;
-			this.label = label;
-			this.tooltip = tooltip;
-			this.chartMarkerId = chartMarkerId;
-			this.millis = millis;
-		}
-	}
-
-	internal static class ProfilerMarkerStore
-	{
-		[InitializeOnLoadMethod]
-		private static void Init()
-		{
-			ProfilerDriver.NewProfilerFrameRecorded -= OnNewFrame;
-			ProfilerDriver.NewProfilerFrameRecorded += OnNewFrame;
-		}
-
-		private static readonly List<FrameDataView.MarkerInfo> markers = new List<FrameDataView.MarkerInfo>();
-
-		private static readonly HashSet<string> expectedMarkers = new HashSet<string>();
-		private static readonly HashSet<int> expectedMarkerIds = new HashSet<int>();
-
-		internal static void AddExpectedMarker(string name)
-		{
-			if (expectedMarkers.Contains(name)) return;
-			expectedMarkers.Add(name);
-			expectedMarkerIds.Clear();
-		}
-
-
-		internal static IReadOnlyList<ChartMarkerData> Markers => captures;
-		
-		internal static void RemoveAt(int index)
-		{
-			if (index < 0 || index >= captures.Count) return;
-			var ex = captures[index];
-			captures.RemoveAt(index);
-			
-			for (var i = lanes.Count - 1; i >= 0; i--)
-			{
-				var lane = lanes[i];
-				if (lane.label == ex.label)
-				{
-					lane.count -= 1;
-					lanes[i] = lane;
-					if (lane.count <= 0)
-					{
-						lanes.RemoveAt(i);
-						for (; i < lanes.Count; i++)
-						{
-							var other = lanes[i];
-							other.num -= 1;
-							lanes[i] = other;
-						}
-					}
-					break;
-				}
-			}
-		}
-
-		internal static int LaneCount => lanes.Count;
-
-		internal static int GetLane(string label)
-		{
-			foreach(var lane in lanes)
-				if (lane.label == label)
-					return lane.num;
-			return 0;
-		}
-
-		private static void AddToLane(string label)
-		{
-			for (var index = 0; index < lanes.Count; index++)
-			{
-				var lane = lanes[index];
-				if (lane.label == label)
-				{
-					lane.count += 1;
-					lanes[index] = lane;
-					return;
-				}
-			}
-			lanes.Add((label, 1, lanes.Count));
-		}
-
-		private static readonly List<ChartMarkerData> captures = new List<ChartMarkerData>();
-		private static int capturesCounter = 0;
-		private static readonly List<(string label, int count, int num)> lanes = new List<(string label, int count, int num)>();
-		
-
-		private static void OnNewFrame(int thread, int frame)
-		{
-			using (var frameData = ProfilerDriver.GetRawFrameDataView(frame, 0))
-			{
-				if (!frameData.valid)
-					return;
-
-				expectedMarkerIds.Clear();
-				foreach (var marker in expectedMarkers)
-				{
-					var id = frameData.GetMarkerId(marker);
-					if (FrameDataView.invalidMarkerId == id) continue;
-					expectedMarkerIds.Add(id);
-				}
-
-				// var names = new string[ProfilerDriver.GetUISystemEventMarkersCount(frame, 1)];
-				// var eventMarker = new EventMarker[ProfilerDriver.GetUISystemEventMarkersCount(frame, 1)];
-				// ProfilerDriver.GetUISystemEventMarkersBatch(frame, 1, eventMarker, names);
-				// Debug.Log(names.Length);
-
-				HierarchyFrameDataView hierarchy = null;
-
-				for (var i = 0; i < frameData.sampleCount; i++)
-				{
-					var markerId = frameData.GetSampleMarkerId(i);
-					if (expectedMarkerIds.Contains(markerId))
-					{
-						var name = frameData.GetSampleName(i);
-						var tooltip = name + ": " + GetAdditionalMarkerInfo(frameData, i, out var ms);
-						captures.Add(new ChartMarkerData(frame, name, tooltip, capturesCounter, ms));
-						AddToLane(name);
-						capturesCounter += 1;
-					}
-				}
-			}
-		}
-		
-		
-		private static readonly List<ulong> callstackBuffer = new List<ulong>();
-
-		private static string GetAdditionalMarkerInfo(RawFrameDataView frame, int sampleIndex, out float millies)
-		{
-			var builder = new StringBuilder();
-			millies = frame.GetSampleTimeMs(sampleIndex);
-			builder.AppendLine(millies + "ms");
-			
-			callstackBuffer.Clear();
-			frame.GetSampleCallstack(sampleIndex, callstackBuffer);
-			if (callstackBuffer.Count > 0)
-			{
-				builder.AppendLine("Callstack:");
-				foreach (var addr in callstackBuffer)
-				{
-					var mi = frame.ResolveMethodInfo(addr);
-					builder.AppendLine(mi.methodName + " at " + mi.sourceFileLine);
-				}
-			}
-
-			// remove last line break
-			if (builder.Length > 2) builder.Remove(builder.Length - 2, 2);
-			return builder.ToString();
-		}
-	}
-
-
 	public class ProfilerChart_Patch : EditorPatchProvider
 	{
 		// TODO: TEST ProfilerDriver.GetUISystemEventMarkersBatch
@@ -352,20 +23,17 @@ namespace Needle.SelectiveProfiling
 
 		private static readonly Type ProfilerWindowType = typeof(ProfilerDriver).Assembly.GetType("UnityEditor.ProfilerWindow");
 		private static readonly List<(Rect rect, ChartMarkerData marker)> GUIMarkerLabels = new List<(Rect rect, ChartMarkerData marker)>();
+		private static MethodInfo setCurrentFrame;
 
-		public static void StopProfilingAndSetFrame(int frame)
+		private static void StopProfilingAndSetFrame(int frame)
 		{
 			var window = EditorWindow.GetWindow(ProfilerWindowType);
 			if (window)
 			{
 				window.Repaint();
-				ProfilerWindowType.GetMethod("SetCurrentFrame", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(window, new object[] {frame});
-				// ProfilerDriver.enabled = false;
-				if (Event.current == null)
-				{
-					return;
-				}
-
+				if (setCurrentFrame == null) setCurrentFrame = ProfilerWindowType.GetMethod("SetCurrentFrame", BindingFlags.Instance | BindingFlags.NonPublic);
+				setCurrentFrame?.Invoke(window, new object[] {frame});
+				if (Event.current == null) return;
 				Event.current.Use();
 				Debug.Break();
 				GUIUtility.ExitGUI();
@@ -376,17 +44,17 @@ namespace Needle.SelectiveProfiling
 		{
 			private static int selectedId = -1;
 			public static string selectedLabel;
-			
+
 			internal static bool IsSelected(ChartMarkerData other)
 			{
 				return selectedLabel == other.label;
 			}
-			
+
 			internal static bool ShowLabel(ChartMarkerData other)
 			{
 				return selectedId == other.chartMarkerId;
 			}
-			
+
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
 			{
 				var t = typeof(ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerChart");
@@ -406,10 +74,12 @@ namespace Needle.SelectiveProfiling
 						{
 							selectedId = e.marker.chartMarkerId;
 							// if ((Event.current.modifiers & EventModifiers.Alt) != 0)
-								selectedLabel = e.marker.label;
+							selectedLabel = e.marker.label;
+							ProfilerTreeView_Patch.RequestExpandItemId = e.marker.itemId;
 							StopProfilingAndSetFrame(e.marker.frame);
 							break;
 						}
+
 						selectedId = -1;
 						selectedLabel = null;
 					}
@@ -455,7 +125,7 @@ namespace Needle.SelectiveProfiling
 				// var other1 = cdata.firstSelectableFrame + 30;
 				// DrawMarker(r, "Frame: " + other, other1, cdata, Color.yellow, true);
 				// ProfilerDriver.lastFrameIndex
-				var maxHeight = 400;
+				const int maxHeight = 400;
 
 				for (var index = ProfilerMarkerStore.Markers.Count - 1; index >= 0; index--)
 				{
@@ -469,7 +139,7 @@ namespace Needle.SelectiveProfiling
 					var rect = r;
 					// rect.y += (cap.chartMarkerId % 3) * 100;
 					var lane = ProfilerMarkerStore.GetLane(cap.label);
-					rect.y = ((float)lane / ProfilerMarkerStore.LaneCount) * maxHeight;
+					rect.y = ((float) lane / ProfilerMarkerStore.LaneCount) * maxHeight;
 					cap.tooltip += "\nLane: " + lane + " " + ProfilerMarkerStore.LaneCount;
 					var showLabel = selectedFrame == cap.frame || MarkerLabelClick.ShowLabel(cap);
 					var selected = MarkerLabelClick.IsSelected(cap);
@@ -477,7 +147,7 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 
-			static class Styles
+			private static class Styles
 			{
 				public static readonly GUIStyle whiteLabel = new GUIStyle("ProfilerBadge");
 			}
@@ -486,7 +156,7 @@ namespace Needle.SelectiveProfiling
 			private static void DrawMarker(Rect r, ChartMarkerData chartMarker, bool selected, bool showLabel, ChartViewData cdata, bool drawLine = false)
 			{
 				var color = GUIColors.GetColorOnGradient(GUIColors.NaiveCalculateGradientPosition(chartMarker.millis, 0));
-				
+
 				var rect = r;
 				rect.height = 0;
 				rect.y += r.height;
@@ -519,7 +189,7 @@ namespace Needle.SelectiveProfiling
 				{
 					GUIMarkerLabels.Add((clickRect, chartMarker));
 				}
-				
+
 				var circleSize = selected ? 6 : 4;
 				if (showLabel)
 				{
@@ -537,27 +207,28 @@ namespace Needle.SelectiveProfiling
 					);
 				}
 
-				void DrawCircle(float circleSize)
+				void DrawCircle(float csize)
 				{
-					var circleRect = new Rect(rect.x, rect.y, circleSize, circleSize);
-					var offset = circleSize * .5f;
+					var circleRect = new Rect(rect.x, rect.y, csize, csize);
+					var offset = csize * .5f;
 					circleRect.x -= offset;
 					circleRect.y -= offset;
 					var clickRect = circleRect;
 					const float clickPadding = 10;
-					var clickSize = clickPadding + circleSize;
+					var clickSize = clickPadding + csize;
 					clickRect.size = Vector2.one * (clickSize);
-					offset = (clickSize - circleSize) * .25f;
+					offset = (clickSize - csize) * .25f;
 					clickRect.x -= offset;
 					clickRect.y -= offset;
 					RegisterClickableMarker(clickRect);
 					GUI.DrawTexture(circleRect, Textures.CircleFilled, ScaleMode.ScaleAndCrop, true, 1, GUI.color, 0, 0);
 					GUI.Label(rect, new GUIContent(string.Empty, content.tooltip));
 				}
+
 				GUI.color = color;
 				DrawCircle(circleSize);
-				
-				
+
+
 				GUI.color = prev;
 			}
 
@@ -566,8 +237,9 @@ namespace Needle.SelectiveProfiling
 				frame -= cdata.chartDomainOffset;
 				var count = rect.width / cdata.series[0].numDataPoints;
 				return rect.x + frame * count;
-				;
 			}
+
+			private static MethodInfo applyWireMaterial;
 
 			private static Vector2 DrawVerticalLine(int frame, ChartViewData cdata, Rect rect, Color color, float minWidth)
 			{
@@ -577,7 +249,6 @@ namespace Needle.SelectiveProfiling
 				if (frame < 0)
 					return Vector2.zero;
 
-
 				// float domainSize = cdata.GetDataDomainLength();
 				var x = GetFrameX(frame, cdata, rect);
 				var lineWidth = minWidth;
@@ -585,8 +256,10 @@ namespace Needle.SelectiveProfiling
 				var top = rect.yMax;
 				// Debug.Log(x + ", " + domainSize + ", " + r.width + ", " + cdata.firstSelectableFrame + ", " + cdata.series[0].numDataPoints); 
 
-				// HandleUtility.ApplyWireMaterial();
-				typeof(HandleUtility).GetMethod("ApplyWireMaterial", BindingFlags.Static | BindingFlags.NonPublic, null, new Type[0], null).Invoke(null, null);
+				if (applyWireMaterial == null)
+					applyWireMaterial =
+						typeof(HandleUtility).GetMethod("ApplyWireMaterial", BindingFlags.Static | BindingFlags.NonPublic, null, new Type[0], null);
+				applyWireMaterial?.Invoke(null, null);
 
 				GL.Begin(GL.QUADS);
 				GL.Color(color);

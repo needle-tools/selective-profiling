@@ -22,7 +22,7 @@ namespace Needle.SelectiveProfiling
 	public static class SelectiveProfiler
 	{
 		public static string SamplePostfix => DevelopmentMode ? "[dev]" : DebugLog ? "[debug]" : string.Empty;
-		internal static bool DrawItemDebugInformationInTreeView => DevelopmentMode;
+		internal static bool DrawItemDebugInformationInTreeView;
 
 		// private static MethodInfo previouslySelectedImmediateProfilingMethod;
 

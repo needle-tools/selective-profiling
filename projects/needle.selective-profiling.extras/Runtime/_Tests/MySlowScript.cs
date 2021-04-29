@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -10,7 +11,8 @@ namespace MyNamespace
 {
 	public class MySlowScript : MonoBehaviour
     {
-    	public int Logs = 10_000;
+	    [Range(0,200)]
+    	public int Millis = 1_000;
     
     	// private void OnEnable()
     	// {
@@ -25,9 +27,10 @@ namespace MyNamespace
     
     	public void Update()
     	{
-    		for (var i = 0; i < Logs / 10; i++)
+    		for (var i = 0; i < Millis / 10; i++)
     		{
-    			Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Log in loop");
+    			// Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Log in loop");
+                Thread.Sleep(1);
     			var c = new SomeClass();
     			SomeClassMethod(c);
     			// var test = "123";
@@ -43,7 +46,7 @@ namespace MyNamespace
     			MethodWithOut(out var i, out var c);
     		}
     
-    		Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Log at end");
+    		// Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Log at end");
     	}
     
     	public class SomeClass
@@ -56,14 +59,15 @@ namespace MyNamespace
     	{
     		someInt = 0;
     		c = default;
-    		for (int i = 0; i < Logs / 10; i++)
+    		for (int i = 0; i < Millis / 10; i++)
     			c = new SomeClass();
     	}
 
         // https://harmony.pardeike.net/articles/patching.html#commonly-unsupported-use-cases
         public void MethodWithGeneric<T>(T test)
         {
-	        Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "GENERIC " + test);
+	        Thread.Sleep(1);
+	        // Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "GENERIC " + test);
         }
     
     	// private void Update()
@@ -111,10 +115,11 @@ namespace MyNamespace
     
     	private void CallingAnotherMethod()
     	{
-    		for (var i = 0; i < Logs; i++)
-    		{
-    			Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Another log");
-    		}
+    		for (var i = 0; i < Millis; i++)
+            {
+	            Thread.Sleep(1);
+	            // Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, this, "Another log");
+            }
             TwoLevelsDeepCalledFromAnotherMethod();
     	}
 
