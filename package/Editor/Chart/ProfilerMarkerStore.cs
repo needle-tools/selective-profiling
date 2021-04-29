@@ -9,14 +9,15 @@ namespace Needle.SelectiveProfiling
 {
 	internal struct ChartMarkerData
 	{
+		public int chartMarkerId;
 		public int frame;
 		public string label;
 		public string tooltip;
-		public int chartMarkerId;
 		public float millis;
 		public int itemId;
+		public int markerId;
 
-		public ChartMarkerData(int frame, string label, string tooltip, int chartMarkerId, float millis)
+		public ChartMarkerData(int frame, int markerId, string label, string tooltip, int chartMarkerId, float millis)
 		{
 			this.frame = frame;
 			this.label = label;
@@ -24,6 +25,7 @@ namespace Needle.SelectiveProfiling
 			this.chartMarkerId = chartMarkerId;
 			this.millis = millis;
 			this.itemId = 0;
+			this.markerId = markerId;
 		}
 	}
 
@@ -179,7 +181,7 @@ namespace Needle.SelectiveProfiling
 					{
 						var name = frameData.GetSampleName(i);
 						var tooltip = name + ": " + GetAdditionalMarkerInfo(frameData, i, out var ms);
-						var chartMarker = new ChartMarkerData(frame, name, tooltip, capturesCounter, ms);
+						var chartMarker = new ChartMarkerData(frame, markerId, name, tooltip, capturesCounter, ms);
 						capturesCounter += 1;
 						if (TryFindItemId(markerId, out var itemId)) 
 							chartMarker.itemId = itemId;

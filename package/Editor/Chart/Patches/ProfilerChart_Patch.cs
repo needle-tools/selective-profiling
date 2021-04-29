@@ -76,6 +76,7 @@ namespace Needle.SelectiveProfiling
 							// if ((Event.current.modifiers & EventModifiers.Alt) != 0)
 							selectedLabel = e.marker.label;
 							ProfilerTreeView_Patch.RequestExpandItemId = e.marker.itemId;
+							ProfilerTreeView_Patch.RequestExpandMarkerId = e.marker.markerId;
 							StopProfilingAndSetFrame(e.marker.frame);
 							break;
 						}
@@ -116,7 +117,7 @@ namespace Needle.SelectiveProfiling
 				if (!Application.isPlaying)
 				{
 					var fr = cdata.firstSelectableFrame + 20;
-					var marker = new ChartMarkerData(fr, "Test", "Tooltip", 0, 10);
+					var marker = new ChartMarkerData(fr, 0, "Test", "Tooltip", 0, 10);
 					DrawMarker(r, marker, false, false, cdata);
 					marker.frame += 20;
 					DrawMarker(r, marker, true, true, cdata);

@@ -11,14 +11,15 @@ using UnityEngine.Profiling;
 namespace Needle.SelectiveProfiling
 {
 	[NoAutoDiscover]
-	internal class CharMarkerInject_Patch : EditorPatchProvider
+	internal class ChartMarkerInject_Patch : EditorPatchProvider
 	{
 		internal readonly List<AddProfilerMarker> Patches = new List<AddProfilerMarker>();
 
 		private readonly string id;
 		public override string ID() => id;
+		public override string DisplayName => ID();
 
-		public CharMarkerInject_Patch(string id)
+		public ChartMarkerInject_Patch(string id)
 		{
 			this.id = id;
 		}

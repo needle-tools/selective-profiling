@@ -37,8 +37,8 @@ namespace Needle.SelectiveProfiling
 			if (string.IsNullOrEmpty(marker.label)) throw new Exception("Missing label");
 			if (marker.method == null) throw new Exception("Missing methods");
 			Debug.Log("Register " + marker.label + ", " + marker.method);
-			var prov = new CharMarkerInject_Patch(marker.label + "@" + marker.method.Name);
-			var patch = new CharMarkerInject_Patch.AddProfilerMarker(marker.label, marker.method);
+			var prov = new ChartMarkerInject_Patch(marker.label + "@" + marker.method.Name);
+			var patch = new ChartMarkerInject_Patch.AddProfilerMarker(marker.label, marker.method);
 			prov.Patches.Add(patch);
 			PatchManager.RegisterPatch(prov);
 			prov.EnablePatch();
