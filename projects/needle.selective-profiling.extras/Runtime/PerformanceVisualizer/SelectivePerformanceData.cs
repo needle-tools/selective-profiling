@@ -168,7 +168,8 @@ namespace Needle.SelectiveProfiling
 						for (var index = 0; index < componentNonAllocCache.Count; index++)
 						{
 							var comp = componentNonAllocCache[index];
-							childrenIds.Add(comp.GetInstanceID());
+							if(comp)
+								childrenIds.Add(comp.GetInstanceID());
 						}
 					}
 				}

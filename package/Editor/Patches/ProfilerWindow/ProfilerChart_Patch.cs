@@ -138,6 +138,7 @@ namespace Needle.SelectiveProfiling
 
 				void Log(object msg)
 				{
+					if (SelectiveProfiler.DebugLog == false) return;
 					if(msg != null)
 						Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg.ToString());
 				}
@@ -212,8 +213,66 @@ namespace Needle.SelectiveProfiling
 			expectedMarkerIds.Clear();
 		}
 
-		internal static readonly List<ChartMarkerData> captures = new List<ChartMarkerData>();
-		internal static int capturesCounter = 0;
+
+		internal static IReadOnlyList<ChartMarkerData> Markers => captures;
+		
+		internal static void RemoveAt(int index)
+		{
+			if (index < 0 || index >= captures.Count) return;
+			var ex = captures[index];
+			captures.RemoveAt(index);
+			
+			for (var i = lanes.Count - 1; i >= 0; i--)
+			{
+				var lane = lanes[i];
+				if (lane.label == ex.label)
+				{
+					lane.count -= 1;
+					lanes[i] = lane;
+					if (lane.count <= 0)
+					{
+						lanes.RemoveAt(i);
+						for (; i < lanes.Count; i++)
+						{
+							var other = lanes[i];
+							other.num -= 1;
+							lanes[i] = other;
+						}
+					}
+					break;
+				}
+			}
+		}
+
+		internal static int LaneCount => lanes.Count;
+
+		internal static int GetLane(string label)
+		{
+			foreach(var lane in lanes)
+				if (lane.label == label)
+					return lane.num;
+			return 0;
+		}
+
+		private static void AddToLane(string label)
+		{
+			for (var index = 0; index < lanes.Count; index++)
+			{
+				var lane = lanes[index];
+				if (lane.label == label)
+				{
+					lane.count += 1;
+					lanes[index] = lane;
+					return;
+				}
+			}
+			lanes.Add((label, 1, lanes.Count));
+		}
+
+		private static readonly List<ChartMarkerData> captures = new List<ChartMarkerData>();
+		private static int capturesCounter = 0;
+		private static readonly List<(string label, int count, int num)> lanes = new List<(string label, int count, int num)>();
+		
 
 		private static void OnNewFrame(int thread, int frame)
 		{
@@ -245,6 +304,7 @@ namespace Needle.SelectiveProfiling
 						var name = frameData.GetSampleName(i);
 						var tooltip = name + ": " + GetAdditionalMarkerInfo(frameData, i, out var ms);
 						captures.Add(new ChartMarkerData(frame, name, tooltip, capturesCounter, ms));
+						AddToLane(name);
 						capturesCounter += 1;
 					}
 				}
@@ -317,9 +377,14 @@ namespace Needle.SelectiveProfiling
 			private static int selectedId = -1;
 			public static string selectedLabel;
 			
-			internal static bool ShowExpanded(ChartMarkerData other)
+			internal static bool IsSelected(ChartMarkerData other)
 			{
-				return selectedLabel == other.label || selectedId == other.chartMarkerId;
+				return selectedLabel == other.label;
+			}
+			
+			internal static bool ShowLabel(ChartMarkerData other)
+			{
+				return selectedId == other.chartMarkerId;
 			}
 			
 			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
@@ -340,7 +405,7 @@ namespace Needle.SelectiveProfiling
 						if (rect.Contains(Event.current.mousePosition))
 						{
 							selectedId = e.marker.chartMarkerId;
-							if ((Event.current.modifiers & EventModifiers.Alt) != 0)
+							// if ((Event.current.modifiers & EventModifiers.Alt) != 0)
 								selectedLabel = e.marker.label;
 							StopProfilingAndSetFrame(e.marker.frame);
 							break;
@@ -375,35 +440,40 @@ namespace Needle.SelectiveProfiling
 				GUIMarkerLabels.Clear();
 
 				// if (___m_Area != ProfilerArea.CPU) return;
-				// GUI.Label(rect, "TEST " + r + ", " + selectedFrame);
+				// GUI.Label(r, "TEST " + r + ", " + selectedFrame);
 
 				// DrawMarker(r, "Frame: " + selectedFrame, selectedFrame, cdata, Color.cyan);
 				if (!Application.isPlaying)
 				{
 					var fr = cdata.firstSelectableFrame + 20;
 					var marker = new ChartMarkerData(fr, "Test", "Tooltip", 0, 10);
-					DrawMarker(r, marker, false, cdata);
+					DrawMarker(r, marker, false, false, cdata);
 					marker.frame += 20;
-					DrawMarker(r, marker, true, cdata);
+					DrawMarker(r, marker, true, true, cdata);
 				}
 
 				// var other1 = cdata.firstSelectableFrame + 30;
 				// DrawMarker(r, "Frame: " + other, other1, cdata, Color.yellow, true);
 				// ProfilerDriver.lastFrameIndex
+				var maxHeight = 400;
 
-				for (var index = ProfilerMarkerStore.captures.Count - 1; index >= 0; index--)
+				for (var index = ProfilerMarkerStore.Markers.Count - 1; index >= 0; index--)
 				{
-					var cap = ProfilerMarkerStore.captures[index];
+					var cap = ProfilerMarkerStore.Markers[index];
 					if (cap.frame < cdata.firstSelectableFrame)
 					{
-						ProfilerMarkerStore.captures.RemoveAt(index);
+						ProfilerMarkerStore.RemoveAt(index);
 						continue;
 					}
 
 					var rect = r;
-					rect.y += (cap.chartMarkerId % 3) * 100;
-					var expanded = MarkerLabelClick.ShowExpanded(cap);
-					DrawMarker(rect, cap, expanded, cdata);
+					// rect.y += (cap.chartMarkerId % 3) * 100;
+					var lane = ProfilerMarkerStore.GetLane(cap.label);
+					rect.y = ((float)lane / ProfilerMarkerStore.LaneCount) * maxHeight;
+					cap.tooltip += "\nLane: " + lane + " " + ProfilerMarkerStore.LaneCount;
+					var showLabel = selectedFrame == cap.frame || MarkerLabelClick.ShowLabel(cap);
+					var selected = MarkerLabelClick.IsSelected(cap);
+					DrawMarker(rect, cap, selected, showLabel, cdata);
 				}
 			}
 
@@ -413,7 +483,7 @@ namespace Needle.SelectiveProfiling
 			}
 
 			// click on marker https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerWindow.cs#L1235
-			private static void DrawMarker(Rect r, ChartMarkerData chartMarker, bool expanded, ChartViewData cdata, bool drawLine = false)
+			private static void DrawMarker(Rect r, ChartMarkerData chartMarker, bool selected, bool showLabel, ChartViewData cdata, bool drawLine = false)
 			{
 				var color = GUIColors.GetColorOnGradient(GUIColors.NaiveCalculateGradientPosition(chartMarker.millis, 0));
 				
@@ -421,6 +491,7 @@ namespace Needle.SelectiveProfiling
 				rect.height = 0;
 				rect.y += r.height;
 				rect.yMax *= 0.15f;
+				// drawLine = true;
 				if (drawLine)
 				{
 					var top = DrawVerticalLine(chartMarker.frame, cdata, rect, color, 1);
@@ -448,36 +519,44 @@ namespace Needle.SelectiveProfiling
 				{
 					GUIMarkerLabels.Add((clickRect, chartMarker));
 				}
-
-				const float circleSize = 5;
-				var circleRect = new Rect(rect.x, rect.y, circleSize, circleSize);
-				var clickRect = circleRect;
-				const float clickSize = 15;
-				clickRect.size = Vector2.one * clickSize;
-				var offset = (clickSize - circleSize) * .25f;
-				clickRect.x -= offset;
-				clickRect.y -= offset;
-				RegisterClickableMarker(clickRect);
-				GUI.DrawTexture(circleRect, Textures.CircleFilled, ScaleMode.ScaleAndCrop, true, 1, GUI.color, 0, 0);
-				GUI.Label(rect, new GUIContent(string.Empty, content.tooltip));
 				
-				if (expanded)
+				var circleSize = selected ? 6 : 4;
+				if (showLabel)
 				{
-					rect.x += circleSize + 2;
-					rect.y -= (size.y - circleSize) * .6f;
-					// RegisterClickableMarker(rect);
+					var labelRect = rect;
+					labelRect.x += 2;
+					labelRect.y -= labelRect.size.y * .5f;
+					RegisterClickableMarker(labelRect);
 					// Styles.whiteLabel.normal.background = Textures.WhiteLabel;
 					// Styles.whiteLabel.normal.textColor = Color.white;
 					GUI.color = Color.white;
 					EditorGUI.DropShadowLabel(
-							rect,
-							content,
-							Styles.whiteLabel
-						);
+						labelRect,
+						content,
+						Styles.whiteLabel
+					);
 				}
-				else
+
+				void DrawCircle(float circleSize)
 				{
+					var circleRect = new Rect(rect.x, rect.y, circleSize, circleSize);
+					var offset = circleSize * .5f;
+					circleRect.x -= offset;
+					circleRect.y -= offset;
+					var clickRect = circleRect;
+					const float clickPadding = 10;
+					var clickSize = clickPadding + circleSize;
+					clickRect.size = Vector2.one * (clickSize);
+					offset = (clickSize - circleSize) * .25f;
+					clickRect.x -= offset;
+					clickRect.y -= offset;
+					RegisterClickableMarker(clickRect);
+					GUI.DrawTexture(circleRect, Textures.CircleFilled, ScaleMode.ScaleAndCrop, true, 1, GUI.color, 0, 0);
+					GUI.Label(rect, new GUIContent(string.Empty, content.tooltip));
 				}
+				GUI.color = color;
+				DrawCircle(circleSize);
+				
 				
 				GUI.color = prev;
 			}
