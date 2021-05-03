@@ -43,7 +43,8 @@ namespace Needle.SelectiveProfiling
 			if (marker.method == null) throw new Exception("Missing methods");
 			if (markers.ContainsKey(marker.key)) return;
 			markers.Add(marker.key, marker);
-			Debug.Log("Register " + marker.label + ", " + marker.method);
+			if(SelectiveProfilerSettings.instance.DebugLog)
+				Debug.Log("Register " + marker.label + ", " + marker.method);
 			var prov = new ChartMarkerInject_Patch(marker.label + "@" + marker.method.Name);
 			var patch = new ChartMarkerInject_Patch.AddProfilerMarker(marker.label, marker.method);
 			prov.Patches.Add(patch);
