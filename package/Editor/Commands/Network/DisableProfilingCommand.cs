@@ -8,16 +8,20 @@ namespace Needle.SelectiveProfiling
 	{
 		[SerializeField]
 		private MethodInformation method;
+
+		[SerializeField]
+		public bool ShouldSave;
 		
-		public DisableProfilingCommand(MethodInformation mi)
+		public DisableProfilingCommand(MethodInformation mi, bool shouldSave)
 		{
 			this.method = mi;
+			this.ShouldSave = shouldSave;
 		}
 		
 		public override void Execute()
 		{
 			if (method != null && method.TryResolveMethod(out var m, true))
-				SelectiveProfiler.DisableProfiling(m);
+				SelectiveProfiler.DisableProfiling(m, ShouldSave);
 		}
 	}
 }

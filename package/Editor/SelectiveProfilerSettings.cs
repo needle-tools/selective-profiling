@@ -112,74 +112,84 @@ namespace Needle.SelectiveProfiling
 		public bool AllowPinning => SelectiveProfiler.DevelopmentMode;
 
 		public bool DebugLog;
-
-		[SerializeField] private List<MethodInformation> Methods = new List<MethodInformation>();
-
+		
 		[SerializeField] internal List<string> PinnedMethods = new List<string>();
-		// [SerializeField] internal List<string> UnpinnedMethods = new List<string>();
+		
+		[SerializeField]
+		private ProfilingGroup CurrentGroup;
 
+		public bool HasGroup => CurrentGroup;
+		public string GroupName => CurrentGroup ? CurrentGroup.name : null;
+		
+		public bool IsEnabled(ProfilingGroup group) => group == CurrentGroup;
+		
+		public void SetGroup(ProfilingGroup group)
+		{
+			Debug.Log("Set group: " + group);
+			if (group == CurrentGroup) return;
+			
+			if (CurrentGroup)
+			{
+				CurrentGroup.MethodStateChanged -= MethodStateChanged;
+				CurrentGroup.Cleared -= Cleared;
+			}
 
-		public int MethodsCount => Methods.Count;
+			var old = CurrentGroup;
+			CurrentGroup = group;
+			if (CurrentGroup)
+			{
+				CurrentGroup.MethodStateChanged += MethodStateChanged;
+				CurrentGroup.Cleared += Cleared;
+			}
+
+			GroupChanged?.Invoke((old, CurrentGroup));
+		}
+
+		public static event Action<(ProfilingGroup old, ProfilingGroup @new)> GroupChanged;
+		public static event Action<MethodInformation, bool> MethodStateChanged;
+		public static event Action Cleared;
+
+		
+		internal void RegisterUndo(string actionName) => Undo.RegisterCompleteObjectUndo(this, actionName);
+
+		public int MethodsCount => CurrentGroup ? CurrentGroup.MethodsCount : 0;
+
 
 		public MethodInformation GetInstance(MethodInformation mi)
 		{
-			foreach (var m in Methods)
-			{
-				if (m.Equals(mi))
-					return m;
-			}
+			if (CurrentGroup)
+				return CurrentGroup.GetInstance(mi);
 
 			return mi;
 		}
 
-		internal void RegisterUndo(string actionName) => Undo.RegisterCompleteObjectUndo(this, actionName);
-
 		public void Add(MethodInformation info)
 		{
-			if (Methods.Any(m => m.Equals(info))) return;
-			Undo.RegisterCompleteObjectUndo(this, "Add " + info);
-			info.Enabled = true;
-			Methods.Add(info);
-			MethodStateChanged?.Invoke(info, true);
+			if (CurrentGroup) CurrentGroup.Add(info);
 		}
 
 		public void Remove(MethodInfo info, bool withUndo = true)
 		{
-			InternalRemove(info.Name, entry => entry.Equals(info), withUndo);
+			if (CurrentGroup)
+			{
+				CurrentGroup.Remove(info, withUndo);
+			}
 		}
 
 		public void Remove(MethodInformation info, bool withUndo = true)
 		{
-			InternalRemove(info.Method, entry => entry.Equals(info), withUndo);
-		}
-
-		private void InternalRemove(string id, Predicate<MethodInformation> pred, bool withUndo)
-		{
-			if (withUndo)
-				Undo.RegisterCompleteObjectUndo(this, "Removed " + id + "/" + this);
-
-			MethodInformation removed = null;
-			for (var index = Methods.Count - 1; index >= 0; index--)
+			if (CurrentGroup)
 			{
-				var method = Methods[index];
-				if (!pred(method)) continue;
-				Methods.RemoveAt(index);
-				removed = method;
-				break;
-			}
-
-			if (removed != null)
-			{
-				NotifyStateChanged(removed, false);
+				CurrentGroup.Remove(info, withUndo);
 			}
 		}
 
 		public void UpdateState(MethodInformation info, bool state, bool withUndo)
 		{
-			if (info.Enabled == state) return;
-			if (withUndo) Undo.RegisterCompleteObjectUndo(this, "Set " + info + ": " + state);
-			info.Enabled = state;
-			MethodStateChanged?.Invoke(info, state);
+			if (CurrentGroup)
+			{
+				CurrentGroup.UpdateState(info, state, withUndo);
+			}
 		}
 
 		public void SetMuted(MethodInformation info, bool mute, bool withUndo = true)
@@ -189,40 +199,21 @@ namespace Needle.SelectiveProfiling
 
 		public bool IsSavedAndEnabled(MethodInformation mi)
 		{
-			var m = Methods.FirstOrDefault(entry => entry.Equals(mi));
-			return m?.Enabled ?? false;
-		}
-
-		public void ClearAll()
-		{
-			Undo.RegisterCompleteObjectUndo(this, "Clear Selective Profiler Data");
-			Methods.Clear();
-			Cleared?.Invoke();
+			if (CurrentGroup) return CurrentGroup.IsSavedAndEnabled(mi);
+			return false;
 		}
 
 		public bool Contains(MethodInfo info)
 		{
-			return Methods.Any(m => m.Equals(info));
+			if (CurrentGroup) return CurrentGroup.Contains(info);
+			return false;
 		}
 
-		public IReadOnlyList<MethodInformation> MethodsList => Methods;
+		public IReadOnlyList<MethodInformation> MethodsList => CurrentGroup ? CurrentGroup.Methods : null;
+		
+		public bool IsEnabledExplicitly(MethodInformation mi) => 
+			MethodsList != null && MethodsList.FirstOrDefault(m => m.Equals(mi) && m.Enabled) != null;
 
-		// public bool IsMuted(MethodInformation m)
-		// {
-		// 	var match = Methods.FirstOrDefault(e => e.Equals(m));
-		// 	if (match != null) return !match.Enabled;
-		// 	return true;
-		// }
-
-		public bool IsEnabledExplicitly(MethodInformation mi) => MethodsList.FirstOrDefault(m => m.Equals(mi) && m.Enabled) != null;
-
-		public static event Action<MethodInformation, bool> MethodStateChanged;
-		public static event Action Cleared;
-
-		private static void NotifyStateChanged(MethodInformation info, bool state)
-		{
-			MethodStateChanged?.Invoke(info, state);
-		}
 	}
 
 #if !UNITY_2020_1_OR_NEWER

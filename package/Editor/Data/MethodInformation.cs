@@ -13,7 +13,7 @@ namespace Needle.SelectiveProfiling
 	/// serializeable method information
 	/// </summary>
 	[Serializable]
-	internal class MethodInformation : IEquatable<MethodInformation>, IEquatable<MethodInfo>
+	public class MethodInformation : IEquatable<MethodInformation>, IEquatable<MethodInfo>
 	{
 		public bool Enabled = true;
 		public string Assembly;

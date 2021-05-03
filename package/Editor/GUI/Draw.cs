@@ -167,6 +167,9 @@ namespace Needle.SelectiveProfiling
 				DrawSettings();
 
 			var header = Application.isPlaying ? "Profiled Methods" : "Saved Methods";
+
+			if (settings.HasGroup) header += " [" + settings.GroupName + "]";
+			
 			if (inFoldouts)
 				WithHeaderFoldout("ProfiledMethods", header, () => DrawProfiledMethods(false), true);
 			else
@@ -245,7 +248,8 @@ namespace Needle.SelectiveProfiling
 
 			scopes.Clear();
 			scopesMeta.Clear();
-			foreach (var method in methods) AddToScope(method);
+			if(methods != null)
+				foreach (var method in methods) AddToScope(method);
 
 			if (scopes.Count <= 0)
 			{

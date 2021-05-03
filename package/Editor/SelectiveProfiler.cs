@@ -230,7 +230,7 @@ namespace Needle.SelectiveProfiling
 #if UNITY_2020_2_OR_NEWER
 			if (IsStandaloneProcess)
 			{
-				var networkCommand = new DisableProfilingCommand(new MethodInformation(method));
+				var networkCommand = new DisableProfilingCommand(new MethodInformation(method), allowSave);
 				QueueCommand(networkCommand);
 				return Task.CompletedTask;
 			}
@@ -242,6 +242,11 @@ namespace Needle.SelectiveProfiling
 			if (profiled.TryGetValue(method, out var prof))
 			{
 				task = prof.Disable();
+				// internally prof disable will disable the enabled state
+				// if the method is currently profiled and we disable it without saving
+				// we can assume that is was enabled before (and should stay that way)
+				if (!allowSave)
+					prof.MethodInformation.Enabled = true;
 			}
 
 			if (allowSave)
@@ -353,8 +358,43 @@ namespace Needle.SelectiveProfiling
 			SelectiveProfilerSettings.Cleared -= MethodsCleared;
 			SelectiveProfilerSettings.Cleared += MethodsCleared;
 
+			SelectiveProfilerSettings.GroupChanged -= ProfilingGroupChanged;
+			SelectiveProfilerSettings.GroupChanged += ProfilingGroupChanged;
+
 			EditorApplication.update -= OnEditorUpdate;
 			EditorApplication.update += OnEditorUpdate;
+		}
+
+		private static void ProfilingGroupChanged((ProfilingGroup old, ProfilingGroup @new) args)
+		{
+			var newGroup = args.@new;
+			var hasNewGroup = newGroup && newGroup.MethodsCount > 0;
+			foreach (var prof in profiled2)
+			{
+				if (!hasNewGroup)
+				{
+					DisableProfiling(prof.Value.Method, false);
+				}
+				else
+				{
+					if (!newGroup.IsEnabled(prof.Key))
+					{
+						DisableProfiling(prof.Value.Method, false);
+					}
+				}
+			}
+
+			if (hasNewGroup)
+			{
+				foreach (var e in newGroup.Methods)
+				{
+					if (!e.Enabled) continue;
+					if (e.TryResolveMethod(out var method))
+					{
+						EnableProfilingAsync(method, false, true, false, false);
+					}
+				}
+			}
 		}
 
 		private static async void ApplyProfiledMethods()

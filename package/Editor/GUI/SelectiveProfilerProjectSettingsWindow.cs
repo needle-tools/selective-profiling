@@ -38,7 +38,7 @@ namespace Needle.SelectiveProfiling
 			var settings = SelectiveProfilerSettings.instance;
 			EditorGUI.BeginChangeCheck();
 			
-			Draw.DefaultSelectiveProfilerUI(settings, false);
+			Draw.DefaultSelectiveProfilerUI(settings, true);
 			
 			GUILayout.FlexibleSpace();
 			GUILayout.Space(10);
