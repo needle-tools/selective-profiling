@@ -42,7 +42,7 @@ namespace Needle.SelectiveProfiling
 			Assembly = other.Assembly;
 			Type = other.Type;
 			Method = other.Method;
-			Enabled = true;
+			Enabled = other.Enabled;
 			CachedMethod = other.CachedMethod;
 			
 			if (string.IsNullOrEmpty(_methodIdentifier)) _methodIdentifier = other._methodIdentifier;

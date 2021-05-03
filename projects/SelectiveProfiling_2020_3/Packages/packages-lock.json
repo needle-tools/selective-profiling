@@ -22,17 +22,6 @@
       "source": "local",
       "dependencies": {}
     },
-    "com.needle.xr.arsimulation": {
-      "version": "file:../../../../../../ar-simulation/package",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {
-        "com.unity.xr.arsubsystems": "3.1.0-preview.2",
-        "com.unity.xr.management": "3.0.5",
-        "com.unity.xr.arfoundation": "3.0.1",
-        "com.unity.xr.legacyinputhelpers": "2.0.8"
-      }
-    },
     "com.unity.code-analysis": {
       "version": "0.1.2-preview",
       "depth": 1,
@@ -162,7 +151,7 @@
     },
     "com.unity.xr.legacyinputhelpers": {
       "version": "2.1.7",
-      "depth": 1,
+      "depth": 2,
       "source": "registry",
       "dependencies": {
         "com.unity.modules.vr": "1.0.0",

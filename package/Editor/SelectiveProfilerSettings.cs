@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -18,8 +19,7 @@ using UnityEditorInternal;
 
 namespace Needle.SelectiveProfiling
 {
-
-	internal static class PinnedItems 
+	internal static class PinnedItems
 	{
 		public static List<string> PinnedProfilerItems => SelectiveProfilerSettings.instance.PinnedMethods;
 		// public static List<string> UnpinnedProfilerItems => SelectiveProfilerSettings.instance.UnpinnedMethods;
@@ -37,7 +37,7 @@ namespace Needle.SelectiveProfiling
 	internal class SelectiveProfilerSettings : ScriptableSingleton<SelectiveProfilerSettings>
 	{
 		public const string SettingsRelativeFilePath = "ProjectSettings/SelectiveProfiler.asset";
-		
+
 		[MenuItem(MenuItems.ToolsMenu + "Copy settings to clipboard")]
 		public static bool CopySettingsToClipboard()
 		{
@@ -45,8 +45,9 @@ namespace Needle.SelectiveProfiling
 			GUIUtility.systemCopyBuffer = File.ReadAllText(SettingsRelativeFilePath);
 			return true;
 		}
-		
+
 		private static SelectiveProfilerSettings _settingsFromMainProcess;
+
 		internal static SelectiveProfilerSettings Instance
 		{
 			get
@@ -56,6 +57,7 @@ namespace Needle.SelectiveProfiling
 					Debug.Log("Update settings");
 					return _settingsFromMainProcess;
 				}
+
 				return instance;
 			}
 			set
@@ -64,7 +66,7 @@ namespace Needle.SelectiveProfiling
 				else throw new NotSupportedException("Updating profiler settings instance is only allowed in standalone profiler process");
 			}
 		}
-		
+
 		[InitializeOnLoadMethod]
 		private static void Init()
 		{
@@ -98,7 +100,7 @@ namespace Needle.SelectiveProfiling
 		public bool SkipProperties => true;
 		public bool UseAlwaysProfile = false;
 		public bool ImmediateMode => false;
-		
+
 		public bool CollapseProperties = false;
 		public bool CollapseHierarchyNesting = false;
 		public bool CollapseNoImpactSamples = false;
@@ -112,84 +114,136 @@ namespace Needle.SelectiveProfiling
 		public bool AllowPinning => SelectiveProfiler.DevelopmentMode;
 
 		public bool DebugLog;
-		
+
 		[SerializeField] internal List<string> PinnedMethods = new List<string>();
-		
-		[SerializeField]
-		private ProfilingGroup CurrentGroup;
 
-		public bool HasGroup => CurrentGroup;
-		public string GroupName => CurrentGroup ? CurrentGroup.name : null;
-		
-		public bool IsEnabled(ProfilingGroup group) => group == CurrentGroup;
-		
-		public void SetGroup(ProfilingGroup group)
+		[SerializeField] internal List<MethodInformation> Methods = new List<MethodInformation>();
+
+		public void Replace(IReadOnlyList<MethodInformation> group)
 		{
-			Debug.Log("Set group: " + group);
-			if (group == CurrentGroup) return;
-			
-			if (CurrentGroup)
+			if (@group == null || group.Count <= 0) return;
+			if (SelectiveProfiler.DebugLog)
+				Debug.Log("Replace group: " + @group.Count);
+			// remove every entry that is not in this group
+			for (var index = Methods.Count - 1; index >= 0; index--)
 			{
-				CurrentGroup.MethodStateChanged -= MethodStateChanged;
-				CurrentGroup.Cleared -= Cleared;
+				var method = Methods[index];
+				if (!group.Contains(method))
+				{
+					Methods.RemoveAt(index);
+					NotifyStateChanged(method.Copy(), false);
+				}
 			}
 
-			var old = CurrentGroup;
-			CurrentGroup = group;
-			if (CurrentGroup)
-			{
-				CurrentGroup.MethodStateChanged += MethodStateChanged;
-				CurrentGroup.Cleared += Cleared;
-			}
-
-			GroupChanged?.Invoke((old, CurrentGroup));
+			Add(group);
 		}
 
-		public static event Action<(ProfilingGroup old, ProfilingGroup @new)> GroupChanged;
+		public void Add(IReadOnlyList<MethodInformation> group)
+		{
+			if (@group == null || group.Count <= 0) return;
+			if (SelectiveProfiler.DebugLog)
+				Debug.Log("Add group: " + @group.Count);
+			foreach (var method in @group)
+			{
+				if (!Methods.Contains(method))
+				{
+					Methods.Add(method.Copy());
+					if (method.Enabled)
+						NotifyStateChanged(method, true);
+				}
+			}
+		}
+
+		public void Remove(IReadOnlyList<MethodInformation> group)
+		{
+			if (@group == null || @group.Count <= 0) return;
+			if (SelectiveProfiler.DebugLog)
+				Debug.Log("Remove group: " + group.Count);
+			for (var index = Methods.Count - 1; index >= 0; index--)
+			{
+				var method = Methods[index];
+				if (@group.Contains(method))
+				{
+					var cur = Methods[index];
+					Methods.RemoveAt(index);
+					if (cur.Enabled)
+						NotifyStateChanged(method.Copy(), false);
+				}
+			}
+		}
+
+		private void NotifyStateChanged(MethodInformation info, bool state)
+		{
+			MethodStateChanged?.Invoke(info, state);
+		}
+
 		public static event Action<MethodInformation, bool> MethodStateChanged;
 		public static event Action Cleared;
 
-		
 		internal void RegisterUndo(string actionName) => Undo.RegisterCompleteObjectUndo(this, actionName);
 
-		public int MethodsCount => CurrentGroup ? CurrentGroup.MethodsCount : 0;
+		public int MethodsCount => Methods.Count;
+
+		public IReadOnlyList<MethodInformation> MethodsList => Methods;
 
 
 		public MethodInformation GetInstance(MethodInformation mi)
 		{
-			if (CurrentGroup)
-				return CurrentGroup.GetInstance(mi);
+			foreach (var m in Methods)
+			{
+				if (m.Equals(mi))
+					return m;
+			}
 
 			return mi;
 		}
 
 		public void Add(MethodInformation info)
 		{
-			if (CurrentGroup) CurrentGroup.Add(info);
+			if (Methods.Any(m => m.Equals(info))) return;
+			Undo.RegisterCompleteObjectUndo(this, "Add " + info);
+			info.Enabled = true;
+			Methods.Add(info);
+			NotifyStateChanged(info, true);
 		}
 
 		public void Remove(MethodInfo info, bool withUndo = true)
 		{
-			if (CurrentGroup)
-			{
-				CurrentGroup.Remove(info, withUndo);
-			}
+			InternalRemove(info.Name, entry => entry.Equals(info), withUndo);
 		}
 
 		public void Remove(MethodInformation info, bool withUndo = true)
 		{
-			if (CurrentGroup)
+			InternalRemove(info.Method, entry => entry.Equals(info), withUndo);
+		}
+
+		private void InternalRemove(string id, Predicate<MethodInformation> pred, bool withUndo)
+		{
+			if (withUndo)
+				Undo.RegisterCompleteObjectUndo(this, "Removed " + id + "/" + this);
+
+			MethodInformation removed = null;
+			for (var index = Methods.Count - 1; index >= 0; index--)
 			{
-				CurrentGroup.Remove(info, withUndo);
+				var method = Methods[index];
+				if (!pred(method)) continue;
+				Methods.RemoveAt(index);
+				removed = method;
+				break;
+			}
+
+			if (removed != null)
+			{
+				NotifyStateChanged(removed, false);
 			}
 		}
 
 		public void UpdateState(MethodInformation info, bool state, bool withUndo)
 		{
-			if (CurrentGroup)
-			{
-				CurrentGroup.UpdateState(info, state, withUndo);
-			}
+			if (info.Enabled == state) return;
+			if (withUndo) Undo.RegisterCompleteObjectUndo(this, "Set " + info + ": " + state);
+			info.Enabled = state;
+			NotifyStateChanged(info, state);
 		}
 
 		public void SetMuted(MethodInformation info, bool mute, bool withUndo = true)
@@ -199,21 +253,24 @@ namespace Needle.SelectiveProfiling
 
 		public bool IsSavedAndEnabled(MethodInformation mi)
 		{
-			if (CurrentGroup) return CurrentGroup.IsSavedAndEnabled(mi);
-			return false;
+			var m = Methods.FirstOrDefault(entry => entry.Equals(mi));
+			return m?.Enabled ?? false;
+		}
+
+		public void ClearAll()
+		{
+			Undo.RegisterCompleteObjectUndo(this, "Clear Selective Profiler Data");
+			Methods.Clear();
+			Cleared?.Invoke();
 		}
 
 		public bool Contains(MethodInfo info)
 		{
-			if (CurrentGroup) return CurrentGroup.Contains(info);
-			return false;
+			return Methods.Any(m => m.Equals(info));
 		}
 
-		public IReadOnlyList<MethodInformation> MethodsList => CurrentGroup ? CurrentGroup.Methods : null;
-		
-		public bool IsEnabledExplicitly(MethodInformation mi) => 
+		public bool IsEnabledExplicitly(MethodInformation mi) =>
 			MethodsList != null && MethodsList.FirstOrDefault(m => m.Equals(mi) && m.Enabled) != null;
-
 	}
 
 #if !UNITY_2020_1_OR_NEWER

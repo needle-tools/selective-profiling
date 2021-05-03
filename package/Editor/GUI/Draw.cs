@@ -168,7 +168,7 @@ namespace Needle.SelectiveProfiling
 
 			var header = Application.isPlaying ? "Profiled Methods" : "Saved Methods";
 
-			if (settings.HasGroup) header += " [" + settings.GroupName + "]";
+			// if (settings.HasGroup) header += " [" + settings.GroupName + "]";
 			
 			if (inFoldouts)
 				WithHeaderFoldout("ProfiledMethods", header, () => DrawProfiledMethods(false), true);
@@ -244,6 +244,12 @@ namespace Needle.SelectiveProfiling
 				scopesMeta[scope].Add(method);
 			}
 
+			if (GUILayout.Button("Save"))
+			{
+				// ReSharper disable once PossibleMultipleEnumeration
+				ProfilingGroup.Save(methods);
+			}
+			
 			GUIState.SelectedScope = (MethodScopeDisplay) EditorGUILayout.EnumPopup("Scope", GUIState.SelectedScope);
 
 			scopes.Clear();

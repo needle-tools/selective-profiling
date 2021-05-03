@@ -68,7 +68,8 @@ namespace Needle.SelectiveProfiling
 					new InstructionsWrapper(), 
 					OnBeforeInjectBeginSample,
 					SelectiveProfiler.DebugLog,
-					SelectiveProfiler.TranspilerShouldSkipCallsInProfilerType
+					SelectiveProfiler.TranspilerShouldSkipCallsInProfilerType,
+					SelectiveProfiler.DevelopmentMode
 					);
 				
 				wrappers.Add(method, wrapper);

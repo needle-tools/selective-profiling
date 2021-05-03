@@ -1,0 +1,158 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5c45a8b4faf48b0bde52b2249064a00, type: 3}
+  m_Name: test
+  m_EditorClassIdentifier: 
+  methods:
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void DrawDetailsViewForModule(UnityEditorInternal.Profiling.ProfilerModuleBase)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void OnGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void DrawMainToolbar()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void DoGUI(UnityEditor.Profiling.HierarchyFrameDataView, Boolean, Boolean
+      ByRef, UnityEditorInternal.ProfilerViewType)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUorGPUProfilerModule
+    Method: Void DrawDetailsView(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUProfilerModule
+    Method: Void DrawDetailsView(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void DrawView(UnityEngine.Rect, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void OldOnGUI()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void DoOnGUI(UnityEngine.Event, UnityEngine.Matrix4x4, UnityEngine.Rect,
+      Boolean, UnityEngine.Rect, System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean HandleIMGUIEvent(UnityEngine.Event, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean HandleIMGUIEvent(UnityEngine.Event, System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean HandleIMGUIEvent(UnityEngine.Event, UnityEngine.Matrix4x4, UnityEngine.Rect,
+      System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void DoIMGUIRepaint()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualTreeUpdater
+    Method: Void UpdateVisualTreePhase(UnityEngine.UIElements.VisualTreeUpdatePhase)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.Panel
+    Method: Void UpdateForRepaint()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.Panel
+    Method: Void Repaint(UnityEngine.Event)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsUtility
+    Method: Boolean DoDispatch(UnityEngine.UIElements.BaseVisualElementPanel)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIEventRegistration
+    Method: Boolean ProcessEvent(Int32, IntPtr)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsUtility
+    Method: Void BeginContainerGUI(LayoutCache, UnityEngine.Event, UnityEngine.UIElements.IMGUIContainer)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void OnGenerateVisualContent(UnityEngine.UIElements.MeshGenerationContext)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualElement
+    Method: Void InvokeGenerateVisualContent(UnityEngine.UIElements.MeshGenerationContext)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean SendEventToIMGUIRaw(UnityEngine.UIElements.EventBase, Boolean,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean SendEventToIMGUI(UnityEngine.UIElements.EventBase, Boolean, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void HandleEvent(UnityEngine.UIElements.EventBase)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.CallbackEventHandler
+    Method: Void HandleEventAtTargetPhase(UnityEngine.UIElements.EventBase)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.MouseCaptureDispatchingStrategy
+    Method: Void DispatchEvent(UnityEngine.UIElements.EventBase, UnityEngine.UIElements.IPanel)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.EventDispatcher
+    Method: Void ApplyDispatchingStrategies(UnityEngine.UIElements.EventBase, UnityEngine.UIElements.IPanel,
+      Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.EventDispatcher
+    Method: Void ProcessEvent(UnityEngine.UIElements.EventBase, UnityEngine.UIElements.IPanel)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.EventDispatcher
+    Method: Void ProcessEventQueue()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.EventDispatcher
+    Method: Void OpenGate()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.EventDispatcherGate
+    Method: Void Dispose()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.EventDispatcher
+    Method: Void Dispatch(UnityEngine.UIElements.EventBase, UnityEngine.UIElements.IPanel,
+      UnityEngine.UIElements.DispatchMode)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.BaseVisualElementPanel
+    Method: Void SendEvent(UnityEngine.UIElements.EventBase, UnityEngine.UIElements.DispatchMode)
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.ChartMarker, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.ProfilerMarkerStore
+    Method: Void OnNewFrame(Int32, Int32)

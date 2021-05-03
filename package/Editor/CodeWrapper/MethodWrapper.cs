@@ -18,21 +18,24 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 		private readonly InjectionCallback beforeInject;
 		private readonly bool debugLog;
 		private readonly bool skipProfilerMethods;
+		private readonly bool developmentMode;
 
 		public MethodWrapper(InstructionsWrapper wrapper,
 			InjectionCallback beforeInject,
 			bool debugLog,
-			bool skipProfilerMethods)
+			bool skipProfilerMethods,
+			bool developmentMode)
 		{
 			this.wrapper = wrapper;
 			this.beforeInject = beforeInject;
 			this.debugLog = debugLog;
 			this.skipProfilerMethods = skipProfilerMethods;
+			this.developmentMode = developmentMode;
 		}
 
 		public void Apply(MethodBase method, IList<CodeInstruction> instructions, ILGenerator il)
 		{
-			var IL_Before = ShouldSaveIL(debugLog) || SelectiveProfiler.DevelopmentMode ? string.Join("\n", instructions) : null;
+			var IL_Before = ShouldSaveIL(debugLog) || developmentMode ? string.Join("\n", instructions) : null;
 
 			var start = -1;
 			var skipNextCall = false;

@@ -47,12 +47,12 @@ namespace SelectiveProfilingTestComponent
 			
 			return;
 			
-			Debug.Log("is never called " + label + ", " + selected);
-
-			for (int i = 0; i < 5; i++)
-			{
-				Debug.Log(i);
-			}
+			// Debug.Log("is never called " + label + ", " + selected);
+			//
+			// for (int i = 0; i < 5; i++)
+			// {
+			// 	Debug.Log(i);
+			// }
 		}
 
 		private bool SomethingWithArgs(int i)

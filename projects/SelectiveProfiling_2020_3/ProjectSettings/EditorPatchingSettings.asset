@@ -17,18 +17,16 @@ MonoBehaviour:
   - Needle.SelectiveProfiling.RayPatch
   - needle.EditorPatching.HarmonyUnityDebugLogPatch
   - needle.EditorPatching.HarmonyInstanceRegistry
-  - Click@Execute
-  - needle.EditorPatching.PatchManager
-  - Needle.SelectiveProfiling.DrawPerformanceInInspectorHeader
-  - Needle.SelectiveProfiling.ProfilerReveal_Patch
+  - Needle.SelectiveProfiling.ContextMenuPatches
   - Needle.SelectiveProfiling.ProfilerChart_Patch
   - Needle.SelectiveProfiling.ProfilerFrameDataView_CustomRowsPatch
   - Needle.SelectiveProfiling.ProfilerPinning+ProfilerPinning_Patch
   - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
-  - Slow Method@Sleep100
-  - Needle.SelectiveProfiling.ContextMenuPatches
+  - Needle.SelectiveProfiling.InputEventsMarker
+  - Click@Execute
   - Slow Method@SleepRandom
   - Other Slow@Sleep100
+  - Needle.SelectiveProfiling.ProfilerTreeView_Patch
   disabledPatchIds:
   - MyNamespace.MySlowScript.Update
   - UnityEngine.Debug.Log
@@ -342,5 +340,5 @@ MonoBehaviour:
   - DefaultNamespace.ComponentCallingMethods.MethodWithStringParameter
   - DefaultNamespace.ComponentCallingMethods.MethodWithTuple
   - DefaultNamespace.ComponentCallingMethods+SomeNestedClass.SomeMethod
-  - SelectiveProfilingTestComponent.LoadArgsAndProperty.MyMethodToTest
-  - SelectiveProfilingTestComponent.LoadArgsAndProperty.CallingSomeOtherMethod
+  - Needle.SelectiveProfiling.DrawPerformanceInInspectorHeader
+  - Needle.SelectiveProfiling.ProfilerReveal_Patch
