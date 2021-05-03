@@ -124,6 +124,8 @@ namespace Needle.SelectiveProfiling
 				if (!frameData.valid)
 					return;
 
+				if (expectedMarkers.Count <= 0) return;
+				
 				expectedMarkerIds.Clear();
 				foreach (var marker in expectedMarkers)
 				{
@@ -131,6 +133,7 @@ namespace Needle.SelectiveProfiling
 					if (FrameDataView.invalidMarkerId == id) continue;
 					expectedMarkerIds.Add(id);
 				}
+				if (expectedMarkerIds.Count <= 0) return;
 
 				// var names = new string[ProfilerDriver.GetUISystemEventMarkersCount(frame, 1)];
 				// var eventMarker = new EventMarker[ProfilerDriver.GetUISystemEventMarkersCount(frame, 1)];
@@ -173,7 +176,8 @@ namespace Needle.SelectiveProfiling
 					return false;
 				}
 
-				for (var i = 0; i < frameData.sampleCount; i++)
+				var samples = frameData.sampleCount;
+				for (var i = 0; i < samples; i++)
 				{
 					var markerId = frameData.GetSampleMarkerId(i);
 					if (expectedMarkerIds.Contains(markerId))

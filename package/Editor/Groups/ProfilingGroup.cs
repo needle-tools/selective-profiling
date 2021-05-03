@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Serialization;
-using File = UnityEngine.Windows.File;
 
 namespace Needle.SelectiveProfiling
 {
@@ -29,8 +23,10 @@ namespace Needle.SelectiveProfiling
 
 		public static ProfilingGroup Save(IEnumerable<MethodInformation> methods)
 		{
-			Debug.Log(LastSavedPath);
-			var path = EditorUtility.SaveFilePanel("Save Methods", LastSavedPath, nameof(ProfilingGroup), "asset");
+			var openDir = LastSavedPath;
+			openDir = Path.GetDirectoryName(openDir);
+			
+			var path = EditorUtility.SaveFilePanel("Save Methods", openDir, nameof(ProfilingGroup), "asset");
 			if (string.IsNullOrEmpty(path)) return null;
 
 			path = path.Replace("\\", "/");
@@ -74,21 +70,21 @@ namespace Needle.SelectiveProfiling
 			Save(Methods);
 		}
 		
-		[ContextMenu(nameof(Enable))]
-		private void Enable()
+		[ContextMenu(nameof(AddToProfiled))]
+		public void AddToProfiled()
 		{
 			SelectiveProfilerSettings.instance.Add(methods);
 		}
 		
-		[ContextMenu(nameof(Replace))]
-		private void Replace()
+		[ContextMenu(nameof(ReplaceProfiled))]
+		public void ReplaceProfiled()
 		{
 			SelectiveProfilerSettings.instance.Replace(methods);
 		}
 
 		
-		[ContextMenu(nameof(Disable))]
-		private void Disable()
+		[ContextMenu(nameof(RemoveProfiled))]
+		public void RemoveProfiled()
 		{
 			SelectiveProfilerSettings.instance.Remove(methods);
 		}

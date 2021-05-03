@@ -6,6 +6,7 @@ using HarmonyLib;
 using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling
@@ -166,7 +167,7 @@ namespace Needle.SelectiveProfiling
 			else
 				DrawSettings();
 
-			var header = Application.isPlaying ? "Profiled Methods" : "Saved Methods";
+			var header = "Methods";
 
 			// if (settings.HasGroup) header += " [" + settings.GroupName + "]";
 			
@@ -174,6 +175,17 @@ namespace Needle.SelectiveProfiling
 				WithHeaderFoldout("ProfiledMethods", header, () => DrawProfiledMethods(false), true);
 			else
 				DrawProfiledMethods(true);
+
+
+			if (settings.MethodsList.Count > 0)
+			{
+				GUILayout.FlexibleSpace();
+				if (GUILayout.Button("Save to group", GUILayout.Height(30)))
+				{
+					// ReSharper disable once PossibleMultipleEnumeration
+					ProfilingGroup.Save(settings.MethodsList);
+				}
+			}
 		}
 
 		private static readonly Dictionary<string, List<MethodInformation>> scopes = new Dictionary<string, List<MethodInformation>>();
@@ -216,6 +228,7 @@ namespace Needle.SelectiveProfiling
 		}
 
 		private const int MaxDrawCount = 30;
+		private static uint maxOffset = 0;
 
 		private static string ScopeFilter
 		{
@@ -223,12 +236,19 @@ namespace Needle.SelectiveProfiling
 			set => SessionState.SetString("ScopeFilter", value);
 		}
 
+		public struct ScopeOptions
+		{
+			public bool HideToggle;
+			public bool BoldScopeHeader;
+		}
+
 		public static void ScopesList(
 			IEnumerable<MethodInformation> methods,
 			Func<MethodInformation, bool> IsEnabled,
-			Action<IList<MethodInformation>> Enable,
-			Action<IList<MethodInformation>> Disable,
-			Action<IList<MethodInformation>> Remove
+			Action<IList<MethodInformation>> Enable = null,
+			Action<IList<MethodInformation>> Disable = null,
+			Action<IList<MethodInformation>> Remove = null,
+			ScopeOptions options = new ScopeOptions()
 		)
 		{
 			void AddToScope(MethodInformation method)
@@ -242,12 +262,6 @@ namespace Needle.SelectiveProfiling
 
 				scopes[scope].Add(method);
 				scopesMeta[scope].Add(method);
-			}
-
-			if (GUILayout.Button("Save"))
-			{
-				// ReSharper disable once PossibleMultipleEnumeration
-				ProfilingGroup.Save(methods);
 			}
 			
 			GUIState.SelectedScope = (MethodScopeDisplay) EditorGUILayout.EnumPopup("Scope", GUIState.SelectedScope);
@@ -272,19 +286,18 @@ namespace Needle.SelectiveProfiling
 				var scope = kvp.Key;
 				var meta = scopesMeta[scope];
 				var headerLabel = scope;
-				if (!Application.isPlaying)
+				if (!Application.isPlaying && !options.HideToggle)
 					headerLabel += " [" + meta.Enabled + "/" + meta.Total + "]";
 				else headerLabel += " [" + meta.Total + "]";
 
 				bool show = false;
 				using (new GUILayout.HorizontalScope())
 				{
-					show = EditorGUILayout.Foldout(GetFoldout(scope), headerLabel, true,
-						meta.Enabled <= 0 ? GUIStyles.BoldFoldoutDisabled : GUIStyles.Foldout
-					);
-					if (Enable != null && GUILayout.Button("All", GUILayout.Width(70)))
+					var headerStyle = !options.HideToggle && meta.Enabled <= 0 ? GUIStyles.BoldFoldoutDisabled : options.BoldScopeHeader ? GUIStyles.BoldFoldout : GUIStyles.Foldout;
+					show = EditorGUILayout.Foldout(GetFoldout(scope), headerLabel, true,headerStyle);
+					if (Enable != null && GUILayout.Button("Enable", GUILayout.Width(50)))
 						Enable(kvp.Value);
-					if (Disable != null && GUILayout.Button("None", GUILayout.Width(70)))
+					if (Disable != null && GUILayout.Button("Disable", GUILayout.Width(55)))
 						Disable(kvp.Value);
 					if (Remove != null && GUILayout.Button("x", GUILayout.Width(20)))
 					{
@@ -295,7 +308,9 @@ namespace Needle.SelectiveProfiling
 				SetFoldout(scope, show);
 				if (show)
 				{
-					EditorGUI.indentLevel++;
+					var doIndent = scopes.Count > 1;
+					if(doIndent)
+						EditorGUI.indentLevel++;
 					var list = kvp.Value;
 					var canFilter = list.Count > 10;
 					if (canFilter)
@@ -317,9 +332,19 @@ namespace Needle.SelectiveProfiling
 						{
 							if (!mi.ToLowerInvariant().Contains(filter)) continue;
 						}
-						else if (index > MaxDrawCount)
+						else if (index > MaxDrawCount + maxOffset)
 						{
 							EditorGUILayout.LabelField("and " + (list.Count - (index + 1)) + " methods");
+							EditorGUILayout.BeginHorizontal();
+							if (GUILayout.Button("Less"))
+							{
+								maxOffset -= 100;
+							}
+							if (GUILayout.Button("More"))
+							{
+								maxOffset += 100;
+							}
+							EditorGUILayout.EndHorizontal();
 							break;
 						}
 
@@ -330,13 +355,21 @@ namespace Needle.SelectiveProfiling
 							if (IsEnabled != null)
 							{
 								var state = IsEnabled.Invoke(entry);
-								var newState = EditorGUILayout.ToggleLeft(label, state, GUIStyles.Label(state), GUILayout.ExpandWidth(true));
-								if (newState != state)
+								if (options.HideToggle)
 								{
-									if (newState)
-										Enable?.Invoke(new List<MethodInformation>() {entry});
-									else
-										Disable?.Invoke(new List<MethodInformation>() {entry});
+									var style = EditorStyles.label;// state ? EditorStyles.label : GUIStyles.DisabledLabel;
+									EditorGUILayout.LabelField(label, style, GUILayout.ExpandWidth(true));
+								}
+								else
+								{
+									var newState = EditorGUILayout.ToggleLeft(label, state, GUIStyles.Label(state), GUILayout.ExpandWidth(true));
+									if (newState != state)
+									{
+										if (newState)
+											Enable?.Invoke(new List<MethodInformation>() {entry});
+										else
+											Disable?.Invoke(new List<MethodInformation>() {entry});
+									}
 								}
 
 								if (GUILayout.Button("x", GUILayout.Width(20)))
@@ -351,8 +384,9 @@ namespace Needle.SelectiveProfiling
 						}
 					}
 
-					EditorGUI.indentLevel--;
-					GUILayout.Space(5);
+					if(doIndent)
+						EditorGUI.indentLevel--;
+					// GUILayout.Space(3);
 				}
 			}
 

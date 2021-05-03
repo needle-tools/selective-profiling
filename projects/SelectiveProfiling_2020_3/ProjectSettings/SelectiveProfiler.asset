@@ -38,34 +38,118 @@ MonoBehaviour:
   - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-    Type: ComponentWithTryCatch
-    Method: Void OtherMethod(Boolean)
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: DefaultNamespace.ComponentCallingMethods
-    Method: Void MethodWithStringParameter(System.String)
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: DefaultNamespace.ComponentCallingMethods
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.ComponentWithRaycasts
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
     Type: Needle.SelectiveProfiling.ComponentCreatingLotsOfGarbage
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.EventSystems.EventSystem
     Method: Void Update()
   - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
     Type: DefaultNamespace.ThisIsAlwaysProfiled
     Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void DoGUI(UnityEditor.Profiling.HierarchyFrameDataView, Boolean, Boolean
+      ByRef, UnityEditorInternal.ProfilerViewType)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUorGPUProfilerModule
+    Method: Void DrawDetailsView(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUProfilerModule
+    Method: Void DrawDetailsView(UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void DrawDetailsViewForModule(UnityEditorInternal.Profiling.ProfilerModuleBase)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void OnGUI()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void DrawView(UnityEngine.Rect, UnityEngine.Rect)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.DockArea
+    Method: Void OldOnGUI()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void DoOnGUI(UnityEngine.Event, UnityEngine.Matrix4x4, UnityEngine.Rect,
+      Boolean, UnityEngine.Rect, System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean HandleIMGUIEvent(UnityEngine.Event, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean HandleIMGUIEvent(UnityEngine.Event, System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Boolean HandleIMGUIEvent(UnityEngine.Event, UnityEngine.Matrix4x4, UnityEngine.Rect,
+      System.Action, Boolean)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.IMGUIContainer
+    Method: Void DoIMGUIRepaint()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.VisualTreeUpdater
+    Method: Void UpdateVisualTreePhase(UnityEngine.UIElements.VisualTreeUpdatePhase)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.Panel
+    Method: Void UpdateForRepaint()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.Panel
+    Method: Void Repaint(UnityEngine.Event)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsUtility
+    Method: Boolean DoDispatch(UnityEngine.UIElements.BaseVisualElementPanel)
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIEventRegistration
+    Method: Boolean ProcessEvent(Int32, IntPtr)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void DrawMainToolbar()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void StoreExpandedState()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.ProfilerFrameDataTreeView
+    Method: Void OnFrameDataViewAboutToBeDisposed()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView
+    Method: Void OnFrameDataViewAboutToBeDisposed()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: Void DisposeFrameDataView()
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.ProfilerWindow
+    Method: UnityEditor.Profiling.HierarchyFrameDataView GetFrameDataView(System.String,
+      ViewModes, Int32, Boolean)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditorInternal.Profiling.CPUorGPUProfilerModule
+    Method: UnityEditor.Profiling.HierarchyFrameDataView GetFrameDataView()
+  - Enabled: 1
+    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.UIElements.UIElementsUtility
+    Method: Void BeginContainerGUI(LayoutCache, UnityEngine.Event, UnityEngine.UIElements.IMGUIContainer)
+  - Enabled: 1
+    Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEditor.EditorWindow
+    Method: Void RepaintImmediately()

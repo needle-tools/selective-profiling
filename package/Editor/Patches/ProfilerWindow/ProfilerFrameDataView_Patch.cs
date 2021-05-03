@@ -98,7 +98,7 @@ namespace Needle.SelectiveProfiling
 			{
 				public override Vector2 GetWindowSize()
 				{
-					var y = Mathf.Clamp(SelectiveProfilerSettings.instance.MethodsCount * 10, 300, Screen.currentResolution.height - 300);
+					var y =  Mathf.Clamp(SelectiveProfilerSettings.instance.MethodsCount * 40 + 200, 200, 700);
 					return new Vector2(500, y);
 				}
 

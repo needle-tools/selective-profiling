@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5c45a8b4faf48b0bde52b2249064a00, type: 3}
-  m_Name: Test2
+  m_Name: SomeGroup
   m_EditorClassIdentifier: 
   methods:
   - Enabled: 1
@@ -26,31 +26,7 @@ MonoBehaviour:
   - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-    Type: ComponentWithTryCatch
-    Method: Void OtherMethod(Boolean)
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: DefaultNamespace.ComponentCallingMethods
-    Method: Void MethodWithStringParameter(System.String)
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: DefaultNamespace.ComponentCallingMethods
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.ComponentWithRaycasts
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
     Type: Needle.SelectiveProfiling.ComponentCreatingLotsOfGarbage
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.EventSystems.EventSystem
     Method: Void Update()
   - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,

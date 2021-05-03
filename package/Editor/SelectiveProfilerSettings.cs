@@ -121,9 +121,10 @@ namespace Needle.SelectiveProfiling
 
 		public void Replace(IReadOnlyList<MethodInformation> group)
 		{
-			if (@group == null || group.Count <= 0) return;
+			if (@group == null) return;
 			if (SelectiveProfiler.DebugLog)
 				Debug.Log("Replace group: " + @group.Count);
+			RegisterUndo("Replace profiled methods");
 			// remove every entry that is not in this group
 			for (var index = Methods.Count - 1; index >= 0; index--)
 			{
@@ -131,25 +132,33 @@ namespace Needle.SelectiveProfiling
 				if (!group.Contains(method))
 				{
 					Methods.RemoveAt(index);
-					NotifyStateChanged(method.Copy(), false);
+					NotifyStateChanged(method, false);
 				}
 			}
 
-			Add(group);
+			Add(group, true);
 		}
 
-		public void Add(IReadOnlyList<MethodInformation> group)
+		public void Add(IReadOnlyList<MethodInformation> group, bool ignoreEnabled = true)
 		{
 			if (@group == null || group.Count <= 0) return;
 			if (SelectiveProfiler.DebugLog)
 				Debug.Log("Add group: " + @group.Count);
+			RegisterUndo("Add profiled methods");
 			foreach (var method in @group)
 			{
-				if (!Methods.Contains(method))
+				var existing = Methods.FirstOrDefault(e => e.Equals(method));
+				if (existing == null)
 				{
-					Methods.Add(method.Copy());
-					if (method.Enabled)
-						NotifyStateChanged(method, true);
+					var copy = method.Copy();
+					Methods.Add(copy);
+					if (ignoreEnabled || copy.Enabled)
+						NotifyStateChanged(copy, true);
+				}
+				else if (!existing.Enabled)
+				{
+					existing.Enabled = true;
+					NotifyStateChanged(existing, true);
 				}
 			}
 		}
@@ -159,15 +168,17 @@ namespace Needle.SelectiveProfiling
 			if (@group == null || @group.Count <= 0) return;
 			if (SelectiveProfiler.DebugLog)
 				Debug.Log("Remove group: " + group.Count);
+			RegisterUndo("Remove profiled methods");
 			for (var index = Methods.Count - 1; index >= 0; index--)
 			{
 				var method = Methods[index];
-				if (@group.Contains(method))
+				var existing = group.FirstOrDefault(e => e.Equals(method));
+				if (existing != null)
 				{
 					var cur = Methods[index];
 					Methods.RemoveAt(index);
 					if (cur.Enabled)
-						NotifyStateChanged(method.Copy(), false);
+						NotifyStateChanged(method, false);
 				}
 			}
 		}

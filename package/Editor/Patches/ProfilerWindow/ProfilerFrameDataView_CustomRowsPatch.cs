@@ -663,22 +663,23 @@ namespace Needle.SelectiveProfiling
 					// GUI.Box(underline, string.Empty, possibleSlowBoxStyle);
 				}
 				
-				labelStyle.alignment = prevAlignment;
-
-
 				if (impact >= 0.999 && !item.hasChildren)
 				{
-					rect.x += width + 5;
-					var padding = rect.height * .4f;
-					rect.y += padding * .5f;
-					rect.width = rect.height - padding;
-					rect.height = rect.width;
+					var icon = new Rect(rect);
+					icon.x += width + 5;
+					var padding = icon.height * .4f;
+					icon.y += padding * .5f;
+					icon.width = icon.height - padding;
+					icon.height = icon.width;
 					GUI.color *= .85f;
-					GUI.DrawTexture(rect, Textures.HotPathIcon, ScaleMode.ScaleAndCrop, true);
+					GUI.DrawTexture(icon, Textures.HotPathIcon, ScaleMode.ScaleAndCrop, true);
 				}
 				
 				GUI.color = prevColor;
+				labelStyle.alignment = prevAlignment;
 				DrawAdditionalInfo(tree, item, rect, state);
+				// set content to null to avoid additional info being drawn twice
+				if(state != null) state.Content = null;
 				return false;
 			}
 
@@ -800,18 +801,25 @@ namespace Needle.SelectiveProfiling
 			private static void DrawAdditionalInfo(TreeView tree, TreeViewItem item, Rect cellRect, [CanBeNull] State state)
 			{
 				if (state == null) return;
+				
 
 				var content = state.Content;
 				if (content != null)
 				{
 					var col = GUI.color;
 					GUI.color = tree.IsSelected(item.id) ? Color.white : Color.gray;
-					var padding = item.hasChildren ? 17 : 3;
 					var rect = cellRect;
-					var width = labelStyle.CalcSize(content).x;
-					rect.x -= width + padding;
-					rect.width = width;
+					var padding = item.hasChildren ? 17 : 3;
 
+					if (rect.x > 100)
+					{
+						var width = labelStyle.CalcSize(content).x;
+						rect.x -= width + padding;
+						rect.width = width;
+					}
+
+					rect.y += 1;
+					
 					if (rect.x < 0)
 					{
 						// draw cut off
@@ -833,6 +841,7 @@ namespace Needle.SelectiveProfiling
 						// draw normally
 						GUI.Label(rect, content, labelStyle);
 					}
+					
 
 					GUI.color = col;
 				}
