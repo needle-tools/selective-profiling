@@ -111,13 +111,16 @@ namespace Needle.SelectiveProfiling
 
 			EditorGUILayout.Space(10);
 			EditorGUILayout.EndScrollView();
-			
 
 
-			if (GUILayout.Button("Clear Pinned Items"))
+
+			if (settings.AllowPinning)
 			{
-				PinnedItems.ClearPinnedItems();
-				PinnedItems.Save();
+				if (GUILayout.Button("Clear Pinned Items"))
+				{
+					PinnedItems.ClearPinnedItems();
+					PinnedItems.Save();
+				}
 			}
 		}
 

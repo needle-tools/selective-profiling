@@ -35,17 +35,17 @@ namespace Needle.SelectiveProfiling
 			patches.Add(new Profiler_Toolbar());
 		}
 
-		public override void OnEnabledPatch()
-		{
-			base.OnEnabledPatch();
-			PatchManager.EnablePatch(typeof(ProfilerPinning.ProfilerPinning_Patch));
-		}
-
-		public override void OnDisabledPatch()
-		{
-			base.OnDisabledPatch();
-			PatchManager.DisablePatch(typeof(ProfilerPinning.ProfilerPinning_Patch), false);
-		}
+		// public override void OnEnabledPatch()
+		// {
+		// 	base.OnEnabledPatch();
+		// 	PatchManager.EnablePatch(typeof(ProfilerPinning.ProfilerPinning_Patch));
+		// }
+		//
+		// public override void OnDisabledPatch()
+		// {
+		// 	base.OnDisabledPatch();
+		// 	PatchManager.DisablePatch(typeof(ProfilerPinning.ProfilerPinning_Patch), false);
+		// }
 
 		private static SelectiveProfilerSettings _settings;
 
@@ -218,25 +218,25 @@ namespace Needle.SelectiveProfiling
 						var menu = new GenericMenu();
 						var tree = __instance as TreeView;
 
-						if (ProfilerPinning.AllowPinning(item))
-						{
-							if (!ProfilerPinning.IsPinned(item))
-							{
-								menu.AddItem(new GUIContent("Pin"), false, () =>
-								{
-									ProfilerPinning.Pin(item);
-									tree?.Reload();
-								});
-							}
-							else //if(!ProfilerPinning.IsChildOfAnyPinnedItem(item, false))
-							{
-								menu.AddItem(new GUIContent("Pin"), true, () =>
-								{
-									ProfilerPinning.Unpin(item);
-									tree?.Reload();
-								});
-							}
-						}
+						// if (ProfilerPinning.AllowPinning(item))
+						// {
+						// 	if (!ProfilerPinning.IsPinned(item))
+						// 	{
+						// 		menu.AddItem(new GUIContent("Pin"), false, () =>
+						// 		{
+						// 			ProfilerPinning.Pin(item);
+						// 			tree?.Reload();
+						// 		});
+						// 	}
+						// 	else //if(!ProfilerPinning.IsChildOfAnyPinnedItem(item, false))
+						// 	{
+						// 		menu.AddItem(new GUIContent("Pin"), true, () =>
+						// 		{
+						// 			ProfilerPinning.Unpin(item);
+						// 			tree?.Reload();
+						// 		});
+						// 	}
+						// }
 
 						if (!settings.Enabled) return;
 
