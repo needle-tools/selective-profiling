@@ -14,14 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   FirstInstall: 0
   Enabled: 1
-  SkipProperties: 1
   UseAlwaysProfile: 0
-  ImmediateMode: 0
+  CollapseProperties: 0
+  CollapseHierarchyNesting: 1
+  CollapseNoImpactSamples: 0
+  ColorPerformanceImpact: 1
   DeepProfiling: 1
   MaxDepth: 5
   DeepProfileMaxLevel: -1
-  AllowPinning: 0
-  DebugLog: 1
+  DebugLog: 0
   Methods:
   - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,

@@ -89,9 +89,9 @@ namespace Needle.SelectiveProfiling
 
 				void Log(object msg)
 				{
-					if (SelectiveProfiler.DebugLog == false) return;
-					if (msg != null)
-						Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, msg.ToString());
+					if (msg == null) return;
+					if (!SelectiveProfiler.DebugLog || !SelectiveProfiler.DevelopmentMode) return;
+					Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "<color=grey>" + msg + "</color>");
 				}
 
 				Log("-----------------------------");

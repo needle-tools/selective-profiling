@@ -11,8 +11,8 @@ public class ThreadSleep : MonoBehaviour
 {
 	private void Start()
 	{
-		ChartMarker.Add("Slow Method", GetType().GetMethod(nameof(SleepRandom), BindingFlags.Instance | BindingFlags.Public));
-		ChartMarker.Add("Other Slow", GetType().GetMethod(nameof(Sleep100), BindingFlags.Instance | BindingFlags.Public));
+		ChartMarkerRegistry.Add("Slow Method", GetType().GetMethod(nameof(SleepRandom), BindingFlags.Instance | BindingFlags.Public));
+		ChartMarkerRegistry.Add("Other Slow", GetType().GetMethod(nameof(Sleep100), BindingFlags.Instance | BindingFlags.Public));
 	}
 
 	private void Update()
