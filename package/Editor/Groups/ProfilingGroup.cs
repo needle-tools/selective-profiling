@@ -70,14 +70,14 @@ namespace Needle.SelectiveProfiling
 			Save(Methods);
 		}
 		
-		[ContextMenu(nameof(AddToProfiled))]
-		public void AddToProfiled()
-		{
-			SelectiveProfilerSettings.instance.Add(methods);
-		}
+		// [ContextMenu(nameof(AddToProfiled))]
+		// public void AddToProfiled()
+		// {
+		// 	SelectiveProfilerSettings.instance.Add(methods);
+		// }
 		
-		[ContextMenu(nameof(ReplaceProfiled))]
-		public void ReplaceProfiled()
+		[ContextMenu(nameof(SetProfiled))]
+		public void SetProfiled()
 		{
 			SelectiveProfilerSettings.instance.Replace(methods);
 		}

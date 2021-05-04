@@ -93,24 +93,6 @@ namespace Needle.SelectiveProfiling
 					PopupWindow.Show(rect, new SettingsPopup());
 				}
 			}
-
-			public class SettingsPopup : PopupWindowContent
-			{
-				public override Vector2 GetWindowSize()
-				{
-					var y =  Mathf.Clamp(SelectiveProfilerSettings.instance.MethodsCount * 40 + 200, 200, 700);
-					return new Vector2(500, y);
-				}
-
-				private Vector2 scroll;
-
-				public override void OnGUI(Rect rect)
-				{
-					scroll = EditorGUILayout.BeginScrollView(scroll);
-					Draw.DefaultSelectiveProfilerUI(SelectiveProfilerSettings.Instance, true);
-					EditorGUILayout.EndScrollView();
-				}
-			}
 		}
 
 

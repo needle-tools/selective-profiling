@@ -817,6 +817,10 @@ namespace Needle.SelectiveProfiling
 						rect.x -= width + padding;
 						rect.width = width;
 					}
+					else
+					{
+						rect.width -= 20;
+					}
 
 					rect.y += 1;
 					

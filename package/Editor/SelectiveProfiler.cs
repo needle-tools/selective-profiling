@@ -88,7 +88,7 @@ namespace Needle.SelectiveProfiling
 		/// <summary>
 		/// by default only save when application is not playing
 		/// </summary>
-		internal static bool ShouldSave => !Application.isPlaying;
+		internal static bool ShouldSave => !Application.isPlaying || SelectiveProfilerSettings.instance.RuntimeSave;
 
 		/// <summary>
 		/// check editor state (this does not settings enabled state)

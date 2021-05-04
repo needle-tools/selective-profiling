@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Needle.SelectiveProfiling.CodeWrapper;
 using UnityEditor;
@@ -47,20 +48,22 @@ namespace Needle.SelectiveProfiling
 			var group = target as ProfilingGroup;
 			if (group == null) return;
 
-			if (GUILayout.Button("Add"))
+			using (new GUILayout.HorizontalScope())
 			{
-				group.AddToProfiled();
+				if (GUILayout.Button("Set Methods", GUILayout.Height(30)))
+				{
+					group.SetProfiled();
+				}
+				if (GUILayout.Button("Remove Methods", GUILayout.Height(30)))
+				{
+					group.RemoveProfiled();
+				}
 			}
 
-			if (GUILayout.Button("Remove"))
-			{
-				group.RemoveProfiled();
-			}
-
-			if (GUILayout.Button("Replace"))
-			{
-				group.ReplaceProfiled();
-			}
+			// if (GUILayout.Button("Add"))
+			// {
+			// 	group.AddToProfiled();
+			// }
 
 			GUILayout.Space(5);
 
@@ -85,6 +88,14 @@ namespace Needle.SelectiveProfiling
 						HideToggle = true,
 						BoldScopeHeader = true,
 					});
+
+
+				// GUILayout.Space(5);
+				// EditorGUILayout.LabelField("Types Explorer", EditorStyles.boldLabel);
+				// Draw.MethodsExplorer(
+				// 	m => group.Methods.Any(mi => mi.Equals(m)),
+				// 		m => group.Methods.Add(new MethodInformation(m)),
+				// 		m => group.Methods.RemoveAll(mi => mi.Equals(m)));
 			}
 		}
 	}

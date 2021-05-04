@@ -97,6 +97,7 @@ namespace Needle.SelectiveProfiling
 		[SerializeField] internal bool FirstInstall = true;
 
 		public bool Enabled = true;
+		public bool RuntimeSave = true;
 		public bool SkipProperties => true;
 		public bool UseAlwaysProfile = false;
 		public bool ImmediateMode => false;

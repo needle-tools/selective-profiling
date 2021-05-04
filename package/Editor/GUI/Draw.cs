@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using HarmonyLib;
 using needle.EditorPatching;
@@ -55,6 +56,10 @@ namespace Needle.SelectiveProfiling
 				}
 
 				settings.Enabled = EditorGUILayout.ToggleLeft(new GUIContent("Enabled", ""), settings.Enabled);
+				
+				settings.RuntimeSave = EditorGUILayout.ToggleLeft(
+					new GUIContent("Runtime Save", "When enabled adding profiled methods during runtime will be saved in the current profiled methods list"),
+					settings.RuntimeSave);
 				// settings.ImmediateMode =
 				// 	EditorGUILayout.ToggleLeft(new GUIContent("Immediate Mode", "Automatically profile selected method in Unity Profiler Window"),
 				// 		settings.ImmediateMode);
@@ -158,6 +163,17 @@ namespace Needle.SelectiveProfiling
 							foreach (var m in l) SelectiveProfiler.DisableAndForget(m);
 						}
 					);
+					
+				}
+				
+
+				if (settings.MethodsList.Count > 0)
+				{
+					if (GUILayout.Button("Save To Group", GUILayout.Height(30)))
+					{
+						// ReSharper disable once PossibleMultipleEnumeration
+						ProfilingGroup.Save(settings.MethodsList);
+					}
 				}
 			}
 
@@ -176,16 +192,6 @@ namespace Needle.SelectiveProfiling
 			else
 				DrawProfiledMethods(true);
 
-
-			if (settings.MethodsList.Count > 0)
-			{
-				GUILayout.FlexibleSpace();
-				if (GUILayout.Button("Save to group", GUILayout.Height(30)))
-				{
-					// ReSharper disable once PossibleMultipleEnumeration
-					ProfilingGroup.Save(settings.MethodsList);
-				}
-			}
 		}
 
 		private static readonly Dictionary<string, List<MethodInformation>> scopes = new Dictionary<string, List<MethodInformation>>();
@@ -328,25 +334,27 @@ namespace Needle.SelectiveProfiling
 						var mi = entry.MethodIdentifier();
 						var label = new GUIContent(entry.ClassWithMethod(), mi);
 
+						var curMax = MaxDrawCount + maxOffset;
+						const int step = 100;
 						if (canFilter)
 						{
 							if (!mi.ToLowerInvariant().Contains(filter)) continue;
 						}
-						else if (index > MaxDrawCount + maxOffset)
+						else if (index > curMax)
 						{
 							EditorGUILayout.LabelField("and " + (list.Count - (index + 1)) + " methods");
 							EditorGUILayout.BeginHorizontal();
 							if (GUILayout.Button("Less"))
 							{
-								maxOffset -= 100;
+								maxOffset -= step;
 							}
 							if (GUILayout.Button("More"))
 							{
-								maxOffset += 100;
+								maxOffset += step;
 							}
 							EditorGUILayout.EndHorizontal();
 							break;
-						}
+						} 
 
 						// TODO: refactor to draw without using Layout or VisualElements
 
@@ -506,8 +514,16 @@ namespace Needle.SelectiveProfiling
 
 		internal static void MethodsExplorer()
 		{
+			MethodsExplorer(
+				method => SelectiveProfiler.TryGet(method, out _) || SelectiveProfilerSettings.instance.Contains(method),
+				method => SelectiveProfiler.EnableProfilingAsync(method, SelectiveProfiler.ShouldSave, true, true),
+				method => SelectiveProfiler.DisableAndForget(method)
+				);
+		}
+
+		internal static void MethodsExplorer(Predicate<MethodInfo> contains, Action<MethodInfo> add, Action<MethodInfo> remove)
+		{
 			EditorGUI.BeginChangeCheck();
-			;
 			EditorGUILayout.BeginHorizontal();
 			filter = EditorGUILayout.TextField("Filter", filter, GUILayout.ExpandWidth(true));
 			if (GUILayout.Button("Refresh", GUILayout.Width(70)))
@@ -524,6 +540,7 @@ namespace Needle.SelectiveProfiling
 				if (filter.Length > 0 && !string.IsNullOrWhiteSpace(filter))
 				{
 					cancelSearch = new CancellationTokenSource();
+					
 					TypesExplorer.TryFindMethod(filter, entry =>
 					{
 						MethodsExplorerRequestRepaint = true;
@@ -549,18 +566,18 @@ namespace Needle.SelectiveProfiling
 					EditorGUILayout.BeginHorizontal();
 					EditorGUILayout.LabelField(new GUIContent(match.Key, match.Method.FullDescription()), GUILayout.ExpandWidth(true));
 
-					if (SelectiveProfiler.TryGet(match.Method, out _) || SelectiveProfilerSettings.instance.Contains(match.Method))
+					if (remove != null && (contains?.Invoke(match.Method) ?? false))
 					{
 						if (GUILayout.Button("Remove", GUILayout.Width(70)))
 						{
-							SelectiveProfiler.DisableAndForget(match.Method);
+							remove(match.Method);
 						}
 					}
-					else
+					else if(add != null)
 					{
 						if (GUILayout.Button("Add", GUILayout.Width(70)))
 						{
-							SelectiveProfiler.EnableProfilingAsync(match.Method, SelectiveProfiler.ShouldSave, true, true);
+							add(match.Method);
 						}
 					}
 
