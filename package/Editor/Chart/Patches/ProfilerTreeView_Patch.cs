@@ -34,6 +34,8 @@ namespace Needle.SelectiveProfiling
 
 			private static void Postfix(TreeView __instance, IList<TreeViewItem> __result, HierarchyFrameDataView ___m_FrameDataView)
 			{
+				if (ProfilerHelper.IsDeepProfiling) return;
+				
 				// SelectiveProfiler.DrawItemDebugInformationInTreeView = true;
 				// if (RequestExpandItemId == 0) return;
 				// var frame = ___m_FrameDataView;

@@ -119,6 +119,8 @@ namespace Needle.SelectiveProfiling
 
 		private static void OnNewFrame(int thread, int frame)
 		{
+			if (ProfilerHelper.IsDeepProfiling) return;
+			
 			using (var frameData = ProfilerDriver.GetRawFrameDataView(frame, 0))
 			{
 				if (!frameData.valid)

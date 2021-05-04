@@ -65,6 +65,8 @@ namespace Needle.SelectiveProfiling
 
 			private static void Prefix()
 			{
+				if (ProfilerHelper.IsDeepProfiling) return;
+				
 				if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
 				{
 					foreach (var e in GUIMarkerLabels)
@@ -109,6 +111,8 @@ namespace Needle.SelectiveProfiling
 			private static void Postfix(Rect r, int selectedFrame, ChartViewData cdata)
 			{
 				GUIMarkerLabels.Clear();
+				
+				if (ProfilerHelper.IsDeepProfiling) return;
 
 				// if (___m_Area != ProfilerArea.CPU) return;
 				// GUI.Label(r, "TEST " + r + ", " + selectedFrame);
