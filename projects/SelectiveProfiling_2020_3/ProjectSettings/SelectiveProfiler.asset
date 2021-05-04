@@ -29,21 +29,6 @@ MonoBehaviour:
   - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-    Type: ComponentWithTryCatch
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: Needle.SelectiveProfiling.ComponentCreatingLotsOfGarbage
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: DefaultNamespace.ThisIsAlwaysProfiled
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
     Type: ThreadSleep
     Method: Void Start()
   - Enabled: 1
