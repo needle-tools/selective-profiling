@@ -29,7 +29,6 @@ namespace Needle.SelectiveProfiling
 	{
 		protected override void OnGetPatches(List<EditorPatch> patches)
 		{
-			if (!SelectiveProfiler.AllowToBeEnabled) return;
 			patches.Add(new Profiler_SelectionChanged());
 			patches.Add(new Profiler_CellGUI());
 			patches.Add(new Profiler_Toolbar());
@@ -86,8 +85,6 @@ namespace Needle.SelectiveProfiling
 
 			private static void Postfix()
 			{
-				if(ProfilerHelper.IsDeepProfiling) return;
-				
 				var rect = GUILayoutUtility.GetRect(120f, 120f, 14, 14, EditorStyles.toolbarButton);
 				if (EditorGUI.DropdownButton(rect, new GUIContent("Selective Profiler"), FocusType.Keyboard, new GUIStyle(EditorStyles.toolbarDropDown)))
 				{
@@ -110,7 +107,6 @@ namespace Needle.SelectiveProfiling
 
 			private static void Postfix(IList<int> selectedIds)
 			{
-				if(ProfilerHelper.IsDeepProfiling) return;
 				if (selectedIds == null || selectedIds.Count <= 0) selectedId = -1;
 				else selectedId = selectedIds[0];
 			}
@@ -139,7 +135,7 @@ namespace Needle.SelectiveProfiling
 			// item: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
 			private static void Postfix(object __instance, Rect cellRect, TreeViewItem item, int column)
 			{
-				if(ProfilerHelper.IsDeepProfiling) return;
+				// if(ProfilerHelper.IsDeepProfiling) return;
 				
 				HierarchyFrameDataView frameDataView;
 				if (column == 0 && Event.current.type == EventType.Repaint)
@@ -204,26 +200,6 @@ namespace Needle.SelectiveProfiling
 					{
 						var menu = new GenericMenu();
 						var tree = __instance as TreeView;
-
-						// if (ProfilerPinning.AllowPinning(item))
-						// {
-						// 	if (!ProfilerPinning.IsPinned(item))
-						// 	{
-						// 		menu.AddItem(new GUIContent("Pin"), false, () =>
-						// 		{
-						// 			ProfilerPinning.Pin(item);
-						// 			tree?.Reload();
-						// 		});
-						// 	}
-						// 	else //if(!ProfilerPinning.IsChildOfAnyPinnedItem(item, false))
-						// 	{
-						// 		menu.AddItem(new GUIContent("Pin"), true, () =>
-						// 		{
-						// 			ProfilerPinning.Unpin(item);
-						// 			tree?.Reload();
-						// 		});
-						// 	}
-						// }
 
 						if (!settings.Enabled) return;
 

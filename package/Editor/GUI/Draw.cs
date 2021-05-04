@@ -48,6 +48,11 @@ namespace Needle.SelectiveProfiling
 				GUILayout.Space(10);
 			}
 
+			if (ProfilerHelper.IsDeepProfiling)
+			{
+				EditorGUILayout.HelpBox("Selective Profiler is not running while in Deep Profile Mode", MessageType.Warning);
+			}
+
 			void DrawSettings()
 			{
 				if (!inFoldouts)

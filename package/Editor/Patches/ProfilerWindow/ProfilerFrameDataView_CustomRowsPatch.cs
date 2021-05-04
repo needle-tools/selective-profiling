@@ -873,11 +873,11 @@ namespace Needle.SelectiveProfiling
 			// ReSharper disable once UnusedMember.Local
 			private static bool Prefix(out string __result, HierarchyFrameDataView frameData, int itemId)
 			{
-				if (ProfilerHelper.IsDeepProfiling)
-				{
-					__result = null;
-					return true;
-				}
+				// if (ProfilerHelper.IsDeepProfiling)
+				// {
+				// 	__result = null;
+				// 	return true;
+				// }
 				
 				if (frameData == null || !frameData.valid)
 				{
