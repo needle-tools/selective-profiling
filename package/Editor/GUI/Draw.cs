@@ -360,9 +360,13 @@ namespace Needle.SelectiveProfiling
 						{
 							EditorGUILayout.LabelField("and " + (list.Count - (index + 1)) + " methods");
 							EditorGUILayout.BeginHorizontal();
-							if (GUILayout.Button("Less"))
+							using(new EditorGUI.DisabledScope(maxOffset <= 0))
 							{
-								maxOffset -= step;
+								if (GUILayout.Button("Less"))
+								{
+									maxOffset -= step;
+									maxOffset = (uint)Mathf.Max(maxOffset, 0);
+								}
 							}
 							if (GUILayout.Button("More"))
 							{

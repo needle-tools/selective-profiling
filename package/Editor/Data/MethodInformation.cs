@@ -234,7 +234,7 @@ namespace Needle.SelectiveProfiling
 							TypesCache.Add(pm.TypeIdentifier(), type);
 						}
 					}
-					catch (TypeLoadException typeLoadException)
+					catch (TypeLoadException)
 					{
 						var types = assembly.GetLoadableTypes();
 						type = types.FirstOrDefault(t => t.Name == pm.Type);
