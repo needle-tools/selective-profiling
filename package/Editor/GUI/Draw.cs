@@ -169,10 +169,21 @@ namespace Needle.SelectiveProfiling
 
 				if (settings.MethodsList.Count > 0)
 				{
-					if (GUILayout.Button("Save To Group", GUILayout.Height(30)))
+					using (new EditorGUILayout.HorizontalScope())
 					{
-						// ReSharper disable once PossibleMultipleEnumeration
-						ProfilingGroup.Save(settings.MethodsList);
+						if (GUILayout.Button("Save To Group", GUILayout.Height(30)))
+						{
+							// ReSharper disable once PossibleMultipleEnumeration
+							ProfilingGroup.Save(settings.MethodsList);
+						}
+						if(GUILayout.Button("Load From Group", GUILayout.Height(30)))
+						{
+							if (ProfilingGroup.TryLoad(out var @group))
+							{
+								Debug.Log(group);
+								group.SetProfiled();
+							}
+						}
 					}
 				}
 			}

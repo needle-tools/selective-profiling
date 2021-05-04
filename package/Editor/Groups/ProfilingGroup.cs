@@ -21,14 +21,8 @@ namespace Needle.SelectiveProfiling
 			set => EditorPrefs.SetString(nameof(ProfilingGroup) + "_LastSavedPath", value);
 		}
 
-		public static ProfilingGroup Save(IEnumerable<MethodInformation> methods)
+		private static string MakeProjectRelative(string path)
 		{
-			var openDir = LastSavedPath;
-			openDir = Path.GetDirectoryName(openDir);
-			
-			var path = EditorUtility.SaveFilePanel("Save Methods", openDir, nameof(ProfilingGroup), "asset");
-			if (string.IsNullOrEmpty(path)) return null;
-
 			path = path.Replace("\\", "/");
 			var projPath = Path.GetFullPath(Application.dataPath + "/../").Replace("\\", "/");
 			if (!path.StartsWith(projPath))
@@ -37,9 +31,38 @@ namespace Needle.SelectiveProfiling
 				return null;
 			}
 			path = path.Substring(projPath.Length);
+			return path;
+		}
+
+		public static bool TryLoad(out ProfilingGroup group)
+		{
+			var openDir = LastSavedPath;
+			openDir = Path.GetDirectoryName(openDir);
+			var path = EditorUtility.OpenFilePanel("Load Group", openDir, "asset");
+			if (File.Exists(path))
+			{
+				path = MakeProjectRelative(path);
+				var inst = AssetDatabase.LoadAssetAtPath<ProfilingGroup>(path);
+				group = inst;
+				return group;
+			}
+
+			group = null;
+			return false;
+		}
+
+		public static ProfilingGroup Save(IEnumerable<MethodInformation> methods)
+		{
+			var openDir = LastSavedPath;
+			openDir = Path.GetDirectoryName(openDir);
+			
+			var path = EditorUtility.SaveFilePanel("Save Methods", openDir, nameof(ProfilingGroup), "asset");
+			if (string.IsNullOrEmpty(path)) return null;
+
 			
 			if (File.Exists(path))
 			{
+				path = MakeProjectRelative(path);
 				var inst = AssetDatabase.LoadAssetAtPath<ProfilingGroup>(path);
 				if (inst)
 				{
