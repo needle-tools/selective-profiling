@@ -367,7 +367,8 @@ namespace Needle.SelectiveProfiling
 
 			// ReSharper disable once UnusedMember.Local
 			private static void Postfix(TreeView __instance, IList<TreeViewItem> __result, HierarchyFrameDataView ___m_FrameDataView)
-			{ 
+			{
+				if (ProfilerHelper.IsDeepProfiling) return;
 				var newRows = __result;
 				if (newRows == null) return;
 				var settings = SelectiveProfilerSettings.instance; 
@@ -597,8 +598,6 @@ namespace Needle.SelectiveProfiling
 				return (val & entry) != 0;
 			}
 
-			private static Gradient gradient;
-
 			private static bool HandleItemsThatExceedThresholds(string name,
 				Rect rect,
 				TreeView tree,
@@ -692,6 +691,7 @@ namespace Needle.SelectiveProfiling
 				out State __state)
 			{
 				__state = null;
+				if (ProfilerHelper.IsDeepProfiling) return true;
 				if (column != 0) return true;
 				
 				var tree = __instance;
@@ -792,6 +792,7 @@ namespace Needle.SelectiveProfiling
 			// ReSharper disable once UnusedMember.Local
 			private static void Postfix(TreeView __instance, Rect cellRect, TreeViewItem item, State __state)
 			{
+				if(ProfilerHelper.IsDeepProfiling) return;
 				DrawAdditionalInfo(__instance, item, cellRect, __state);
 			}
 
@@ -872,6 +873,12 @@ namespace Needle.SelectiveProfiling
 			// ReSharper disable once UnusedMember.Local
 			private static bool Prefix(out string __result, HierarchyFrameDataView frameData, int itemId)
 			{
+				if (ProfilerHelper.IsDeepProfiling)
+				{
+					__result = null;
+					return true;
+				}
+				
 				if (frameData == null || !frameData.valid)
 				{
 					__result = null;

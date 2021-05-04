@@ -19,6 +19,7 @@ namespace Needle.SelectiveProfiling
 	internal static class ProfilerHelper
 	{
 		internal static bool HasCallstackEnabled => ProfilerDriver.memoryRecordMode != ProfilerMemoryRecordMode.None;
+		internal static bool IsDeepProfiling => ProfilerDriver.deepProfiling;
 
 		// private static EditorWindow profilerWindow;
 		internal static TreeView profilerTreeView;
