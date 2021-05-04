@@ -7,7 +7,8 @@ namespace Needle.SelectiveProfiling
 	{
 		public override Vector2 GetWindowSize()
 		{
-			var y =  Mathf.Clamp(SelectiveProfilerSettings.instance.MethodsCount * EditorGUIUtility.singleLineHeight * 1.5f + 100, 200, Screen.currentResolution.height - 300);
+			var maxHeight = Mathf.Min(Screen.currentResolution.height - 300, 800);
+			var y =  Mathf.Clamp(SelectiveProfilerSettings.instance.MethodsCount * EditorGUIUtility.singleLineHeight * 1.5f + 100, 200, maxHeight);
 			return new Vector2(500, y);
 		}
 
