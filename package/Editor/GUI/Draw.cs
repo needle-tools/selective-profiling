@@ -363,10 +363,17 @@ namespace Needle.SelectiveProfiling
 							if (IsEnabled != null)
 							{
 								var state = IsEnabled.Invoke(entry);
+								var prevColor = GUI.color;
+								if (!entry.TryResolveMethod(out var t) || entry.IsMissing)   
+								{
+									GUI.color = Color.yellow;
+									label.tooltip = entry.LoadError + "\n\n" + label.tooltip;
+								}
+								
 								if (options.HideToggle)
 								{
 									var style = EditorStyles.label;// state ? EditorStyles.label : GUIStyles.DisabledLabel;
-									EditorGUILayout.LabelField(label, style, GUILayout.ExpandWidth(true));
+									EditorGUILayout.LabelField(label, style, GUILayout.ExpandWidth(true)); 
 								}
 								else
 								{
@@ -384,6 +391,8 @@ namespace Needle.SelectiveProfiling
 								{
 									Remove?.Invoke(new List<MethodInformation>() {entry});
 								}
+
+								GUI.color = prevColor;
 							}
 							else
 							{

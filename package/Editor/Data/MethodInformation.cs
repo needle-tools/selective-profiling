@@ -21,6 +21,9 @@ namespace Needle.SelectiveProfiling
 		public string Method;
 
 		internal MethodInfo CachedMethod;
+		internal string LoadError;
+
+		public bool IsMissing => !string.IsNullOrEmpty(LoadError) && CachedMethod == null;
 
 		internal MethodInformation(MethodInfo method)
 		{
@@ -166,6 +169,14 @@ namespace Needle.SelectiveProfiling
 				method = pm.CachedMethod;
 				return true;
 			}
+
+			void SaveOrLogProblem(string msg)
+			{
+				pm.LoadError = msg;
+				if(SelectiveProfilerSettings.instance.DebugLog)
+					Debug.LogWarning(msg);
+				
+			}
 			
 			if (pm?.IsValid() ?? false)
 			{
@@ -173,10 +184,11 @@ namespace Needle.SelectiveProfiling
 				var methodIdentifier = pm.MethodIdentifier();
 				if (MethodsCache.ContainsKey(methodIdentifier))
 				{
-					method = MethodsCache[methodIdentifier];
+					pm.CachedMethod = method = MethodsCache[methodIdentifier];
 					return method != null;
 				}
-
+ 
+				
 				// check if type has already been resolved
 				Type type = null;
 				var typeIdentifier = pm.TypeIdentifier();
@@ -206,7 +218,7 @@ namespace Needle.SelectiveProfiling
 
 				if (assembly == null)
 				{
-					Debug.LogWarning("Could not find assembly " + pm.Assembly + "\n" + methodIdentifier);
+					SaveOrLogProblem("Could not find assembly " + pm.Assembly);
 					method = null;
 					return false;
 				}
@@ -227,8 +239,12 @@ namespace Needle.SelectiveProfiling
 						var types = assembly.GetLoadableTypes();
 						type = types.FirstOrDefault(t => t.Name == pm.Type);
 						requireUpdateIfSuccessfullyResolved |= type != null;
-						if (type == null) 
-							Debug.LogError(nameof(TypeLoadException) + " in " + assembly.FullName + "when trying to resolve " + pm.Type + ": " + typeLoadException);
+						if (type == null)
+						{
+							SaveOrLogProblem("Could not find type " + pm.Type);
+							method = null;
+							return false;
+						}
 					}
 				}
 
@@ -241,7 +257,7 @@ namespace Needle.SelectiveProfiling
 						if (m.ToString() == pm.Method)
 						{
 							MethodsCache.Add(methodIdentifier, m);
-							method = m;
+							pm.CachedMethod = method = m;
 							if (requireUpdateIfSuccessfullyResolved) 
 								pm.UpdateFrom(method);
 							return true;
@@ -261,6 +277,7 @@ namespace Needle.SelectiveProfiling
 								method = m;
 								if (requireUpdateIfSuccessfullyResolved) 
 									pm.UpdateFrom(method);
+								pm.CachedMethod = method;
 								MethodsCache.Add(methodIdentifier, m);
 								MethodIdentifierChanged?.Invoke((old, methodIdentifier));
 								return true;
@@ -269,7 +286,7 @@ namespace Needle.SelectiveProfiling
 					}
 				}
 				
-				Debug.LogWarning("Could not resolve method " + methodIdentifier + "\n" + assembly + "\n" + type);
+				SaveOrLogProblem("Could not resolve method " + methodIdentifier + "\n" + assembly + "\n" + type);
 			}
 			
 			method = null;
