@@ -11,7 +11,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "0Harmony.dll",
+        "EditorPatching-Harmony.dll",
         "Microsoft.CodeAnalysis.dll",
         "Microsoft.CodeAnalysis.CSharp.dll",
         "Mono.Cecil.dll"
