@@ -12,24 +12,17 @@ using UnityEngine.EventSystems;
 
 namespace Needle.SelectiveProfiling
 {
-	public struct ChartMarker
-	{
-		public string key => label;
-		public string label;
-		public MethodBase method;
-	}
-	
 	public static class ChartMarkerRegistry
 	{
 		[InitializeOnLoadMethod]
 		private static void Init()
 		{
-			Add(new ChartMarker(){label = "Click", method = AccessTools.Method(typeof(ExecuteEvents), "Execute", new[] {typeof(IPointerClickHandler), typeof(BaseEventData)})});
+			Add("Click", AccessTools.Method(typeof(ExecuteEvents), "Execute", new[] {typeof(IPointerClickHandler), typeof(BaseEventData)}));
 			Add("Enable Profiling Async", AccessTools.Method(typeof(SelectiveProfiler), "InternalEnableProfilingAsync"));
 			Add("Apply Patch", AccessTools.Method(typeof(PatchBase), nameof(PatchBase.Apply)));
 			Add("Run Task", AccessTools.Method(typeof(Task), nameof(Task.Run), new[]{typeof(Action)}));
 			Add("Harmony Patch", AccessTools.Method(typeof(PatchProcessor), nameof(PatchProcessor.Patch)));
-			Add("Profiler New Frame", AccessTools.Method(typeof(ProfilerMarkerStore), "OnNewFrame"));
+			// Add("Profiler New Frame", AccessTools.Method(typeof(ProfilerMarkerStore), "OnNewFrame"));
 
 			// await Task.Delay(1000);
 			// for (var index = 0; index < SelectiveProfilerSettings.instance.Methods.Count; index++)
@@ -42,40 +35,30 @@ namespace Needle.SelectiveProfiling
 			// }
 		}
 
-		private static readonly Dictionary<string, ChartMarker> markers = new Dictionary<string, ChartMarker>();
+		private static readonly Dictionary<string, MethodBase> markers = new Dictionary<string, MethodBase>();
 
 		public static void Add(string label, MethodBase method)
 		{
 			if (markers.ContainsKey(label)) return;
-			Add(new ChartMarker()
+			
+			if (string.IsNullOrEmpty(label))
 			{
-				label = label,
-				method = method
-			});
-		}
-
-		public static void Add(ChartMarker marker)
-		{
-			if (string.IsNullOrEmpty(marker.label))
-			{
-				Debug.LogError("Missing label\n" + marker.method);
+				Debug.LogError("Missing label\n" + method);
 				return;
 			}
-			if (marker.method == null)
+			if (method == null)
 			{
-				Debug.LogError("Missing method for " + marker.label);
+				Debug.LogError("Missing method for " + label);
 				return;
 			}
-			if (markers.ContainsKey(marker.key)) return;
-			markers.Add(marker.key, marker);
+			var key = label;
+			if (markers.ContainsKey(key)) return;
+			markers.Add(key, method);
 			if(SelectiveProfilerSettings.instance.DebugLog)
-				Debug.Log("Register " + marker.label + ", " + marker.method);
-			// var prov = new ChartMarkerInject_Patch(marker.label + "@" + marker.method.Name);
-			var patch = new ChartMarkerInject_Patch.AddProfilerMarker(marker.label, marker.method);
+				Debug.Log("Register " + label + ", " + method);
+			var patch = new ChartMarkerInject_Patch.AddProfilerMarker(label, method);
 			Patcher.Apply(patch);
-			// prov.Patches.Add(patch);
-			// PatchManager.RegisterPatch(prov);
-			// prov.EnablePatch();
+			Add(key);
 		}
 
 		public static void Remove(string key)
@@ -84,6 +67,17 @@ namespace Needle.SelectiveProfiling
 			{
 				markers.Remove(key);
 			}
+		}
+		
+		
+		/// <summary>
+		/// use this with the Profiler.Sample name
+		/// </summary>
+		public static void Add(string sampleName)
+		{
+			if (ProfilerMarkerStore.expectedMarkers.Contains(sampleName)) return;
+			ProfilerMarkerStore.expectedMarkers.Add(sampleName);
+			ProfilerMarkerStore.expectedMarkerIds.Clear();
 		}
 	}
 }

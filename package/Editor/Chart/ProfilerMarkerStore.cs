@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Security.Policy;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
+using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
@@ -42,15 +44,8 @@ namespace Needle.SelectiveProfiling
 			ProfilerDriver.NewProfilerFrameRecorded += OnNewFrame;
 		}
 
-		private static readonly HashSet<string> expectedMarkers = new HashSet<string>();
-		private static readonly HashSet<int> expectedMarkerIds = new HashSet<int>();
-
-		internal static void AddExpectedMarker(string name)
-		{
-			if (expectedMarkers.Contains(name)) return;
-			expectedMarkers.Add(name);
-			expectedMarkerIds.Clear();
-		}
+		internal static readonly HashSet<string> expectedMarkers = new HashSet<string>();
+		internal static readonly HashSet<int> expectedMarkerIds = new HashSet<int>();
 
 
 		internal static void RemoveAt(int index)
@@ -123,13 +118,17 @@ namespace Needle.SelectiveProfiling
 		private static void OnNewFrame(int thread, int frame)
 		{
 			if (ProfilerHelper.IsDeepProfiling) return;
-			
+			if (expectedMarkers.Count <= 0) return;
+			InternalGetFrameData(thread, frame);
+			// Task.Run(() => InternalGetFrameData(thread, frame));
+		}
+
+		private static void InternalGetFrameData(int thread, int frame)
+		{
 			using (var frameData = ProfilerDriver.GetRawFrameDataView(frame, 0))
 			{
 				if (!frameData.valid)
 					return;
-
-				if (expectedMarkers.Count <= 0) return;
 				
 				expectedMarkerIds.Clear();
 				foreach (var marker in expectedMarkers)
@@ -147,6 +146,7 @@ namespace Needle.SelectiveProfiling
 
 				capturedThisFrame.Clear();
 				var samples = frameData.sampleCount;
+				samples = Mathf.Min(samples, 100_000);
 				for (var i = 0; i < samples; i++)
 				{
 					var markerId = frameData.GetSampleMarkerId(i);
@@ -175,7 +175,6 @@ namespace Needle.SelectiveProfiling
 					}
 				}
 			}
-			
 		}
 
 

@@ -18,7 +18,6 @@ namespace Needle.SelectiveProfiling
 
 			private readonly string label;
 			private readonly MethodBase method;
-			[CanBeNull] public IEnumerable<MethodBase> additional;
 			
 			public override string Id { get; }
 
@@ -49,21 +48,12 @@ namespace Needle.SelectiveProfiling
 				}
 
 				yield return Add(method);
-				if (additional != null)
-				{
-					foreach (var ad in additional)
-					{
-						if (ad == method) continue;
-						yield return Add(ad);
-					}
-				}
 			}
 
 			// ReSharper disable once UnusedMember.Local
 			private static IEnumerable<CodeInstruction> Transpiler(MethodBase method, IEnumerable<CodeInstruction> inst)
 			{
 				var marker = Labels[method];
-				ProfilerMarkerStore.AddExpectedMarker(marker);
 
 				void Log(object msg)
 				{
