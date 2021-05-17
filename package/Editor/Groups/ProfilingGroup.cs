@@ -80,6 +80,7 @@ namespace Needle.SelectiveProfiling
 				var inst = CreateInstance<ProfilingGroup>();
 				inst.name = Path.GetFileNameWithoutExtension(path);
 				if (methods != null) inst.methods = new List<MethodInformation>(methods);
+				path = MakeProjectRelative(path);
 				AssetDatabase.CreateAsset(inst, path);
 				return inst;
 			}

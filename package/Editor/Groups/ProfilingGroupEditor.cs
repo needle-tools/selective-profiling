@@ -87,7 +87,8 @@ namespace Needle.SelectiveProfiling
 					{
 						HideToggle = true,
 						BoldScopeHeader = true,
-					});
+					}
+					);
 
 
 				// GUILayout.Space(5);
