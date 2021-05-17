@@ -137,8 +137,10 @@ namespace Needle.SelectiveProfiling
 					var lane = ProfilerMarkerStore.GetLane(cap.label);
 					rect.y = ((float) lane / ProfilerMarkerStore.LaneCount) * maxHeight;
 					cap.tooltip += "\nFound: " + cap.count;
-					var showLabel = selectedFrame == cap.frame || MarkerLabelClick.ShowLabel(cap);
-					var selected = MarkerLabelClick.IsSelected(cap);
+					var isFrame = selectedFrame == cap.frame;
+					var showAll = isFrame && Event.current.modifiers != EventModifiers.Alt; 
+					var showLabel = showAll || MarkerLabelClick.ShowLabel(cap);
+					var selected = showAll || MarkerLabelClick.IsSelected(cap);
 					DrawMarker(rect, cap, selected, showLabel, cdata);
 				}
 			}
