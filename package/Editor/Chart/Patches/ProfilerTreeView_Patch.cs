@@ -9,27 +9,21 @@ using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
-	internal class ProfilerTreeView_Patch : EditorPatchProvider
+	internal class ProfilerTreeView_Patch
 	{
 		internal static int RequestExpandItemId;
 		internal static int RequestExpandMarkerId;
 		
-		protected override void OnGetPatches(List<EditorPatch> patches)
+		public class ExpandSelectedMarkerInHierarchy : PatchBase
 		{
-			patches.Add(new ExpandSelectedMarkerInHierarchy());
-		}
-		
-		public class ExpandSelectedMarkerInHierarchy : EditorPatch
-		{
-			
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
 				var m = t.GetMethod("BuildRows", (BindingFlags) ~0);
-				targetMethods.Add(m);
-				return Task.CompletedTask;
+				yield return m;
 			}
-
+			
 			private static readonly List<int> selectionList = new List<int>();
 
 			private static void Postfix(TreeView __instance, IList<TreeViewItem> __result, HierarchyFrameDataView ___m_FrameDataView)

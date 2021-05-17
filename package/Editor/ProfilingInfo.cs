@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
-using NUnit.Framework.Internal;
-using UnityEditor;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling
@@ -14,11 +11,11 @@ namespace Needle.SelectiveProfiling
 	// [AlwaysProfile]
 	internal class ProfilingInfo
 	{
-		public readonly EditorPatchProvider Patch;
+		public readonly IPatch Patch;
 		public readonly MethodInfo Method;
 		public MethodInformation MethodInformation;
 
-		public bool IsActive => Patch != null && PatchManager.IsActive(Patch.ID());
+		public bool IsActive => Patch != null && Patcher.IsActive(Patch);
 		
 		internal string Identifier
 		{
@@ -32,7 +29,7 @@ namespace Needle.SelectiveProfiling
 		private string identifier;
 		private bool enabled;
 
-		public ProfilingInfo(EditorPatchProvider patch, MethodInfo info, MethodInformation mi)
+		public ProfilingInfo(IPatch patch, MethodInfo info, MethodInformation mi)
 		{
 			this.Patch = patch;
 			this.Method = info;
@@ -42,15 +39,17 @@ namespace Needle.SelectiveProfiling
 		public Task<bool> Enable(bool force = false)
 		{
 			if (!force && !MethodInformation.Enabled)
-				return PatchManager.CompletedTaskFailed;
+				return Task.FromResult(false);
 			MethodInformation.Enabled = true;
 			
 			// some methods can only be patched on the main thread
 			// we try to patch on background thread first and if a unity exception with "Can only be executed on main thread"
 			// is thrown we call enable again but request patching on the main thread
-			Patch.SuppressUnityExceptions = !SelectiveProfiler.DebugLog;
-			Patch.PatchThreaded = true;
-			var ts = Patch.Enable(false);
+			
+			// TODO
+			// Patch.SuppressUnityExceptions = !SelectiveProfiler.DebugLog;
+			// Patch.PatchThreaded = true;
+			var ts = Patcher.ApplyAsync(this.Patch);
 
 			if (!enabled)
 			{
@@ -71,7 +70,7 @@ namespace Needle.SelectiveProfiling
 		public Task Disable()
 		{
 			MethodInformation.Enabled = false;
-			var t = Patch.Disable(true, false);
+			var t = Patcher.RemoveAsync(Patch);//.Disable(true, false);
 			if (enabled)
 			{
 				enabled = false;
@@ -89,7 +88,7 @@ namespace Needle.SelectiveProfiling
 
 		public override string ToString()
 		{
-			return Patch?.ID() + " - " + Identifier;
+			return Patch?.GetType().Name + " - " + Identifier;
 		}
 
 		private HashSet<ProfilingInfo> callers;

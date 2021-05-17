@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEngine;
 using UnityEngine.Serialization;

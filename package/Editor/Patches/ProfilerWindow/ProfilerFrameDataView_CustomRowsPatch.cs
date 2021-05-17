@@ -5,19 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
-using UnityEditor.Graphs;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
@@ -30,17 +23,8 @@ namespace Needle.SelectiveProfiling
 	/// <summary>
 	/// injecting parent hierarchy items
 	/// </summary>
-	public class ProfilerFrameDataView_CustomRowsPatch : EditorPatchProvider
+	public class ProfilerFrameDataView_CustomRowsPatch
 	{
-		protected override void OnGetPatches(List<EditorPatch> patches)
-		{
-			// patches.Add(new Profiler_BuildRows());
-			// patches.Add(new FrameDataTreeViewItem_Init());
-			patches.Add(new Profiler_GetItemName());
-			patches.Add(new Profiler_CellGUI());
-			patches.Add(new Profiler_BuildRows_CollapseItems());
-		}
-
 		// internal static List<int> RequestSelectedIds = new List<int>();
 
 		private static readonly Dictionary<int, string> customRowsInfo = new Dictionary<int, string>();
@@ -57,17 +41,16 @@ namespace Needle.SelectiveProfiling
 		internal const int parentIdOffset = 1_000_000;
 
 
-		private class Profiler_BuildRows_CollapseItems : EditorPatch
+		private class Profiler_BuildRows_CollapseItems : PatchBase
 		{
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
-				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
-				var m = t.GetMethod("BuildRows", (BindingFlags) ~0);
-				targetMethods.Add(m);
-				return Task.CompletedTask;
+				yield return typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView")
+					.GetMethod("BuildRows", (BindingFlags) ~0);
 			}
 
 			private static int currentDepthOffset;
+
 			private static HierarchyFrameDataView frameDataView;
 
 			private static TreeViewItem CreateNewItem(TreeViewItem parent, int newId, int depth)
@@ -287,9 +270,11 @@ namespace Needle.SelectiveProfiling
 			private static readonly List<ICollapseHandler> handlers = new List<ICollapseHandler>();
 
 			// using to keep track of which handler type was already active
+
 			private static readonly List<Type> activeHandlers = new List<Type>();
 
 			// TODO: make configure-able
+
 			private static readonly HashSet<string> _itemsToCollapse = new HashSet<string>()
 			{
 				"UIRepaint",
@@ -366,6 +351,7 @@ namespace Needle.SelectiveProfiling
 			private static int previousFrameIndex;
 
 			// ReSharper disable once UnusedMember.Local
+
 			private static void Postfix(TreeView __instance, IList<TreeViewItem> __result, HierarchyFrameDataView ___m_FrameDataView)
 			{
 				if (ProfilerHelper.IsDeepProfiling) return;
@@ -494,15 +480,13 @@ namespace Needle.SelectiveProfiling
 		/// <summary>
 		/// render additional row information
 		/// </summary>
-		private class Profiler_CellGUI : EditorPatch
+		private class Profiler_CellGUI : PatchBase
 		{
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L647
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
-				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
-				var m = t.GetMethod("CellGUI", (BindingFlags) ~0);
-				targetMethods.Add(m);
-				return Task.CompletedTask;
+				yield return typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView")
+					.GetMethod("CellGUI", (BindingFlags) ~0);
 			}
 
 			private static MethodInfo _indentCallback;
@@ -853,9 +837,9 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private class Profiler_GetItemName : EditorPatch
+		private class Profiler_GetItemName : PatchBase
 		{
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
 				var asm = typeof(EventMarker).Assembly;
 #if UNITY_2021_1_OR_NEWER
@@ -864,13 +848,13 @@ namespace Needle.SelectiveProfiling
 				var t = asm.GetType("UnityEditorInternal.Profiling.CPUorGPUProfilerModule");
 #endif
 				var m = t.GetMethod("GetItemName", AccessUtils.AllDeclared, null, CallingConventions.Any, 
-					new[]{typeof(HierarchyFrameDataView), typeof(int)}, null); 
-				targetMethods.Add(m);
-				return Task.CompletedTask;
+					new[]{typeof(HierarchyFrameDataView), typeof(int)}, null);
+				yield return m;
 			}
 
 
 			// ReSharper disable once UnusedMember.Local
+
 			private static bool Prefix(out string __result, HierarchyFrameDataView frameData, int itemId)
 			{
 				// if (ProfilerHelper.IsDeepProfiling)

@@ -10,16 +10,10 @@ using Debug = UnityEngine.Debug;
 
 namespace Needle.SelectiveProfiling
 {
-	public class ProfilerChart_Patch : EditorPatchProvider
+	public class ProfilerChart_Patch
 	{
 		// TODO: TEST ProfilerDriver.GetUISystemEventMarkersBatch
-
 		// Profiler Window create chart https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerWindow.cs#L352
-		protected override void OnGetPatches(List<EditorPatch> patches)
-		{
-			patches.Add(new DrawMarkerLabels());
-			patches.Add(new MarkerLabelClick());
-		}
 
 		private static readonly Type ProfilerWindowType = typeof(ProfilerDriver).Assembly.GetType("UnityEditor.ProfilerWindow");
 		private static readonly List<(Rect rect, ChartMarkerData marker)> GUIMarkerLabels = new List<(Rect rect, ChartMarkerData marker)>();
@@ -40,7 +34,7 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private class MarkerLabelClick : EditorPatch
+		private class MarkerLabelClick : PatchBase
 		{
 			private static int selectedId = -1;
 			public static string selectedLabel;
@@ -55,12 +49,11 @@ namespace Needle.SelectiveProfiling
 				return selectedId == other.chartMarkerId;
 			}
 
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
 				var t = typeof(ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerChart");
 				var m = t.GetMethod("DoChartGUI", (BindingFlags) ~0);
-				targetMethods.Add(m);
-				return Task.CompletedTask;
+				yield return m;
 			}
 
 			private static void Prefix()
@@ -90,14 +83,13 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private class DrawMarkerLabels : EditorPatch
+		private class DrawMarkerLabels : PatchBase
 		{
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
 				var t = typeof(ProfilerDriver).Assembly.GetType("UnityEditorInternal.Chart");
 				var m = t.GetMethod("DrawChartStacked", (BindingFlags) ~0);
-				targetMethods.Add(m);
-				return Task.CompletedTask;
+				yield return m;
 			}
 
 

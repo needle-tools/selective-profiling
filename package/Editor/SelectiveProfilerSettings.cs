@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using needle.EditorPatching;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
 
 #if !UNITY_2020_1_OR_NEWER
@@ -84,7 +80,7 @@ namespace Needle.SelectiveProfiling
 
 				foreach (var exp in SelectiveProfiler.ExpectedPatches())
 				{
-					PatchManager.EnablePatch(exp);
+					Patcher.Apply(exp);
 				}
 			}
 		}

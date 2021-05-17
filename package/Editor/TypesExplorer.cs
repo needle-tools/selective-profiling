@@ -5,8 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using HarmonyLib;
-using needle.EditorPatching;
-using UnityEngine;
+using Needle.SelectiveProfiling.Utils;
 
 namespace Needle.SelectiveProfiling
 {

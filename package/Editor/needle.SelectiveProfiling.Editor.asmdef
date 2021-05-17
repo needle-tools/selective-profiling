@@ -1,9 +1,7 @@
 {
     "name": "Needle.SelectiveProfiling",
     "rootNamespace": "Needle.SelectiveProfiling",
-    "references": [
-        "GUID:336404f647c61ce4db3b999a77d5db23"
-    ],
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],
@@ -11,10 +9,10 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "EditorPatching-Harmony.dll",
         "Microsoft.CodeAnalysis.dll",
         "Microsoft.CodeAnalysis.CSharp.dll",
-        "Mono.Cecil.dll"
+        "Mono.Cecil.dll",
+        "SelectiveProfiling-Harmony.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

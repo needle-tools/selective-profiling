@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Net;
-using System.Net.NetworkInformation;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
-using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
-using UnityEditorInternal;
 using UnityEngine;
 
 #if UNITY_2020_2_OR_NEWER
@@ -25,14 +19,8 @@ using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {
-	public class ProfilerFrameDataView_Patch : EditorPatchProvider
+	public class ProfilerFrameDataView_Patch
 	{
-		protected override void OnGetPatches(List<EditorPatch> patches)
-		{
-			patches.Add(new Profiler_SelectionChanged());
-			patches.Add(new Profiler_CellGUI());
-			patches.Add(new Profiler_Toolbar());
-		}
 
 		// public override void OnEnabledPatch()
 		// {
@@ -72,17 +60,15 @@ namespace Needle.SelectiveProfiling
 		}
 
 
-		private class Profiler_Toolbar : EditorPatch
+		private class Profiler_Toolbar : PatchBase
 		{
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.Profiling.ProfilerFrameDataHierarchyView");
 				var m = t.GetMethod("DrawDetailedViewPopup", BindingFlags.Instance | BindingFlags.NonPublic);
-				targetMethods.Add(m);
-
-				return Task.CompletedTask;
+				yield return m;
 			}
-
+			
 			private static void Postfix()
 			{
 				var rect = GUILayoutUtility.GetRect(120f, 120f, 14, 14, EditorStyles.toolbarButton);
@@ -94,17 +80,15 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-
-		private class Profiler_SelectionChanged : EditorPatch
+		private class Profiler_SelectionChanged : PatchBase
 		{
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
 				var m = t.GetMethod("SelectionChanged", (BindingFlags) ~0);
-				targetMethods.Add(m);
-				return Task.CompletedTask;
+				yield return m;
 			}
-
+			
 			private static void Postfix(IList<int> selectedIds)
 			{
 				if (selectedIds == null || selectedIds.Count <= 0) selectedId = -1;
@@ -112,16 +96,17 @@ namespace Needle.SelectiveProfiling
 			}
 		}
 
-		private class Profiler_CellGUI : EditorPatch
+		private class Profiler_CellGUI : PatchBase
 		{
 			// https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L647
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
 				var t = typeof(UnityEditorInternal.ProfilerDriver).Assembly.GetType("UnityEditorInternal.ProfilerFrameDataTreeView");
 				var m = t.GetMethod("CellGUI", (BindingFlags) ~0);
-				targetMethods.Add(m);
-				return Task.CompletedTask;
+				yield return m;
 			}
+
+
 
 			private static int lastPatchedInImmediateMode = -1;
 
@@ -131,8 +116,11 @@ namespace Needle.SelectiveProfiling
 			// 	// TreeView.DefaultStyles.label.normal.textColor = Color.gray;
 			// }
 
+
 			// method https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L676
+
 			// item: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Modules/ProfilerEditor/ProfilerWindow/ProfilerFrameDataTreeView.cs#L68
+
 			private static void Postfix(object __instance, Rect cellRect, TreeViewItem item, int column)
 			{
 				// if(ProfilerHelper.IsDeepProfiling) return;

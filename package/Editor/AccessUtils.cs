@@ -7,15 +7,12 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
-using needle.EditorPatching;
 using Unity.Profiling;
 using UnityEditor;
-using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Profiling;
-using UnityEngine.Scripting;
 using Matrix4x4 = UnityEngine.Matrix4x4;
 using Object = UnityEngine.Object;
 using Vector2 = UnityEngine.Vector2;
@@ -35,6 +32,18 @@ namespace Needle.SelectiveProfiling.Utils
 
 	internal static class AccessUtils
 	{
+		public static IEnumerable<Type> GetLoadableTypes(this Assembly assembly)
+		{
+			try
+			{
+				return assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException e)
+			{
+				return e.Types.Where(t => t != null);
+			}
+		}
+		
 		private static readonly Dictionary<string, Assembly> assemblyMap = new Dictionary<string, Assembly>();
 		private static Dictionary<string, MethodInfo> foundMethodCalls = new Dictionary<string, MethodInfo>();
 
@@ -485,7 +494,7 @@ namespace Needle.SelectiveProfiling.Utils
 			}
 
 			var assembly = method.DeclaringType?.Assembly;
-			if (assembly == typeof(PatchManager).Assembly || assembly == typeof(Harmony).Assembly)
+			if (assembly == typeof(Harmony).Assembly)
 			{
 				Reason($"Profiling method in {assembly} is not allowed");
 				return false;

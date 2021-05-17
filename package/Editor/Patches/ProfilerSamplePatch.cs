@@ -4,12 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Threading.Tasks;
 using HarmonyLib;
-using needle.EditorPatching;
 using Needle.SelectiveProfiling.CodeWrapper;
 using Needle.SelectiveProfiling.Utils;
-using UnityEngine;
 using UnityEngine.Profiling;
 
 // ReSharper disable UnusedType.Global
@@ -19,38 +16,16 @@ namespace Needle.SelectiveProfiling
 	// Limitations/Unsupported use cases: https://harmony.pardeike.net/articles/patching.html#commonly-unsupported-use-cases
 	// - Generic Methods are experimental and might not work -> https://harmony.pardeike.net/articles/patching-edgecases.html#generics
 
-	[NoAutoDiscover]
-	public class ProfilerSamplePatch : EditorPatchProvider
+	// [NoAutoDiscover]
+	public class ProfilerSamplePatch
 	{
-		public ProfilerSamplePatch(MethodBase method, string prefix = null, string postfix = null)
-		{
-			this.method = method;
-			this.prefix = prefix;
-			this.postfix = postfix;
-			this._id = method != null ? method.DeclaringType?.FullName + "." + method.Name : base.ID();
-			this.Group = "Selective Profiling Sampler";
-		}
-
-		private readonly string _id;
-
-		public override string DisplayName => ID();
-		public override string ID() => _id;
-		public override bool Persistent() => false;
-
-		private readonly string prefix;
-		private readonly string postfix;
-		private readonly MethodBase method;
-		
 		internal const char TypeSampleNameSeparator = '/';
 
-		protected override void OnGetPatches(List<EditorPatch> patches)
+		internal class TranspilerPatch : PatchBase
 		{
-			if (method != null)
-				patches.Add(new TranspilerPatch(method, prefix, postfix));
-		}
+			public override string Id => method?.DeclaringType?.FullName + "::" + method?.Name;
+			public override string DisplayName => method?.Name;
 
-		private class TranspilerPatch : EditorPatch
-		{
 			private static readonly Dictionary<MethodBase, ICodeWrapper> wrappers = new Dictionary<MethodBase, ICodeWrapper>();
 			private readonly MethodBase method;
 			private readonly string prefix;
@@ -74,12 +49,10 @@ namespace Needle.SelectiveProfiling
 				
 				wrappers.Add(method, wrapper);
 			}
-
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
-				if (method == null) return Task.CompletedTask;
-				targetMethods.Add(method);
-				return Task.CompletedTask;
+				yield return method;
 			}
 
 			// ReSharper disable once UnusedMember.Local
@@ -108,7 +81,7 @@ namespace Needle.SelectiveProfiling
 				var label = il.DefineLabel();
 				
 				// when using the custom rows patch prefix the sample with the method name
-				if (!string.IsNullOrWhiteSpace(parentType) && PatchManager.IsActive(typeof(ProfilerFrameDataView_CustomRowsPatch).FullName))
+				if (!string.IsNullOrWhiteSpace(parentType) && Patcher.IsActive(typeof(ProfilerFrameDataView_CustomRowsPatch).FullName))
 				{
 					// if (instruction.operand is MethodInfo type)
 					// 	parentType = type.DeclaringType?.Name;

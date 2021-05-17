@@ -1,41 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
-using needle.EditorPatching;
 using UnityEngine;
 using UnityEngine.Profiling;
 
 namespace Needle.SelectiveProfiling
 {
-	[NoAutoDiscover]
-	internal class ChartMarkerInject_Patch : EditorPatchProvider
+	internal class ChartMarkerInject_Patch
 	{
 		internal readonly List<AddProfilerMarker> Patches = new List<AddProfilerMarker>();
 
-		private readonly string id;
-		public override string ID() => id;
-		public override string DisplayName => ID();
-
-		public ChartMarkerInject_Patch(string id)
-		{
-			this.id = id;
-		}
-
-		public override bool OnWillEnablePatch()
-		{
-			if (Patches.Count <= 0) return false;
-			return base.OnWillEnablePatch();
-		}
-
-		protected override void OnGetPatches(List<EditorPatch> patches)
-		{
-			patches.AddRange(Patches);
-		}
-
-		public class AddProfilerMarker : EditorPatch
+		public class AddProfilerMarker : PatchBase
 		{
 			private static readonly Dictionary<MethodBase, string> Labels = new Dictionary<MethodBase, string>();
 
@@ -49,12 +26,11 @@ namespace Needle.SelectiveProfiling
 				System.Diagnostics.Debug.Assert(method != null, nameof(this.method) + " != null");
 				this.method = method;
 			}
-
-			protected override Task OnGetTargetMethods(List<MethodBase> targetMethods)
+			
+			protected override IEnumerable<MethodBase> GetPatches()
 			{
-				void Add(MethodBase _method)
+				MethodBase Add(MethodBase _method)
 				{
-					targetMethods.Add(_method);
 					if (Labels.ContainsKey(method))
 					{
 						var existing = Labels[method];
@@ -66,19 +42,19 @@ namespace Needle.SelectiveProfiling
 					}
 					else
 						Labels.Add(_method, label);
+					
+					return method;
 				}
 
-				Add(method);
+				yield return Add(method);
 				if (additional != null)
 				{
 					foreach (var ad in additional)
 					{
 						if (ad == method) continue;
-						Add(ad);
+						yield return Add(ad);
 					}
 				}
-
-				return Task.CompletedTask;
 			}
 
 			// ReSharper disable once UnusedMember.Local

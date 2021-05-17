@@ -12,7 +12,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "EditorPatching-Harmony.dll"
+        "SelectiveProfiling-Harmony.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

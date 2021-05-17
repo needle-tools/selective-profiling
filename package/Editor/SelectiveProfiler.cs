@@ -5,8 +5,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
-using needle.EditorPatching;
-using Needle.SelectiveProfiling.Commands;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditorInternal;
@@ -182,14 +180,15 @@ namespace Needle.SelectiveProfiling
 			}
 
 
-			var patch = new ProfilerSamplePatch(method, null, " " + SamplePostfix);
-			patch.PatchThreaded = true;
+			var patch = new ProfilerSamplePatch.TranspilerPatch(method, null, " " + SamplePostfix);
+			// TODO
+			// patch.PatchThreaded = true;
 			var info = new ProfilingInfo(patch, method, methodInfo);
 			profiled.Add(method, info);
 			profiled2.Add(methodInfo, info);
 			
 			HandleCallstackRegistration(info);
-			PatchManager.RegisterPatch(patch);
+			// PatchManager.RegisterPatch(patch);
 
 			var enabled = false;
 			if (enablePatch)

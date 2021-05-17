@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Threading;
-using HarmonyLib;
-using needle.EditorPatching;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace Needle.SelectiveProfiling

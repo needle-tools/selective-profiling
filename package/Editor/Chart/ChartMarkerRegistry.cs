@@ -45,11 +45,12 @@ namespace Needle.SelectiveProfiling
 			markers.Add(marker.key, marker);
 			if(SelectiveProfilerSettings.instance.DebugLog)
 				Debug.Log("Register " + marker.label + ", " + marker.method);
-			var prov = new ChartMarkerInject_Patch(marker.label + "@" + marker.method.Name);
+			// var prov = new ChartMarkerInject_Patch(marker.label + "@" + marker.method.Name);
 			var patch = new ChartMarkerInject_Patch.AddProfilerMarker(marker.label, marker.method);
-			prov.Patches.Add(patch);
-			PatchManager.RegisterPatch(prov);
-			prov.EnablePatch();
+			Patcher.Apply(patch);
+			// prov.Patches.Add(patch);
+			// PatchManager.RegisterPatch(prov);
+			// prov.EnablePatch();
 		}
 
 		public static void Remove(string key)
