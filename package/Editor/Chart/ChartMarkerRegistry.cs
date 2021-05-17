@@ -29,6 +29,7 @@ namespace Needle.SelectiveProfiling
 			Add("Apply Patch", AccessTools.Method(typeof(PatchBase), nameof(PatchBase.Apply)));
 			Add("Run Task", AccessTools.Method(typeof(Task), nameof(Task.Run), new[]{typeof(Action)}));
 			Add("Harmony Patch", AccessTools.Method(typeof(PatchProcessor), nameof(PatchProcessor.Patch)));
+			Add("Profiler New Frame", AccessTools.Method(typeof(ProfilerMarkerStore), "OnNewFrame"));
 
 			// await Task.Delay(1000);
 			// for (var index = 0; index < SelectiveProfilerSettings.instance.Methods.Count; index++)

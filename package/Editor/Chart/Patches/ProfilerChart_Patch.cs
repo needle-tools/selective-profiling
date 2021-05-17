@@ -70,7 +70,6 @@ namespace Needle.SelectiveProfiling
 							selectedId = e.marker.chartMarkerId;
 							// if ((Event.current.modifiers & EventModifiers.Alt) != 0)
 							selectedLabel = e.marker.label;
-							ProfilerTreeView_Patch.RequestExpandItemId = e.marker.itemId;
 							ProfilerTreeView_Patch.RequestExpandMarkerId = e.marker.markerId;
 							StopProfilingAndSetFrame(e.marker.frame);
 							break;

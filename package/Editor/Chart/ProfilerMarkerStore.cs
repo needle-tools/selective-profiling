@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Security.Policy;
 using System.Text;
 using UnityEditor;
 using UnityEditor.Profiling;
@@ -13,7 +14,6 @@ namespace Needle.SelectiveProfiling
 		public string label;
 		public string tooltip;
 		public float millis;
-		public int itemId;
 		public int markerId;
 		public int count;
 
@@ -24,7 +24,6 @@ namespace Needle.SelectiveProfiling
 			this.tooltip = tooltip;
 			this.chartMarkerId = chartMarkerId;
 			this.millis = millis;
-			this.itemId = 0;
 			this.markerId = markerId;
 			this.count = 1;
 		}
@@ -117,7 +116,7 @@ namespace Needle.SelectiveProfiling
 		private static int capturesCounter = 0;
 		private static readonly List<(string label, int count, int num)> lanes = new List<(string label, int count, int num)>();
 
-		private static readonly Dictionary<int, int> tempMarkerIdToHierarchyItemId = new Dictionary<int, int>();
+		// private static readonly Dictionary<int, int> tempMarkerIdToHierarchyItemId = new Dictionary<int, int>();
 		
 		private static readonly List<(int markerId, int captureIndex)> capturedThisFrame = new List<(int, int)>();
 
@@ -146,42 +145,6 @@ namespace Needle.SelectiveProfiling
 				// ProfilerDriver.GetUISystemEventMarkersBatch(frame, 1, eventMarker, names);
 				// Debug.Log(names.Length);
 
-				HierarchyFrameDataView hierarchy = null;
-				bool TryFindItemId(int markerId, out int itemId)
-				{
-					if (hierarchy == null)
-					{
-						hierarchy = ProfilerDriver.GetHierarchyFrameDataView(frame, 0, 
-							HierarchyFrameDataView.ViewModes.Default, 0, false);
-						tempMarkerIdToHierarchyItemId.Clear();
-					}
-
-					if (tempMarkerIdToHierarchyItemId.Count <= 0)
-					{
-						var root = hierarchy.GetRootItemID();
-						CollectItems(root);
-						void CollectItems(int _itemId)
-						{
-							var _markerId = hierarchy.GetItemMarkerID(_itemId);
-							if (!tempMarkerIdToHierarchyItemId.ContainsKey(_markerId))
-							{
-								tempMarkerIdToHierarchyItemId.Add(_markerId, _itemId);
-							}
-							if (hierarchy.HasItemChildren(_itemId))
-							{
-								var children = new List<int>();
-								hierarchy.GetItemChildren(_itemId, children);
-								foreach (var ch in children)
-									CollectItems(ch);
-							}
-						}
-					}
-					if (tempMarkerIdToHierarchyItemId.TryGetValue(markerId, out itemId))
-						return true;
-					itemId = 0;
-					return false;
-				}
-
 				capturedThisFrame.Clear();
 				var samples = frameData.sampleCount;
 				for (var i = 0; i < samples; i++)
@@ -206,15 +169,11 @@ namespace Needle.SelectiveProfiling
 						var tooltip = name + ": " + GetAdditionalMarkerInfo(frameData, i, out var ms);
 						var chartMarker = new ChartMarkerData(frame, markerId, name, tooltip, capturesCounter, ms);
 						capturesCounter += 1;
-						if (TryFindItemId(markerId, out var itemId)) 
-							chartMarker.itemId = itemId;
 						capturedThisFrame.Add((markerId, captures.Count));
 						captures.Add(chartMarker);
 						AddToLane(name);
 					}
 				}
-				if(hierarchy != null)
-					hierarchy.Dispose();
 			}
 			
 		}
