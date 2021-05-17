@@ -8,5 +8,7 @@ namespace Needle.SelectiveProfiling
 		void Remove(Harmony harmony);
 		string Id { get; }
 		string DisplayName { get; }
+		bool SuppressUnityExceptions { get; set; }
+		bool PatchThreaded { get; set; }
 	}
 }

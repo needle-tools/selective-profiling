@@ -11,7 +11,7 @@ namespace Needle.SelectiveProfiling
 	// [AlwaysProfile]
 	internal class ProfilingInfo
 	{
-		public readonly IPatch Patch;
+		public readonly PatchBase Patch;
 		public readonly MethodInfo Method;
 		public MethodInformation MethodInformation;
 
@@ -29,7 +29,7 @@ namespace Needle.SelectiveProfiling
 		private string identifier;
 		private bool enabled;
 
-		public ProfilingInfo(IPatch patch, MethodInfo info, MethodInformation mi)
+		public ProfilingInfo(PatchBase patch, MethodInfo info, MethodInformation mi)
 		{
 			this.Patch = patch;
 			this.Method = info;
@@ -46,9 +46,8 @@ namespace Needle.SelectiveProfiling
 			// we try to patch on background thread first and if a unity exception with "Can only be executed on main thread"
 			// is thrown we call enable again but request patching on the main thread
 			
-			// TODO
-			// Patch.SuppressUnityExceptions = !SelectiveProfiler.DebugLog;
-			// Patch.PatchThreaded = true;
+			Patch.SuppressUnityExceptions = !SelectiveProfiler.DebugLog;
+			Patch.PatchThreaded = true;
 			var ts = Patcher.ApplyAsync(this.Patch);
 
 			if (!enabled)

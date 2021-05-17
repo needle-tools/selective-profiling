@@ -17,6 +17,8 @@ namespace Needle.SelectiveProfiling
 
 		private static Harmony _harmony;
 		private static List<IPatch> patches;
+		private static readonly Dictionary<string, IPatch> activePatches = new Dictionary<string, IPatch>();
+		private static readonly Dictionary<string, IPatch> knownPatches = new Dictionary<string, IPatch>();
 
 		internal static Harmony Harmony
 		{
@@ -62,38 +64,55 @@ namespace Needle.SelectiveProfiling
 
 		internal static void Apply(string id)
 		{
+			if (knownPatches.ContainsKey(id))
+				Apply(knownPatches[id]);
 		}
 
 		internal static void Apply(IPatch patch)
 		{
+			var id = patch.Id;
+			if (activePatches.ContainsKey(id)) return;
+			activePatches.Add(id, patch);
+			if (!knownPatches.ContainsKey(id))
+				knownPatches.Add(id, patch);
 			patch.Apply(Harmony);
 		}
 
 		internal static Task<bool> ApplyAsync(IPatch patch)
 		{
+			var id = patch.Id;
+			if (activePatches.ContainsKey(id)) return Task.FromResult(true);
+			activePatches.Add(id, patch);
+			if (!knownPatches.ContainsKey(id))
+				knownPatches.Add(id, patch);
 			patch.Apply(Harmony);
 			return Task.FromResult(true);
 		}
 
 		internal static void Remove(IPatch patch)
 		{
+			var id = patch.Id;
+			if (!activePatches.ContainsKey(id)) return;
+			activePatches.Remove(id);
 			patch.Remove(Harmony);
 		}
 
 		internal static Task<bool> RemoveAsync(IPatch patch)
 		{
+			if (!activePatches.ContainsKey(patch.Id)) return Task.FromResult(true);
+			activePatches.Remove(patch.Id);
 			patch.Remove(Harmony);
 			return Task.FromResult(true);
 		}
 
 		internal static bool IsActive(IPatch patch)
 		{
-			return true;
+			return activePatches.ContainsKey(patch.Id);
 		}
 
 		internal static bool IsActive(string id)
 		{
-			return false;
+			return activePatches.ContainsKey(id);
 		}
 	}
 }

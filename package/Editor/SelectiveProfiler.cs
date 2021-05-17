@@ -181,8 +181,7 @@ namespace Needle.SelectiveProfiling
 
 
 			var patch = new ProfilerSamplePatch.TranspilerPatch(method, null, " " + SamplePostfix);
-			// TODO
-			// patch.PatchThreaded = true;
+			patch.PatchThreaded = true;
 			var info = new ProfilingInfo(patch, method, methodInfo);
 			profiled.Add(method, info);
 			profiled2.Add(methodInfo, info);
@@ -288,13 +287,6 @@ namespace Needle.SelectiveProfiling
 			if(ShouldSave)
 				SelectiveProfilerSettings.Instance.Remove(info);
 			return task ?? Task.CompletedTask;
-		}
-
-		internal static IEnumerable<string> ExpectedPatches()
-		{
-			yield return typeof(ProfilerFrameDataView_Patch).FullName;
-			yield return typeof(ProfilerFrameDataView_CustomRowsPatch).FullName;
-			yield return typeof(ContextMenuPatches).FullName;
 		}
 
 		internal static bool DebugLog => SelectiveProfilerSettings.Instance.DebugLog;

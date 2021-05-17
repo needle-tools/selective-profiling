@@ -31,20 +31,6 @@ namespace Needle.SelectiveProfiling
 
 		internal static void DefaultSelectiveProfilerUI(SelectiveProfilerSettings settings, bool inFoldouts)
 		{
-			if (!SelectiveProfiler.ExpectedPatches().All(Patcher.IsActive))
-			{
-				var notEnabledList = SelectiveProfiler.ExpectedPatches().Where(p => !Patcher.IsActive(p));
-				EditorGUILayout.HelpBox(
-					"Some patches for Selective Profiler are not enabled. Some functionality might not work as expected or be missing.\n" +
-					string.Join(", ", notEnabledList), MessageType.Warning);
-				if (GUILayout.Button("Enable patches"))
-				{
-					foreach (var exp in SelectiveProfiler.ExpectedPatches())
-						Patcher.Apply(exp);
-				}
-
-				GUILayout.Space(10);
-			}
 
 			if (ProfilerHelper.IsDeepProfiling)
 			{
@@ -387,6 +373,8 @@ namespace Needle.SelectiveProfiling
 									GUI.color = Color.yellow;
 									label.tooltip = entry.LoadError + "\n\n" + label.tooltip;
 								}
+								else if (options.HideToggle && !state)
+									GUI.color = new Color(.75f, .75f, .75f);
 								
 								if (options.HideToggle)
 								{

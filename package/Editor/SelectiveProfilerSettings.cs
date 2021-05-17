@@ -77,11 +77,6 @@ namespace Needle.SelectiveProfiling
 				                                                           "or join us on discord: <b>https://discord.gg/CFZDp4b</b>");
 				instance.FirstInstall = false;
 				instance.Save();
-
-				foreach (var exp in SelectiveProfiler.ExpectedPatches())
-				{
-					Patcher.Apply(exp);
-				}
 			}
 		}
 
