@@ -474,12 +474,13 @@ namespace Needle.SelectiveProfiling
 
 			// TODO: refactor deep profiling to use editor update loop
 
-			var list = callsFound.ToArray();
-			callsFound.Clear();
+			// var list = callsFound.ToArray();
+			// callsFound.Clear();
 			try
 			{
-				foreach (var method in list)
+				for (var index = callsFound.ToArray().Length - 1; index >= 0; index--)
 				{
+					var method = callsFound.ToArray()[index];
 					// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
 					if (DeepProfileDebuggingMode)
 					{
@@ -488,10 +489,11 @@ namespace Needle.SelectiveProfiling
 							stepDeepProfileList.Add((method, depth, source));
 					}
 					// dont save nested calls
-					else if(!profiled.ContainsKey(method))
+					else if (!profiled.ContainsKey(method))
 					{
-						if(DebugLog)
-							Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Handle Deep Profile: " + source + " -> " + method + ", Level: " + depth);
+						if (DebugLog)
+							Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null,
+								"Handle Deep Profile: " + source + " -> " + method + ", Level: " + depth);
 						await InternalEnableProfilingAsync(method, false, true, false, source, depth);
 					}
 				}

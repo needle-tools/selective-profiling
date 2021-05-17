@@ -15,6 +15,7 @@ namespace Needle.SelectiveProfiling
 		public float millis;
 		public int itemId;
 		public int markerId;
+		public int count;
 
 		public ChartMarkerData(int frame, int markerId, string label, string tooltip, int chartMarkerId, float millis)
 		{
@@ -25,6 +26,7 @@ namespace Needle.SelectiveProfiling
 			this.millis = millis;
 			this.itemId = 0;
 			this.markerId = markerId;
+			this.count = 1;
 		}
 	}
 
@@ -116,6 +118,8 @@ namespace Needle.SelectiveProfiling
 		private static readonly List<(string label, int count, int num)> lanes = new List<(string label, int count, int num)>();
 
 		private static readonly Dictionary<int, int> tempMarkerIdToHierarchyItemId = new Dictionary<int, int>();
+		
+		private static readonly List<(int markerId, int captureIndex)> capturedThisFrame = new List<(int, int)>();
 
 		private static void OnNewFrame(int thread, int frame)
 		{
@@ -178,18 +182,33 @@ namespace Needle.SelectiveProfiling
 					return false;
 				}
 
+				capturedThisFrame.Clear();
 				var samples = frameData.sampleCount;
 				for (var i = 0; i < samples; i++)
 				{
 					var markerId = frameData.GetSampleMarkerId(i);
 					if (expectedMarkerIds.Contains(markerId))
 					{
+						var alreadyFound = false;
+						for (var k = 0; k < capturedThisFrame.Count; k++)
+						{
+							var (markerId1, captureIndex) = capturedThisFrame[k];
+							if (markerId1 == markerId)
+							{
+								alreadyFound = true;
+								var prev = captures[captureIndex];
+								prev.count += 1;
+								captures[captureIndex] = prev;
+							}
+						}
+						if (alreadyFound) continue;
 						var name = frameData.GetSampleName(i);
 						var tooltip = name + ": " + GetAdditionalMarkerInfo(frameData, i, out var ms);
 						var chartMarker = new ChartMarkerData(frame, markerId, name, tooltip, capturesCounter, ms);
 						capturesCounter += 1;
 						if (TryFindItemId(markerId, out var itemId)) 
 							chartMarker.itemId = itemId;
+						capturedThisFrame.Add((markerId, captures.Count));
 						captures.Add(chartMarker);
 						AddToLane(name);
 					}

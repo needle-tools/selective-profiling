@@ -110,7 +110,7 @@ namespace Needle.SelectiveProfiling
 				// GUI.Label(r, "TEST " + r + ", " + selectedFrame);
 
 				// DrawMarker(r, "Frame: " + selectedFrame, selectedFrame, cdata, Color.cyan);
-				if (!Application.isPlaying)
+				if (!Application.isPlaying && ProfilerMarkerStore.Markers.Count <= 0)
 				{
 					var fr = cdata.firstSelectableFrame + 20;
 					var marker = new ChartMarkerData(fr, 0, "Test", "Tooltip", 0, 10);
@@ -137,7 +137,7 @@ namespace Needle.SelectiveProfiling
 					// rect.y += (cap.chartMarkerId % 3) * 100;
 					var lane = ProfilerMarkerStore.GetLane(cap.label);
 					rect.y = ((float) lane / ProfilerMarkerStore.LaneCount) * maxHeight;
-					cap.tooltip += "\nLane: " + lane + " " + ProfilerMarkerStore.LaneCount;
+					cap.tooltip += "\nFound: " + cap.count;
 					var showLabel = selectedFrame == cap.frame || MarkerLabelClick.ShowLabel(cap);
 					var selected = MarkerLabelClick.IsSelected(cap);
 					DrawMarker(rect, cap, selected, showLabel, cdata);

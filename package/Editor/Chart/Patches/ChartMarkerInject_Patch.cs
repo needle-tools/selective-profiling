@@ -19,12 +19,15 @@ namespace Needle.SelectiveProfiling
 			private readonly string label;
 			private readonly MethodBase method;
 			[CanBeNull] public IEnumerable<MethodBase> additional;
+			
+			public override string Id { get; }
 
 			public AddProfilerMarker(string label, MethodBase method)
 			{
+				Debug.Assert(method != null, nameof(this.method) + " != null");
 				this.label = label;
-				System.Diagnostics.Debug.Assert(method != null, nameof(this.method) + " != null");
 				this.method = method;
+				Id = label + "-" + method.DeclaringType.FullName + "::" + method.Name;
 			}
 			
 			protected override IEnumerable<MethodBase> GetPatches()
@@ -42,7 +45,6 @@ namespace Needle.SelectiveProfiling
 					}
 					else
 						Labels.Add(_method, label);
-					
 					return method;
 				}
 

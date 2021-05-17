@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
 using needle.EditorPatching;
@@ -13,8 +15,8 @@ namespace Needle.SelectiveProfiling
 	public struct ChartMarker
 	{
 		public string key => label;
-		[NotNull] public string label;
-		[NotNull] public MethodBase method;
+		public string label;
+		public MethodBase method;
 	}
 	
 	public static class ChartMarkerRegistry
@@ -23,6 +25,20 @@ namespace Needle.SelectiveProfiling
 		private static void Init()
 		{
 			Add(new ChartMarker(){label = "Click", method = AccessTools.Method(typeof(ExecuteEvents), "Execute", new[] {typeof(IPointerClickHandler), typeof(BaseEventData)})});
+			Add("Enable Profiling Async", AccessTools.Method(typeof(SelectiveProfiler), "InternalEnableProfilingAsync"));
+			Add("Apply Patch", AccessTools.Method(typeof(PatchBase), nameof(PatchBase.Apply)));
+			Add("Run Task", AccessTools.Method(typeof(Task), nameof(Task.Run), new[]{typeof(Action)}));
+			Add("Harmony Patch", AccessTools.Method(typeof(PatchProcessor), nameof(PatchProcessor.Patch)));
+
+			// await Task.Delay(1000);
+			// for (var index = 0; index < SelectiveProfilerSettings.instance.Methods.Count; index++)
+			// {
+			// 	var m = SelectiveProfilerSettings.instance.Methods[index];
+			// 	if (m.Assembly.Contains("Selective")) continue;
+			// 	if (m.TryResolveMethod(out var method))
+			// 		Add(m.ClassWithMethod(), method);
+			// 	if (index > 100) break;
+			// }
 		}
 
 		private static readonly Dictionary<string, ChartMarker> markers = new Dictionary<string, ChartMarker>();
@@ -39,8 +55,16 @@ namespace Needle.SelectiveProfiling
 
 		public static void Add(ChartMarker marker)
 		{
-			if (string.IsNullOrEmpty(marker.label)) throw new Exception("Missing label");
-			if (marker.method == null) throw new Exception("Missing methods");
+			if (string.IsNullOrEmpty(marker.label))
+			{
+				Debug.LogError("Missing label\n" + marker.method);
+				return;
+			}
+			if (marker.method == null)
+			{
+				Debug.LogError("Missing method for " + marker.label);
+				return;
+			}
 			if (markers.ContainsKey(marker.key)) return;
 			markers.Add(marker.key, marker);
 			if(SelectiveProfilerSettings.instance.DebugLog)
