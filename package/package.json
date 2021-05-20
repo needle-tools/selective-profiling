@@ -11,8 +11,6 @@
 	  },
 	"category": "Libraries",
 	"dependencies": {
-		"com.needle.editorpatching" : "1.2.0-exp",
-		"com.unity.nuget.mono-cecil" : "1.10.1-preview.1",
-		"com.unity.code-analysis" : "0.1.2-preview"
+		"com.unity.nuget.mono-cecil" : "1.10.1-preview.1"
 	}
 }

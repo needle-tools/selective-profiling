@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using HarmonyLib;
-using JetBrains.Annotations;
-using needle.EditorPatching;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;

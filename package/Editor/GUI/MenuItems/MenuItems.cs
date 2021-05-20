@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
 using HarmonyLib;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Needle.SelectiveProfiling.Analysis;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;

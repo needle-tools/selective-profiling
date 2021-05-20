@@ -1,11 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using needle.EditorPatching;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Profiling;
-using UnityEngine;
 
 namespace Needle.SelectiveProfiling
 {

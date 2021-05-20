@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
-using needle.EditorPatching;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;

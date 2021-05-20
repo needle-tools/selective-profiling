@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using Microsoft.CodeAnalysis.CSharp;
-using Needle.SelectiveProfiling.CodeWrapper;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;

@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
-using System.Text;
-using JetBrains.Annotations;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Mono.Cecil;
 using UnityEditor;
 using UnityEditor.Compilation;
-using UnityEngine;
 
 namespace Needle.SelectiveProfiling.Analysis
 {
@@ -30,38 +23,38 @@ namespace Needle.SelectiveProfiling.Analysis
 			// 	Debug.Log("FOUND TYPES " + string.Join("\n", collector.FullTypeNames));
 		}
 
-		private const string NESTED_CLASS_DELIMITER = "+";
-		private const string NAMESPACE_CLASS_DELIMITER = ".";
-
-		public static string GetFullName(this ClassDeclarationSyntax source)
-		{
-			Debug.Assert(source != null);
-
-			var items = new List<string>();
-			var parent = source.Parent;
-			while (parent.IsKind(SyntaxKind.ClassDeclaration))
-			{
-				var parentClass = parent as ClassDeclarationSyntax;
-				Debug.Assert(null != parentClass);
-				items.Add(parentClass.Identifier.Text);
-				parent = parent.Parent;
-			}
-
-			var nameSpace = parent as NamespaceDeclarationSyntax;
-			var sb = new StringBuilder();
-			if (nameSpace != null)
-			{
-				sb.Append(nameSpace.Name);
-				sb.Append(NAMESPACE_CLASS_DELIMITER);
-			}
-
-			items.Reverse();
-			items.ForEach(i => { sb.Append(i).Append(NESTED_CLASS_DELIMITER); });
-			sb.Append(source.Identifier.Text);
-
-			var result = sb.ToString();
-			return result;
-		}
+		// private const string NESTED_CLASS_DELIMITER = "+";
+		// private const string NAMESPACE_CLASS_DELIMITER = ".";
+		//
+		// public static string GetFullName(this ClassDeclarationSyntax source)
+		// {
+		// 	Debug.Assert(source != null);
+		//
+		// 	var items = new List<string>();
+		// 	var parent = source.Parent;
+		// 	while (parent.IsKind(SyntaxKind.ClassDeclaration))
+		// 	{
+		// 		var parentClass = parent as ClassDeclarationSyntax;
+		// 		Debug.Assert(null != parentClass);
+		// 		items.Add(parentClass.Identifier.Text);
+		// 		parent = parent.Parent;
+		// 	}
+		//
+		// 	var nameSpace = parent as NamespaceDeclarationSyntax;
+		// 	var sb = new StringBuilder();
+		// 	if (nameSpace != null)
+		// 	{
+		// 		sb.Append(nameSpace.Name);
+		// 		sb.Append(NAMESPACE_CLASS_DELIMITER);
+		// 	}
+		//
+		// 	items.Reverse();
+		// 	items.ForEach(i => { sb.Append(i).Append(NESTED_CLASS_DELIMITER); });
+		// 	sb.Append(source.Identifier.Text);
+		//
+		// 	var result = sb.ToString();
+		// 	return result;
+		// }
 
 
 		private static Assembly[] _cachedAssemblies;
@@ -101,16 +94,16 @@ namespace Needle.SelectiveProfiling.Analysis
 		}
 	}
 
-	internal class TypesCollector : CSharpSyntaxWalker
-	{
-		[CanBeNull] public List<string> FullTypeNames;
-
-		public override void VisitClassDeclaration(ClassDeclarationSyntax node)
-		{
-			base.VisitClassDeclaration(node);
-			var name = node.GetFullName();
-			if (FullTypeNames == null) FullTypeNames = new List<string>();
-			FullTypeNames.Add(name);
-		}
-	}
+	// internal class TypesCollector : CSharpSyntaxWalker
+	// {
+	// 	[CanBeNull] public List<string> FullTypeNames;
+	//
+	// 	public override void VisitClassDeclaration(ClassDeclarationSyntax node)
+	// 	{
+	// 		base.VisitClassDeclaration(node);
+	// 		var name = node.GetFullName();
+	// 		if (FullTypeNames == null) FullTypeNames = new List<string>();
+	// 		FullTypeNames.Add(name);
+	// 	}
+	// }
 }
