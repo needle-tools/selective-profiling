@@ -590,9 +590,13 @@ namespace Needle.SelectiveProfiling
 					}
 					else if(add != null)
 					{
-						if (GUILayout.Button("Add", GUILayout.Width(70)))
+						var allowAdd = AccessUtils.AllowPatching(match.Method, false, false);
+						using (new EditorGUI.DisabledScope(!allowAdd))
 						{
-							add(match.Method);
+							if (GUILayout.Button(new GUIContent("Add", !allowAdd ? AccessUtils.AllowPatchingResultLastReason : string.Empty), GUILayout.Width(70)))
+							{
+								add(match.Method);
+							}
 						}
 					}
 
