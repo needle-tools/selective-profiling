@@ -43,6 +43,19 @@ namespace Needle.SelectiveProfiling.Utils
 				return e.Types.Where(t => t != null);
 			}
 		}
+
+		public static IEnumerable<MethodInfo> GetLoadableMethods(this Type type, BindingFlags bindingFlags)
+		{
+			try
+			{
+				return type.GetMethods(bindingFlags);
+			}
+			catch(TypeLoadException e)
+			{
+				// var k = e.Data;
+				return Array.Empty<MethodInfo>();
+			}
+		}
 		
 		private static readonly Dictionary<string, Assembly> assemblyMap = new Dictionary<string, Assembly>();
 		private static Dictionary<string, MethodInfo> foundMethodCalls = new Dictionary<string, MethodInfo>();

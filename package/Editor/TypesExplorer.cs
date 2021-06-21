@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -107,9 +108,28 @@ namespace Needle.SelectiveProfiling
 							methodsList.Add(new FilterEntry<MethodInfo>(filter, fullName, method, name));
 						}
 
-						foreach (var method in type.GetMethods(AccessTools.allDeclared)) 
+						try
 						{
-							RegisterMethodInfo(method);
+							var methods = type.GetLoadableMethods(AccessTools.allDeclared);
+							foreach (var method in methods )
+							{
+								try
+								{
+									RegisterMethodInfo(method);
+								}
+								catch (FileNotFoundException)
+								{
+									// ignore
+								}
+								catch (TypeLoadException)
+								{
+									// ignore
+								}
+							}
+						}
+						catch (TypeLoadException)
+						{
+							// ignore
 						}
 						
 						// foreach (var method in type.GetMethods((BindingFlags)~0))
