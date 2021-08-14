@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
+using MonoMod.Utils;
 using Needle.SelectiveProfiling.Utils;
 using UnityEditor;
 using UnityEditorInternal;
@@ -141,15 +142,15 @@ namespace Needle.SelectiveProfiling
 				}
 			}
 
-			void HandleDeepProfiling()
-			{
-				if (!Application.isPlaying) return;
-				var nextLevel = ++depth;
-				if (nextLevel < settings.MaxDepth)
-				{
-					HandleNestedCalls(method, nextLevel);
-				}
-			}
+			// void HandleDeepProfiling()
+			// {
+			// 	if (!Application.isPlaying) return;
+			// 	var nextLevel = ++depth;
+			// 	if (nextLevel < settings.MaxDepth)
+			// 	{
+			// 		HandleNestedCalls(method, nextLevel);
+			// 	}
+			// }
 
 			var methodInfo = settings.GetInstance(new MethodInformation(method));
 			if (enableIfMuted) methodInfo.Enabled = true;
@@ -159,7 +160,7 @@ namespace Needle.SelectiveProfiling
 				existingProfilingInfo.MethodInformation = methodInfo;
 				HandleCallstackRegistration(existingProfilingInfo);
 
-				if (ShouldSave || save)
+				if ((!deepProfiling && ShouldSave) || save)
 				{
 					settings.Add(methodInfo);
 				}
@@ -167,7 +168,7 @@ namespace Needle.SelectiveProfiling
 				if (!existingProfilingInfo.IsActive)
 				{
 					await existingProfilingInfo.Enable();
-					HandleDeepProfiling();
+					// HandleDeepProfiling();
 				}
 
 				return existingProfilingInfo.IsActive;
@@ -180,7 +181,7 @@ namespace Needle.SelectiveProfiling
 			}
 
 
-			var patch = new ProfilerSamplePatch.TranspilerPatch(method, null, " " + SamplePostfix);
+			var patch = new ProfilerSamplePatch.TranspilerPatch(method, null, " " + SamplePostfix, depth, settings.MaxDepth);
 			patch.PatchThreaded = true;
 			var info = new ProfilingInfo(patch, method, methodInfo);
 			profiled.Add(method, info);
@@ -197,12 +198,7 @@ namespace Needle.SelectiveProfiling
 				if (!muted)
 				{
 					enabled = await info.Enable();
-
-					if (enabled)
-					{
-						HandleDeepProfiling();
-					}
-					else if (DebugLog)
+					if (!enabled && DebugLog)
 					{
 						Debug.LogError("Did not enable: " + method + ", " + info.IsActive + ", " + info.Identifier + ", hasBody: " + method.HasMethodBody());
 					}
@@ -395,7 +391,7 @@ namespace Needle.SelectiveProfiling
 
 		private static readonly List<(MethodInformation method, bool state)> stateChangedList = new List<(MethodInformation, bool)>();
 
-		private static void OnEditorUpdate()
+		private static async void OnEditorUpdate()
 		{
 #if UNITY_2020_2_OR_NEWER
 			if (queuedCommands.Count > 0)
@@ -422,12 +418,12 @@ namespace Needle.SelectiveProfiling
 							if (patch.IsActive == shouldBeActive) continue;
 
 							if (shouldBeActive)
-								EnableProfilingAsync(patch.Method);
-							else patch.Disable();
+								await EnableProfilingAsync(patch.Method);
+							else await patch.Disable();
 						}
 						else if (shouldBeActive)
 						{
-							EnableProfilingAsync(method);
+							await EnableProfilingAsync(method);
 						}
 						++handled;
 					}
@@ -437,6 +433,35 @@ namespace Needle.SelectiveProfiling
 			
 			if (DeepProfileDebuggingMode)
 				UpdateDeepProfileDebug();
+
+			var settings = SelectiveProfilerSettings.instance;
+			callsFoundInFlight.Clear();
+			callsFoundInFlight.AddRange(callsFound);
+			callsFound.Clear();
+			foreach (var kvp in callsFoundInFlight)
+			{
+				var method = kvp.Key;
+				var info = kvp.Value;
+				var nextDepth = info.depth + 1;
+				if (nextDepth >= settings.MaxDepth) continue;
+				if (await InternalEnableProfilingAsync(method, false, true, true, info.callers.FirstOrDefault(), nextDepth))
+				{
+					if (profiled.TryGetValue(method, out var profilingInfo))
+					{
+						for (int i = 1; i < info.callers.Count; i++)
+						{
+							var source = info.callers[i];
+							var sourcePatch = profiled.FirstOrDefault(p => p.Value.Method == source).Value;
+							if (sourcePatch != null)
+							{
+								profilingInfo.AddCaller(sourcePatch);
+							}
+						}
+					}
+					// var info = profiled
+				}
+			}
+			callsFound.Clear();
 		}
 
 		private static void MethodsCleared()
@@ -452,58 +477,28 @@ namespace Needle.SelectiveProfiling
 		}
 
 		private static readonly bool deepProfiling = SelectiveProfilerSettings.Instance.DeepProfiling;
-		private static volatile HashSet<MethodInfo> callsFound = new HashSet<MethodInfo>();
-		// private static volatile List<MethodInfo> nestedMethods = new List<MethodInfo>();
+		private static readonly Dictionary<MethodInfo, (int depth, List<MethodInfo> callers)> callsFound = new Dictionary<MethodInfo, (int depth, List<MethodInfo> callers)>();
+		private static readonly Dictionary<MethodInfo, (int depth, List<MethodInfo> callers)> callsFoundInFlight = new Dictionary<MethodInfo, (int depth, List<MethodInfo> callers)>();
 
-		internal static void RegisterInternalCalledMethod(MethodBase source, MethodInfo method)
+		internal static void RegisterInternalCalledMethod(MethodInfo source, MethodInfo method, int depth)
 		{
 			if (!deepProfiling) return;
 			if (method == null) return;
-			if (callsFound.Contains(method)) return;
-			
+			if (callsFound.ContainsKey(method))
+			{
+				// use smallest depth if the method is called from multiple places and deep profiling is enabled
+				var val = callsFound[method];
+				val.depth = Mathf.Min(depth, val.depth);
+				if(!val.callers.Contains(source))
+					val.callers.Add(source);
+				callsFound[method] = val;
+				return;
+			}
 			var settings = SelectiveProfilerSettings.Instance;
 			if (method.DeclaringType != null && !AccessUtils.AllowedLevel(method, settings.DeepProfileMaxLevel)) return;
 			if (!AccessUtils.AllowPatching(method, true, DebugLog)) return;
-			callsFound.Add(method);
+			callsFound.Add(method, (depth, new List<MethodInfo> {source}));
 		}
-
-		private static async void HandleNestedCalls(MethodInfo source, int depth)
-		{
-			if (!deepProfiling) return;
-			if (callsFound.Count <= 0) return;
-
-			// TODO: refactor deep profiling to use editor update loop
-
-			// var list = callsFound.ToArray();
-			// callsFound.Clear();
-			try
-			{
-				for (var index = callsFound.ToArray().Length - 1; index >= 0; index--)
-				{
-					var method = callsFound.ToArray()[index];
-					// if debugging deep profiling applying nested methods will be handled by setting stepDeepProfile to true
-					if (DeepProfileDebuggingMode)
-					{
-						if (stepDeepProfileList == null) stepDeepProfileList = new List<(MethodInfo, int, MethodInfo)>(100);
-						if (!stepDeepProfileList.Any(e => e.method == method))
-							stepDeepProfileList.Add((method, depth, source));
-					}
-					// dont save nested calls
-					else if (!profiled.ContainsKey(method))
-					{
-						if (DebugLog)
-							Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null,
-								"Handle Deep Profile: " + source + " -> " + method + ", Level: " + depth);
-						await InternalEnableProfilingAsync(method, false, true, false, source, depth);
-					}
-				}
-			}
-			catch (InvalidOperationException ex)
-			{
-				Debug.LogException(ex);
-			}
-		}
-
 
 		internal static bool DevelopmentMode
 		{

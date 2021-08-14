@@ -14,23 +14,30 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 	{
 		internal static Action<string, string> CapturedILBeforeAfter;
 
+		private readonly MethodInfo sourceMethod;
 		private readonly InstructionsWrapper wrapper;
 		private readonly InjectionCallback beforeInject;
 		private readonly bool debugLog;
 		private readonly bool skipProfilerMethods;
 		private readonly bool developmentMode;
+		private int depth;
 
-		public MethodWrapper(InstructionsWrapper wrapper,
+		public MethodWrapper(
+			MethodInfo method,
+			InstructionsWrapper wrapper,
 			InjectionCallback beforeInject,
 			bool debugLog,
 			bool skipProfilerMethods,
-			bool developmentMode)
+			bool developmentMode,
+			int depth)
 		{
+			this.sourceMethod = method;
 			this.wrapper = wrapper;
 			this.beforeInject = beforeInject;
 			this.debugLog = debugLog;
 			this.skipProfilerMethods = skipProfilerMethods;
 			this.developmentMode = developmentMode;
+			this.depth = depth;
 		}
 
 		public void Apply(MethodBase method, IList<CodeInstruction> instructions, ILGenerator il)
@@ -139,7 +146,7 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 						}
 
 						if (mi.GetCustomAttribute<DontFollow>() == null)
-							SelectiveProfiler.RegisterInternalCalledMethod(method, mi);
+							SelectiveProfiler.RegisterInternalCalledMethod(sourceMethod, mi, depth);
 					}
 
 					if (inst.operand is ConstructorInfo ci)

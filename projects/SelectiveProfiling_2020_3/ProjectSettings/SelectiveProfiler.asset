@@ -15,69 +15,19 @@ MonoBehaviour:
   FirstInstall: 0
   Enabled: 1
   RuntimeSave: 1
-  UseAlwaysProfile: 1
-  CollapseProperties: 0
-  CollapseHierarchyNesting: 0
+  UseAlwaysProfile: 0
+  CollapseProperties: 1
+  CollapseHierarchyNesting: 1
   CollapseNoImpactSamples: 0
   ColorPerformanceImpact: 1
   DeepProfiling: 1
   MaxDepth: 3
   DeepProfileMaxLevel: -1
-  DebugLog: 0
+  DebugLog: 1
   PinnedMethods: []
   Methods:
   - Enabled: 1
     Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-    Type: ThreadSleep
-    Method: Void Start()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: ThreadSleep
+    Type: _Tests.SelectiveProfilingTestComponent.DeepProfileTest
     Method: Void Update()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: ThreadSleep
-    Method: Void Sleep100()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: ThreadSleep
-    Method: Void SleepRandom()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: ThreadSleep
-    Method: Void Throw()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: ThreadSleep
-    Method: Void CallThrow()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void Update()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void SomeClassMethod(SomeClass)
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void MethodWithOut(Int32 ByRef, SomeClass ByRef)
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void CallingAnotherMethod()
-  - Enabled: 1
-    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-    Type: MyNamespace.MySlowScript
-    Method: Void TwoLevelsDeepCalledFromAnotherMethod()

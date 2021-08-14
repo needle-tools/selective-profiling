@@ -27,27 +27,29 @@ namespace Needle.SelectiveProfiling
 			public override string DisplayName => method?.Name;
 
 			private static readonly Dictionary<MethodBase, ICodeWrapper> wrappers = new Dictionary<MethodBase, ICodeWrapper>();
-			private readonly MethodBase method;
+			private readonly MethodInfo method;
 			private readonly string prefix;
 			private readonly string postfix;
 
-			public TranspilerPatch(MethodBase methods, string prefix, string postfix)
+			public TranspilerPatch(MethodInfo method, string prefix, string postfix, int level, int maxLevel)
 			{
-				this.method = methods;
+				this.method = method;
 				if (string.IsNullOrEmpty(prefix)) prefix = string.Empty;
 				if (string.IsNullOrEmpty(postfix)) postfix = string.Empty;
 				this.prefix = prefix;
 				this.postfix = postfix;
 				
 				ICodeWrapper wrapper = new MethodWrapper(
+					method,
 					new InstructionsWrapper(), 
 					OnBeforeInjectBeginSample,
 					SelectiveProfiler.DebugLog,
 					SelectiveProfiler.TranspilerShouldSkipCallsInProfilerType,
-					SelectiveProfiler.DevelopmentMode
+					SelectiveProfiler.DevelopmentMode,
+					level
 					);
 				
-				wrappers.Add(method, wrapper);
+				wrappers.Add(this.method, wrapper);
 			}
 			
 			protected override IEnumerable<MethodBase> GetPatches()

@@ -11,9 +11,9 @@ public class ComponentWithTryCatch : MonoBehaviour
         {
             OtherMethod(true);
         }
-        catch(Exception e)
+        catch(TestException e)
         {
-            Debug.Log("Captured exception");
+            // Debug.Log("Captured expected exception");
         }
         finally
         {
@@ -21,10 +21,12 @@ public class ComponentWithTryCatch : MonoBehaviour
         } 
         
     }
+    
+    private class TestException : Exception{}
 
     private void OtherMethod(bool t)
     {
-        if (t) throw new Exception("Test throw");
+        if (t) throw new TestException();
         Nested();
 
         void Nested()
