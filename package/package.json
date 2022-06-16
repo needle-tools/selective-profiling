@@ -1,8 +1,8 @@
 {
 	"displayName": "Selective Profiling",
 	"name": "com.needle.selective-profiling",
-	"version": "0.0.1-pre",
-	"unity": "2020.2",
+	"version": "1.0.0-pre",
+	"unity": "2020.3",
 	"description": "Deep profile single methods",
 	"author": {
 		"name": "Needle",
