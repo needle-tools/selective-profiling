@@ -191,10 +191,10 @@ namespace Needle.SelectiveProfiling.CodeWrapper
 					// when a method has a label we assume that we dont have to (or must) include the preceding stack loads
 					// if we move the label to the beginning of the loads we might cause wrong branching 
 					// e.g. when a branch jumps over some load/store and we move the label to the beginning of those
-					if (hasLabel) start = -1;
-					
-					beforeInject?.Invoke(method, inst, index);
-					start = index;
+					// if (hasLabel) start = -1;
+					//
+					// beforeInject?.Invoke(method, inst, index);
+					// start = index;
 
 					// void LookAheadPotentiallyWrappingStoreResultAndConstrained()
 					// {
