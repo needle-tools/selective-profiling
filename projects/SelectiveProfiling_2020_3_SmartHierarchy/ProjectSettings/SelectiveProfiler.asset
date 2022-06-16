@@ -15,33 +15,33 @@ MonoBehaviour:
   FirstInstall: 0
   Enabled: 1
   UseAlwaysProfile: 0
-  CollapseProperties: 0
-  CollapseHierarchyNesting: 0
+  CollapseProperties: 1
+  CollapseHierarchyNesting: 1
   ColorPerformanceImpact: 1
   DeepProfiling: 0
   MaxDepth: 5
   DeepProfileMaxLevel: -1
   DebugLog: 1
   Methods:
-  - Enabled: 0
+  - Enabled: 1
     Assembly: AV.Hierarchy, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: AV.Hierarchy.HierarchyItemCreator
     Method: AV.Hierarchy.HierarchyItemBase CreateForInstance(Int32, UnityEngine.Object,
       UnityEditor.IMGUI.Controls.TreeViewItem)
-  - Enabled: 0
+  - Enabled: 1
     Assembly: AV.Hierarchy, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Type: AV.Hierarchy.SmartHierarchy
     Method: Boolean TryGetOrCreateItem(UnityEditor.IMGUI.Controls.TreeViewItem, AV.Hierarchy.HierarchyItemBase
       ByRef)
   - Enabled: 1
-    Assembly: UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEngine.UIElements.IMGUIContainer
-    Method: Void DoOnGUI(UnityEngine.Event, UnityEngine.Matrix4x4, UnityEngine.Rect,
-      Boolean, UnityEngine.Rect, System.Action, Boolean)
-  - Enabled: 0
     Assembly: UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    Type: UnityEditor.DockArea
-    Method: Void OldOnGUI()
+    Type: UnityEditor.CameraEditor
+    Method: Void DrawCameraBound(UnityEngine.Camera, UnityEditor.GizmoType)
+  - Enabled: 1
+    Assembly: needle.SelectiveProfiling.Extras, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    Type: Needle.SelectiveProfiling.ComponentCreatingLotsOfGarbage
+    Method: Void Update()
   PinnedMethods:
   - needle.SelectiveProfiling.Extras.dll!::MyIEnumeratorComponent.Update()
   - PlayerEndOfFrame

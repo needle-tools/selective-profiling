@@ -16,8 +16,13 @@ MonoBehaviour:
   enabledPatchIds:
   - Needle.SelectiveProfiling.RayPatch
   - needle.EditorPatching.HarmonyUnityDebugLogPatch
-  - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
   - Needle.SelectiveProfiling.ContextMenuPatches
+  - Needle.SelectiveProfiling.ProfilerFrameDataView_CustomRowsPatch
+  - needle.EditorPatching.HarmonyInstanceRegistry
+  - Needle.SelectiveProfiling.DrawPerformanceInInspectorHeader
+  - Needle.SelectiveProfiling.ProfilerReveal_Patch
+  - Needle.SelectiveProfiling.ProfilerPinning+ProfilerPinning_Patch
+  - Needle.SelectiveProfiling.ProfilerFrameDataView_Patch
   disabledPatchIds:
   - MyNamespace.MySlowScript.Update
   - UnityEngine.Debug.Log

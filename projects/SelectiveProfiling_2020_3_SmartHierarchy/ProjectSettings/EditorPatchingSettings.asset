@@ -20,9 +20,6 @@ MonoBehaviour:
   - Needle.SelectiveProfiling.ContextMenuPatches
   - Needle.SelectiveProfiling.ProfilerPinning+ProfilerPinning_Patch
   - needle.EditorPatching.HarmonyInstanceRegistry
-  - Needle.SelectiveProfiling.ProfilerFrameDataView_CustomRowsPatch
-  - Needle.SelectiveProfiling.DrawPerformanceInInspectorHeader
-  - Needle.SelectiveProfiling.ProfilerReveal_Patch
   disabledPatchIds:
   - MyNamespace.MySlowScript.Update
   - UnityEngine.Debug.Log
