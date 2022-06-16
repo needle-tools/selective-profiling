@@ -48,8 +48,11 @@ namespace Needle.SelectiveProfiling
 					SelectiveProfiler.DevelopmentMode,
 					level
 					);
-				
-				wrappers.Add(this.method, wrapper);
+
+				if (wrappers.ContainsKey(this.method))
+					wrappers[this.method] = wrapper;
+				else
+					wrappers.Add(this.method, wrapper);
 			}
 			
 			protected override IEnumerable<MethodBase> GetPatches()
