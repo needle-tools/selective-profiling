@@ -1,0 +1,10 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes: []
+  m_configObjects:
+    com.needle.xr.management.arsimulation_loader: {fileID: 11400000, guid: 89c0937aae2d58d4e918ee48f5222667, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: f613f3997775b9b4e89553a447a8a996, type: 2}

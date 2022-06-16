@@ -55,3 +55,55 @@ MonoBehaviour:
       PublicKeyToken=null
     Type: ComponentWithTryCatch
     Method: Void Update()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: Boolean IsInvoking()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: Void CancelInvoke()
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: Void Invoke(System.String, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: Void InvokeRepeating(System.String, Single, Single)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: Void CancelInvoke(System.String)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: Boolean IsInvoking(System.String)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: UnityEngine.Coroutine StartCoroutine(System.String)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: UnityEngine.Coroutine StartCoroutine(System.String, System.Object)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: UnityEngine.Coroutine StartCoroutine(System.Collections.IEnumerator)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: UnityEngine.Coroutine StartCoroutine_Auto(System.Collections.IEnumerator)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: Void StopCoroutine(System.Collections.IEnumerator)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: Void StopCoroutine(UnityEngine.Coroutine)
+  - Enabled: 1
+    Assembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Type: UnityEngine.MonoBehaviour
+    Method: Void print(System.Object)
