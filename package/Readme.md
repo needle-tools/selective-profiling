@@ -14,6 +14,7 @@ With selective profiler you can choose individual methods to profile from Unity 
 - ### Select methods in the Unity Profiler to start or stop deep profiling, at any time! No domain reload or restart needed. 
 - ### Slow method calls or calls producing a lot of garbage are color coded
 - ### Deeply nested hierarchies can be collapsed (e.g. collapsing internal editor calls)
+- ### Method call markers can be rendered in the graph view (experimental, needs UI)
 - ### Mark methods or classes in your project with ``[AlwaysProfile]`` to be always deep profiled without having to turn on Deep Profiling for your whole project or selecting specific methods.
 ![](Documentation~/profiler-select.gif)
 
@@ -60,6 +61,10 @@ For injection we use [Harmony](https://github.com/pardeike/Harmony), an awesome 
 - Generic classes or methods are currently not supported. [See issue](https://github.com/needle-tools/selective-profiling/issues/6)
 - Occasionally injections break method functionality or cause errors ([see issue](https://github.com/needle-tools/selective-profiling/issues/2)). It seems to only happen with properties though. Profiling code inside properties should not be important and therefore it is disabled by default (See setting ``Skip Properties``). Otherwise it is recommended to try disabling the ``Deep Profile`` option in ``Project Settings/Needle/Selective Profiling`` or decreasing the ``Max Level``. In any case please also [open an issue](https://github.com/needle-tools/selective-profiling/issues/new) with as much information about your project and profiled method as possible to help us find and fix issues like that.
 - ECS samples using a combination ``unsafe partial struct`` can apparently not be patched correctly [see issue 16](https://github.com/needle-tools/selective-profiling/issues/16)
+
+## Contribution
+- This project is open for contributions!  
+  There are a couple of things missing, for example: UI for marking methods to be displayed in the Profiler graph view.
 
 ## Contact ✒️
 <b>[🌵 needle — tools for unity](https://needle.tools)</b> • 
