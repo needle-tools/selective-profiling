@@ -12,8 +12,10 @@ With selective profiler you can choose individual methods to profile from Unity 
 
 ## Features 🧬
 - ### Select methods in the Unity Profiler to start or stop deep profiling, at any time! No domain reload or restart needed. 
-![](Documentation~/profiler-select.gif)
+- ### Slow method calls or calls producing a lot of garbage are color coded
+- ### Deeply nested hierarchies can be collapsed (e.g. collapsing internal editor calls)
 - ### Mark methods or classes in your project with ``[AlwaysProfile]`` to be always deep profiled without having to turn on Deep Profiling for your whole project or selecting specific methods.
+![](Documentation~/profiler-select.gif)
 
 
 
