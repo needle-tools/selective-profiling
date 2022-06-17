@@ -68,7 +68,8 @@ namespace Needle.SelectiveProfiling.Analysis
 				return _cachedAssemblies;
 			}
 		}
-
+		
+#if _HAS_CECIL_INSTALLED
 		private static DefaultAssemblyResolver unityResolver;
 
 		internal static DefaultAssemblyResolver UnityResolver
@@ -78,20 +79,21 @@ namespace Needle.SelectiveProfiling.Analysis
 				if (unityResolver != null) return unityResolver;
 
 				// set up assembly resolver so we can go from AssemblyNameReference to AssemblyDefinition
-				var resolver = new DefaultAssemblyResolver();
-#if UNITY_2019_1_OR_NEWER
-				foreach (var p in CompilationPipeline.GetPrecompiledAssemblyPaths(CompilationPipeline.PrecompiledAssemblySources.All))
-#else
-                foreach (var p in CompilationPipeline.GetPrecompiledAssemblyNames().Select(x => CompilationPipeline.GetPrecompiledAssemblyPathFromAssemblyName(x)))
-#endif
-					resolver.AddSearchDirectory(Path.GetDirectoryName(p));
-				foreach (var p in CachedAssemblies)
-					resolver.AddSearchDirectory(Path.GetDirectoryName(p.outputPath));
-
-				unityResolver = resolver;
+// 				var resolver = new DefaultAssemblyResolver();
+// #if UNITY_2019_1_OR_NEWER
+// 				foreach (var p in CompilationPipeline.GetPrecompiledAssemblyPaths(CompilationPipeline.PrecompiledAssemblySources.All))
+// #else
+//                 foreach (var p in CompilationPipeline.GetPrecompiledAssemblyNames().Select(x => CompilationPipeline.GetPrecompiledAssemblyPathFromAssemblyName(x)))
+// #endif
+// 					resolver.AddSearchDirectory(Path.GetDirectoryName(p));
+// 				foreach (var p in CachedAssemblies)
+// 					resolver.AddSearchDirectory(Path.GetDirectoryName(p.outputPath));
+//
+// 				unityResolver = resolver;
 				return unityResolver;
 			}
 		}
+#endif
 	}
 
 	// internal class TypesCollector : CSharpSyntaxWalker

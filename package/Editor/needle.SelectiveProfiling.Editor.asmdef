@@ -16,6 +16,17 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.burst",
+            "expression": "",
+            "define": "_HAS_BURST_INSTALLED"
+        },
+        {
+            "name": "com.unity.nuget.mono-cecil",
+            "expression": "",
+            "define": "_HAS_CECIL_INSTALLED"
+        }
+    ],
     "noEngineReferences": false
 }
