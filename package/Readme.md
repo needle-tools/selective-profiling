@@ -18,9 +18,7 @@ With selective profiler you can choose individual methods to profile from Unity 
 
 
 ## Installation 💾
-1) 
-    <details>
-    <summary>Clone this repository and add OpenUPM to your project</em></summary>
+1)  Add OpenUPM to your project:
 
     To add OpenUPM to your project:
 
@@ -32,9 +30,8 @@ With selective profiler you can choose individual methods to profile from Unity 
     Scope(s): com.needle
     ```
     - click <kbd>Save</kbd>
-    </details>
 
-2) Add the folder named "package" to your project in Package Manager via local file path ``"com.needle.selective-profiling": "file:path/to/cloned/repo/package"``). 
+2) Open Window/PackageManager, select "My Registries" in top left corner, find and select "Selective Profiler" and click <kbd>Install</kbd> 
 3) That's it. Now you should be able to right click methods in profiler to add samples. You can find settings under ``Project Settings/Needle/Selective Profiler``
 
 ## How to use 💡
