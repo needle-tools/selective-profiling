@@ -11,11 +11,12 @@ With selective profiler you can choose individual methods to profile from Unity 
 
 
 ## Features 🧬
-- ### Select methods in the Unity Profiler to start or stop deep profiling, at any time! No domain reload or restart needed. 
-- ### Slow method calls or calls producing a lot of garbage are color coded
-- ### Deeply nested hierarchies can be collapsed (e.g. collapsing internal editor calls)
-- ### Method call markers can be rendered in the graph view (experimental, needs UI)
-- ### Mark methods or classes in your project with ``[AlwaysProfile]`` to be always deep profiled without having to turn on Deep Profiling for your whole project or selecting specific methods.
+- Select methods in the Unity Profiler to start or stop deep profiling, at any time! No domain reload or restart needed. 
+- Slow method calls or calls producing a lot of garbage are color coded
+- Deeply nested hierarchies can be collapsed (e.g. collapsing internal editor calls)
+- Method call markers can be rendered in the graph view (experimental, needs UI)
+- Mark methods or classes in your project with ``[AlwaysProfile]`` to be always deep profiled without having to turn on Deep Profiling for your whole project or selecting specific methods.
+  
 ![](Documentation~/profiler-select.gif)
 
 
@@ -23,10 +24,7 @@ With selective profiler you can choose individual methods to profile from Unity 
 ## Installation 💾
 0) ⚡ **Fast mode**: [download package-installer for Selective Profiler](https://package-installer.glitch.me/v1/installer/OpenUPM/com.needle.selective-profiling?registry=https://package.openupm.com) and import into Unity. Done!  
    *Behind the scenes it will automatically do the steps listed below*
-1)  Add [OpenUPM](https://openupm.com/packages/com.needle.selective-profiling/) to your project:
-
-    To add OpenUPM to your project:
-
+1) 🐢 **Slow mode**: Add [OpenUPM](https://openupm.com/packages/com.needle.selective-profiling/) to your project:
     - open `Edit/Project Settings/Package Manager`
     - add a new Scoped Registry:
     ```
