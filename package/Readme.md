@@ -21,7 +21,9 @@ With selective profiler you can choose individual methods to profile from Unity 
 
 
 ## Installation 💾
-1)  Add OpenUPM to your project:
+0) ⚡ **Fast mode**: [download package-installer for Selective Profiler](https://package-installer.glitch.me/v1/installer/OpenUPM/com.needle.selective-profiling?registry=https://package.openupm.com) and import into Unity. Done!  
+   *Behind the scenes it will automatically do the steps listed below*
+1)  Add [OpenUPM](https://openupm.com/packages/com.needle.selective-profiling/) to your project:
 
     To add OpenUPM to your project:
 
