@@ -436,7 +436,8 @@ namespace Needle.SelectiveProfiling
 
 			var settings = SelectiveProfilerSettings.instance;
 			callsFoundInFlight.Clear();
-			callsFoundInFlight.AddRange(callsFound);
+			foreach (var call in callsFound)
+				callsFoundInFlight.Add(call.Key, call.Value);
 			callsFound.Clear();
 			foreach (var kvp in callsFoundInFlight)
 			{
